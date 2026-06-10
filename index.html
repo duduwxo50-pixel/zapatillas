@@ -94,9 +94,19 @@
         .admin-form input, .admin-form select, .admin-form textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; }
         .admin-form textarea { grid-column: 1 / -1; }
 
-        .color-variant-row { background: #f1f5f9; padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); }
-        .image-inputs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 10px; }
+        .color-variant-row { background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color); position: relative; }
+        .color-variant-row .color-row-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+        .color-variant-row .color-row-header input[type="text"] { flex: 1; min-width: 120px; padding: 7px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; font-weight: 600; outline: none; }
+        .color-variant-row .color-row-header .btn-remove-color { background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-size: 14px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .image-inputs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 8px; }
         .file-upload-box { display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 600; }
+        .file-upload-box input[type="file"] { font-size: 10px; }
+        .img-preview-thumb { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color); background: #e2e8f0; display: none; }
+        .img-preview-thumb.visible { display: block; }
+        .upload-status { font-size: 10px; font-weight: 700; margin-top: 2px; }
+        .upload-status.ok { color: #16a34a; }
+        .upload-status.uploading { color: #d97706; }
+        .upload-status.err { color: var(--danger-color); }
 
         .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
         .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
@@ -240,11 +250,11 @@
                         </div>
 
                         <div style="margin-bottom: 20px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                                <h3 style="font-size:14px; text-transform:uppercase; color:var(--text-muted);">Imágenes de la Zapatilla (Sube hasta 7 fotos para el carrusel)</h3>
-                                <button type="button" class="btn-action" style="padding:6px 12px; font-size:12px;" onclick="addImageSlotRow()">+ Añadir Foto</button>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                <h3 style="font-size:14px; text-transform:uppercase; color:var(--text-muted);">Colores y Fotos (hasta 7 fotos por color)</h3>
+                                <button type="button" class="btn-action" style="padding:6px 14px; font-size:12px;" onclick="addColorVariant()">+ Añadir Color</button>
                             </div>
-                            <div id="variants-container" class="image-inputs-grid"></div>
+                            <div id="variants-container"></div>
                         </div>
 
                         <textarea id="form-p-desc" rows="3" placeholder="Descripción de la zapatilla..." required></textarea>
@@ -305,9 +315,121 @@
         let isAdminLoggedIn = false;
         let activeHomeFilter = "all";
         
-        let runtimeImages = ["", "", "", "", "", "", ""];
+        let runtimeVariants = []; // [{colorName, images:[url,url,...]}, ...]
         let carouselInterval = null;
         let currentImageIndex = 0;
+
+        // ─────────────────────────────────────────────
+        // FREEIMAGE.HOST UPLOAD (gratuito, sin registro)
+        // ─────────────────────────────────────────────
+        async function uploadToImgHost(base64Data) {
+            const pureB64 = base64Data.split(',')[1];
+            const formData = new FormData();
+            formData.append("source", pureB64);
+            formData.append("type", "base64");
+            const res = await fetch("https://freeimage.host/api/1/upload?key=6d207e02198a847aa98d0a2a901485a5", {
+                method: "POST",
+                body: formData
+            });
+            const json = await res.json();
+            if (json.status_code === 200) return json.image.url;
+            throw new Error(json.error?.message || "Error subiendo imagen a freeimage.host");
+        }
+
+        // ─────────────────────────────────────────────
+        // VARIANTES DE COLOR – RENDERIZADO
+        // ─────────────────────────────────────────────
+        function renderVariantsContainer() {
+            const container = document.getElementById('variants-container');
+            container.innerHTML = '';
+            runtimeVariants.forEach((variant, vi) => {
+                const row = document.createElement('div');
+                row.className = 'color-variant-row';
+                row.id = `variant-row-${vi}`;
+
+                const photosHTML = Array.from({length: 7}, (_, pi) => {
+                    const url = variant.images[pi] || '';
+                    const hasImg = url.trim() !== '';
+                    return `
+                        <div class="file-upload-box" id="slot-${vi}-${pi}">
+                            <label style="font-size:10px; font-weight:700;">Foto ${pi + 1}${pi === 0 ? ' ★' : ''}</label>
+                            <img id="prev-${vi}-${pi}" class="img-preview-thumb ${hasImg ? 'visible' : ''}" src="${hasImg ? url : ''}">
+                            <input type="file" accept="image/*" onchange="handlePhotoUpload(this, ${vi}, ${pi})">
+                            <span id="status-${vi}-${pi}" class="upload-status ${hasImg ? 'ok' : ''}">${hasImg ? '✓ Guardada' : ''}</span>
+                        </div>`;
+                }).join('');
+
+                row.innerHTML = `
+                    <div class="color-row-header">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Color / Variante ${vi + 1}</span>
+                        <input type="text" placeholder="Ej: Blanco, Negro, Rojo..." value="${variant.colorName}"
+                               oninput="runtimeVariants[${vi}].colorName = this.value">
+                        ${runtimeVariants.length > 1 ? `<button class="btn-remove-color" onclick="removeColorVariant(${vi})" title="Eliminar esta variante">×</button>` : ''}
+                    </div>
+                    <div class="image-inputs-grid">${photosHTML}</div>`;
+                container.appendChild(row);
+            });
+        }
+
+        function addColorVariant() {
+            runtimeVariants.push({ colorName: '', images: Array(7).fill('') });
+            renderVariantsContainer();
+            // scroll al nuevo
+            const last = document.getElementById(`variant-row-${runtimeVariants.length - 1}`);
+            if (last) last.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function removeColorVariant(vi) {
+            if (runtimeVariants.length <= 1) return;
+            runtimeVariants.splice(vi, 1);
+            renderVariantsContainer();
+        }
+
+        // ─────────────────────────────────────────────
+        // SUBIDA DE FOTO → ImgBB → guardar URL
+        // ─────────────────────────────────────────────
+        async function handlePhotoUpload(inputEl, vi, pi) {
+            const file = inputEl.files[0];
+            if (!file) return;
+
+            const statusEl = document.getElementById(`status-${vi}-${pi}`);
+            const prevEl   = document.getElementById(`prev-${vi}-${pi}`);
+
+            statusEl.className = 'upload-status uploading';
+            statusEl.innerText = '⏳ Subiendo...';
+            prevEl.classList.remove('visible');
+
+            try {
+                // Leer como base64
+                const base64 = await new Promise((res, rej) => {
+                    const fr = new FileReader();
+                    fr.onload = e => res(e.target.result);
+                    fr.onerror = () => rej(new Error("No se pudo leer el archivo"));
+                    fr.readAsDataURL(file);
+                });
+
+                // Subir a freeimage.host
+                const url = await uploadToImgHost(base64);
+
+                // Guardar URL en la estructura
+                runtimeVariants[vi].images[pi] = url;
+
+                // Mostrar preview
+                prevEl.src = url;
+                prevEl.classList.add('visible');
+                statusEl.className = 'upload-status ok';
+                statusEl.innerText = '✓ Lista';
+            } catch (err) {
+                statusEl.className = 'upload-status err';
+                statusEl.innerText = '✗ Error al subir — intenta de nuevo';
+                console.error(err);
+            }
+        }
+
+        function initVariantsForNew() {
+            runtimeVariants = [{ colorName: 'Único', images: Array(7).fill('') }];
+            renderVariantsContainer();
+        }
 
         // ENRUTAMIENTO SPA
         function navigateTo(viewId) {
@@ -401,43 +523,8 @@
             return '$ ' + Math.round(val).toLocaleString('es-CO');
         }
 
-        // CARGA DE FOTOS EN FORMULARIO (MÁXIMO 7)
-        function renderImageSlots() {
-            const container = document.getElementById('variants-container');
-            container.innerHTML = "";
-            
-            for (let i = 0; i < 7; i++) {
-                const hasImg = runtimeImages[i] && runtimeImages[i].trim() !== "";
-                const box = document.createElement('div');
-                box.className = "file-upload-box";
-                box.innerHTML = `
-                    <label style="font-weight:700;">Foto ${i + 1} ${i === 0 ? '(Principal)' : ''}</label>
-                    <input type="file" accept="image/*" onchange="encodeFormFile(this, ${i})">
-                    <span id="status-${i}" style="color:${hasImg ? 'green' : 'gray'};">
-                        ${hasImg ? '✓ Cargada' : 'Sin archivo'}
-                    </span>
-                `;
-                container.appendChild(box);
-            }
-        }
-
-        function addImageSlotRow() {
-            // Inicializador complementario
-            renderImageSlots();
-        }
-
-        function encodeFormFile(inputElement, imgIndex) {
-            const file = inputElement.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    runtimeImages[imgIndex] = e.target.result;
-                    const indicator = document.getElementById(`status-${imgIndex}`);
-                    if(indicator) { indicator.innerText = "✓ Cargada"; indicator.style.color = "green"; }
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+        // ─── eliminado: renderImageSlots / addImageSlotRow / encodeFormFile ───
+        // (reemplazados por renderVariantsContainer / addColorVariant / handlePhotoUpload)
 
         // FILTROS DE TIENDA
         function selectQuickFilter(filterType) {
@@ -543,45 +630,71 @@
             currentImageIndex = 0;
             const container = document.getElementById('detail-view-container');
             
-            const variant = p.variants && p.variants[0] ? p.variants[0] : { images: ['https://via.placeholder.com/500'] };
-            const validImages = variant.images.filter(img => img && img.trim() !== "");
+            const variants = (p.variants && p.variants.length > 0) ? p.variants : [{ colorName: 'Único', images: ['https://via.placeholder.com/500'] }];
+            let activeVariantIndex = 0;
 
-            // Crear miniaturas
-            const thumbsHTML = validImages.map((img, i) => `
-                <div id="thumb-${i}" class="thumbnail-card ${i === 0 ? 'active-thumb' : ''}" onclick="selectManualImage(${i}, '${img}')">
-                    <img src="${img}">
-                </div>
-            `).join('');
+            function buildDetailHTML(vi) {
+                const variant = variants[vi];
+                const validImages = (variant.images || []).filter(img => img && img.trim() !== '');
+                if (validImages.length === 0) validImages.push('https://via.placeholder.com/500');
 
-            container.innerHTML = `
-                <div class="product-detail-layout">
-                    <div>
-                        <div class="main-product-preview">
-                            <img id="detail-master-img" src="${validImages[0] || 'https://via.placeholder.com/500'}">
-                        </div>
-                        <div class="thumbnails-strip">${thumbsHTML}</div>
+                const thumbsHTML = validImages.map((img, i) => `
+                    <div id="thumb-${i}" class="thumbnail-card ${i === 0 ? 'active-thumb' : ''}" onclick="selectManualImage(${i}, '${img.replace(/'/g,"\\'")}')">
+                        <img src="${img}">
                     </div>
-                    <div>
-                        <span style="text-transform:uppercase; font-size:12px; color:var(--text-muted); font-weight:700;">${p.brand}</span>
-                        <h1 style="font-size:32px; margin-bottom:10px;">${p.title}</h1>
-                        <p style="text-transform:capitalize; margin-bottom:15px; font-size:14px; color:var(--text-muted);">Línea: Zapatillas para ${p.gender}</p>
-                        
-                        <h2 style="font-size:24px; margin:20px 0; color:var(--accent-dark);">${formatCOP(p.price)}</h2>
-                        <div style="margin-bottom:30px; font-size:15px; color:#475569; white-space: pre-wrap;">${p.desc}</div>
-                        
-                        <div style="display:flex; gap:12px;">
-                            ${p.stock > 0 ? 
-                                `<button class="btn-action" style="flex:1; padding:14px;" onclick="addToBag('${p.id}')">Añadir a la Bolsa</button>
-                                 <button class="btn-action" style="flex:1; padding:14px; background-color:var(--whatsapp-color);" onclick="buyDirectWhatsApp('${p.id}')">Pedir por WhatsApp</button>` : 
-                                `<button class="btn-action danger" style="width:100%; padding:14px; cursor:not-allowed;" disabled>Modelo Agotado</button>`
-                            }
+                `).join('');
+
+                const colorChipsHTML = variants.length > 1 ? `
+                    <div style="margin-bottom:15px;">
+                        <p style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">Color:</p>
+                        <div class="color-selector-wrapper">
+                            ${variants.map((v, i) => `
+                                <button class="color-chip-btn ${i === vi ? 'selected-chip' : ''}" onclick="switchDetailVariant('${id}', ${i})">${v.colorName || 'Color ' + (i+1)}</button>
+                            `).join('')}
+                        </div>
+                    </div>` : '';
+
+                container.innerHTML = `
+                    <div class="product-detail-layout">
+                        <div>
+                            <div class="main-product-preview">
+                                <img id="detail-master-img" src="${validImages[0]}">
+                            </div>
+                            <div class="thumbnails-strip">${thumbsHTML}</div>
+                        </div>
+                        <div>
+                            <span style="text-transform:uppercase; font-size:12px; color:var(--text-muted); font-weight:700;">${p.brand}</span>
+                            <h1 style="font-size:32px; margin-bottom:10px;">${p.title}</h1>
+                            <p style="text-transform:capitalize; margin-bottom:15px; font-size:14px; color:var(--text-muted);">Línea: Zapatillas para ${p.gender}</p>
+                            
+                            ${colorChipsHTML}
+                            
+                            <h2 style="font-size:24px; margin:20px 0; color:var(--accent-dark);">${formatCOP(p.price)}</h2>
+                            <div style="margin-bottom:30px; font-size:15px; color:#475569; white-space: pre-wrap;">${p.desc}</div>
+                            
+                            <div style="display:flex; gap:12px;">
+                                ${p.stock > 0 ? 
+                                    `<button class="btn-action" style="flex:1; padding:14px;" onclick="addToBag('${p.id}')">Añadir a la Bolsa</button>
+                                     <button class="btn-action" style="flex:1; padding:14px; background-color:var(--whatsapp-color);" onclick="buyDirectWhatsApp('${p.id}')">Pedir por WhatsApp</button>` : 
+                                    `<button class="btn-action danger" style="width:100%; padding:14px; cursor:not-allowed;" disabled>Modelo Agotado</button>`
+                                }
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
 
+                startAutomatedCarousel(validImages);
+            }
+
+            // Exponer switchDetailVariant globalmente para este producto
+            window.switchDetailVariant = function(pid, vi) {
+                if (carouselInterval) clearInterval(carouselInterval);
+                currentImageIndex = 0;
+                buildDetailHTML(vi);
+            };
+
+            buildDetailHTML(activeVariantIndex);
             navigateTo('product-detail-view');
-            startAutomatedCarousel(validImages);
         }
 
         function startAutomatedCarousel(imagesArray) {
@@ -737,12 +850,20 @@
             e.preventDefault();
             const id = document.getElementById('form-p-id').value || Date.now().toString();
 
-            // Empaquetar las fotos válidas
-            const validImagesList = runtimeImages.filter(img => img && img.trim() !== "");
-            if (validImagesList.length === 0) {
-                alert("Por favor, sube al menos una foto (Foto 1 Principal) para la zapatilla.");
+            // Validar que al menos la variante 1 tenga al menos 1 imagen
+            const firstVariantImages = runtimeVariants[0]?.images.filter(u => u && u.trim() !== '') || [];
+            if (firstVariantImages.length === 0) {
+                alert("Por favor, sube al menos una foto para la primera variante (Foto 1 Principal).");
                 return;
             }
+
+            // Construir variantes limpias
+            const cleanVariants = runtimeVariants
+                .filter(v => v.images.some(u => u && u.trim() !== ''))
+                .map(v => ({
+                    colorName: v.colorName.trim() || 'Único',
+                    images: v.images.filter(u => u && u.trim() !== '')
+                }));
 
             const productPayload = {
                 id: id,
@@ -754,7 +875,7 @@
                 stock: parseInt(document.getElementById('form-p-stock').value),
                 provider: document.getElementById('form-p-provider').value,
                 desc: document.getElementById('form-p-desc').value.trim(),
-                variants: [{ colorName: "Único", images: validImagesList }]
+                variants: cleanVariants
             };
 
             await sendPostRequest({ action: "saveProduct", product: productPayload });
@@ -775,15 +896,17 @@
             document.getElementById('form-p-provider').value = p.provider;
             document.getElementById('form-p-desc').value = p.desc;
 
-            runtimeImages = ["", "", "", "", "", "", ""];
-            if (p.variants && p.variants[0] && p.variants[0].images) {
-                p.variants[0].images.forEach((img, index) => {
-                    if(index < 7) runtimeImages[index] = img;
-                });
+            // Cargar variantes existentes
+            if (p.variants && p.variants.length > 0) {
+                runtimeVariants = p.variants.map(v => ({
+                    colorName: v.colorName || 'Único',
+                    images: [...Array(7).fill('')].map((_, i) => v.images[i] || '')
+                }));
+            } else {
+                runtimeVariants = [{ colorName: 'Único', images: Array(7).fill('') }];
             }
 
-            renderImageSlots();
-
+            renderVariantsContainer();
             document.getElementById('form-product-title').innerText = "Modificando Calzado Seleccionado";
             document.getElementById('btn-cancel-edit').style.display = "inline-block";
             document.getElementById('form-product-title').scrollIntoView({ behavior: 'smooth' });
@@ -792,8 +915,7 @@
         function resetProductForm() {
             document.getElementById('form-p-id').value = "";
             document.getElementById('product-admin-form').reset();
-            runtimeImages = ["", "", "", "", "", "", ""];
-            renderImageSlots();
+            initVariantsForNew();
             document.getElementById('form-product-title').innerText = "Registrar Nuevo Calzado";
             document.getElementById('btn-cancel-edit').style.display = "none";
         }
@@ -821,7 +943,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderImageSlots();
+            initVariantsForNew();
             syncWithGoogleSheets();
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
