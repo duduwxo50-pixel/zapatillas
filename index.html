@@ -283,11 +283,17 @@
 
             <aside>
                 <div class="admin-section">
-                    <h2>Módulo de Proveedores</h2>
-                    <form onsubmit="saveProviderHandler(event)" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
-                        <input type="text" id="prov-form-name" placeholder="Nombre Comercial" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-                        <input type="text" id="prov-form-contact" placeholder="WhatsApp" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-                        <button type="submit" class="btn-action" style="font-size:13px; padding:12px;">Guardar Proveedor</button>
+                    <h2 id="prov-form-title">Registrar Proveedor</h2>
+                    <form onsubmit="saveProviderHandler(event)" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                        <input type="hidden" id="prov-form-original-name">
+                        <input type="text" id="prov-form-name" placeholder="Nombre / Fábrica *" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+                        <input type="text" id="prov-form-contact" placeholder="Contacto / Teléfono *" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+                        <input type="text" id="prov-form-nit" placeholder="NIT o Cédula" style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+                        <input type="text" id="prov-form-address" placeholder="Dirección" style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+                        <div style="display:flex; gap:8px;">
+                            <button type="submit" class="btn-action" style="font-size:13px; padding:10px; flex:1;">Guardar Proveedor</button>
+                            <button type="button" id="btn-cancel-prov" class="btn-action secondary" style="font-size:13px; padding:10px; display:none;" onclick="resetProviderForm()">Cancelar</button>
+                        </div>
                     </form>
 
                     <h3 style="font-size:14px; text-transform:uppercase; margin-bottom:10px; color:var(--text-muted);">Proveedores Vinculados</h3>
@@ -296,6 +302,7 @@
                             <tr>
                                 <th>Proveedor</th>
                                 <th>Contacto</th>
+                                <th>NIT</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -838,9 +845,13 @@
             const tableProv = document.getElementById('table-providers-body');
             tableProv.innerHTML = dbData.providers.map(p => `
                 <tr>
-                    <td><strong style="text-transform:uppercase;">${p.name}</strong></td>
+                    <td><strong style="text-transform:uppercase;">${p.name}</strong><br><small style="color:var(--text-muted);">${p.address || ''}</small></td>
                     <td>${p.contact}</td>
-                    <td><button onclick="deleteProviderHandler('${p.name}')" style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold; font-size:14px;">×</button></td>
+                    <td style="color:var(--text-muted); font-size:11px;">${p.nit || '—'}</td>
+                    <td style="white-space:nowrap;">
+                        <button onclick="editProviderLoader('${p.name}')" style="background:#020617; color:#fff; border:none; padding:3px 7px; border-radius:4px; font-size:11px; cursor:pointer; margin-right:4px;">✏</button>
+                        <button onclick="deleteProviderHandler('${p.name}')" style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-weight:bold; font-size:14px;">×</button>
+                    </td>
                 </tr>
             `).join('');
         }
@@ -927,12 +938,37 @@
 
         async function saveProviderHandler(e) {
             e.preventDefault();
-            const name = document.getElementById('prov-form-name').value.trim();
+            const originalName = document.getElementById('prov-form-original-name').value.trim();
+            const name    = document.getElementById('prov-form-name').value.trim();
             const contact = document.getElementById('prov-form-contact').value.trim();
-            
-            await sendPostRequest({ action: "saveProvider", provider: { name, contact } });
-            document.getElementById('prov-form-name').value = "";
-            document.getElementById('prov-form-contact').value = "";
+            const nit     = document.getElementById('prov-form-nit').value.trim();
+            const address = document.getElementById('prov-form-address').value.trim();
+
+            await sendPostRequest({ action: "saveProvider", provider: { name, contact, nit, address, originalName } });
+            resetProviderForm();
+        }
+
+        function editProviderLoader(name) {
+            const p = dbData.providers.find(pr => pr.name === name);
+            if (!p) return;
+            document.getElementById('prov-form-original-name').value = p.name;
+            document.getElementById('prov-form-name').value    = p.name;
+            document.getElementById('prov-form-contact').value = p.contact;
+            document.getElementById('prov-form-nit').value     = p.nit || '';
+            document.getElementById('prov-form-address').value = p.address || '';
+            document.getElementById('prov-form-title').innerText = "Editando Proveedor";
+            document.getElementById('btn-cancel-prov').style.display = "inline-block";
+            document.getElementById('prov-form-name').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetProviderForm() {
+            document.getElementById('prov-form-original-name').value = '';
+            document.getElementById('prov-form-name').value    = '';
+            document.getElementById('prov-form-contact').value = '';
+            document.getElementById('prov-form-nit').value     = '';
+            document.getElementById('prov-form-address').value = '';
+            document.getElementById('prov-form-title').innerText = "Registrar Proveedor";
+            document.getElementById('btn-cancel-prov').style.display = "none";
         }
 
         async function deleteProviderHandler(name) {
