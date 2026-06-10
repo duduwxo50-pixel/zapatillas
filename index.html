@@ -114,6 +114,95 @@
 
         .auth-gate { max-width: 360px; margin: 80px auto; background: white; padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+
+        /* ── PRECIO CON DESCUENTO ── */
+        .price-original { font-size: 12px; color: var(--text-muted); text-decoration: line-through; font-weight: 600; }
+        .price-sale { font-weight: 800; color: #dc2626; font-size: 15px; }
+        .price-normal { font-weight: 700; color: var(--text-main); }
+        .discount-badge { background: #dc2626; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
+        .featured-ribbon { position: absolute; top: 10px; left: 10px; background: var(--accent-dark); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 3px; z-index: 10; letter-spacing: 0.5px; text-transform: uppercase; }
+
+        /* ── BOTTOM NAV MÓVIL ── */
+        .mobile-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--border-color); z-index: 999; padding: 8px 0 12px; }
+        .mobile-bottom-nav ul { display: flex; justify-content: space-around; list-style: none; margin: 0; padding: 0; }
+        .mobile-bottom-nav li { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; cursor: pointer; padding: 4px 12px; border-radius: 6px; transition: color 0.2s; }
+        .mobile-bottom-nav li span.nav-icon { font-size: 20px; }
+        .mobile-bottom-nav li.active-nav { color: var(--accent-dark); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+
+            /* Ocultar search en header, mostrar nav inferior */
+            .navigation-menu { display: none; }
+            .search-input-field { width: 140px; font-size: 13px; }
+            .search-input-field:focus { width: 160px; }
+            .header-container { padding: 12px 16px; }
+            .brand-logo { font-size: 20px; }
+
+            .mobile-bottom-nav { display: block; }
+
+            /* Ajustar vistas para que no queden tapadas por el nav inferior */
+            .spa-view { margin: 20px auto 80px; padding: 0 14px; }
+
+            /* Hero más compacto */
+            .hero-banner { height: auto; min-height: 200px; padding: 24px 20px; background: linear-gradient(180deg, #ffffff 50%, transparent), url('https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80') center/cover; margin-bottom: 24px; }
+            .hero-text h1 { font-size: 26px; margin-bottom: 10px; }
+            .hero-text p { font-size: 13px; }
+            .hero-text .btn-action { padding: 10px 18px; font-size: 13px; margin-top: 10px; }
+
+            /* Pills de filtro */
+            .visual-filters-container { gap: 8px; margin-bottom: 24px; }
+            .filter-pill-btn { padding: 10px 16px; font-size: 12px; }
+
+            /* Grid de productos: 2 columnas en móvil */
+            .featured-products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .product-details-frame { padding: 10px; }
+            .product-details-frame h3 { font-size: 13px; }
+            .product-details-frame div { font-size: 13px; }
+
+            /* Catálogo: ocultar sidebar, solo grid */
+            .catalog-layout { grid-template-columns: 1fr; gap: 16px; }
+            .catalog-layout aside { display: none; }
+
+            /* Detalle del producto: apilado */
+            .product-detail-layout { grid-template-columns: 1fr; gap: 20px; }
+            .product-detail-layout h1 { font-size: 22px; }
+            .thumbnail-card { width: 48px; height: 48px; }
+
+            /* Carrito: apilado */
+            .cart-layout { grid-template-columns: 1fr; gap: 20px; }
+            .cart-item img { width: 60px; height: 60px; }
+
+            /* Admin */
+            .dashboard-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .kpi-card { padding: 14px; }
+            .kpi-card .value { font-size: 18px; }
+            .kpi-card h3 { font-size: 11px; }
+
+            /* Panel admin: apilado en móvil */
+            #admin-view > div[style*="grid"] { display: flex !important; flex-direction: column; }
+            .admin-form { grid-template-columns: 1fr 1fr; }
+            .admin-section { padding: 16px; }
+
+            /* Tabla de inventario scrolleable */
+            .admin-section > div { overflow-x: auto; }
+            .data-table { font-size: 12px; min-width: 420px; }
+            .data-table th, .data-table td { padding: 8px 6px; }
+
+            /* Variantes de color más compactas */
+            .image-inputs-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+
+            /* Autenticación */
+            .auth-gate { margin: 40px auto; padding: 24px 18px; }
+        }
+
+        @media (max-width: 420px) {
+            .featured-products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .dashboard-grid { grid-template-columns: 1fr; gap: 10px; }
+            .admin-form { grid-template-columns: 1fr; }
+            .image-inputs-grid { grid-template-columns: repeat(3, 1fr); }
+            .hero-text h1 { font-size: 22px; }
+        }
     </style>
 </head>
 <body>
@@ -242,11 +331,18 @@
                                 <option value="mujer">Mujer</option>
                             </select>
                             <input type="number" id="form-p-price" placeholder="Precio de Venta COP" required>
+                            <input type="number" id="form-p-price-old" placeholder="Precio anterior (opcional, para descuento)">
                             <input type="number" id="form-p-cost" placeholder="Costo de Fábrica COP" required>
                             <input type="number" id="form-p-stock" placeholder="Cantidad Inicial Stock" required>
                             <select id="form-p-provider" required>
                                 <option value="">-- Asociar Proveedor --</option>
                             </select>
+                        </div>
+                        <div style="display:flex; gap:20px; align-items:center; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid var(--border-color);">
+                            <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer;">
+                                <input type="checkbox" id="form-p-featured" style="width:16px; height:16px; cursor:pointer;">
+                                ⭐ Mostrar en página principal (Destacado)
+                            </label>
                         </div>
 
                         <div style="margin-bottom: 20px;">
@@ -312,6 +408,21 @@
             </aside>
         </div>
     </section>
+
+    <!-- NAV INFERIOR MÓVIL -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <ul>
+            <li id="mnav-home" onclick="mobileNav('home-view')" class="active-nav">
+                <span class="nav-icon">🏠</span>Inicio
+            </li>
+            <li id="mnav-catalog" onclick="mobileNav('catalog-view')">
+                <span class="nav-icon">👟</span>Catálogo
+            </li>
+            <li id="mnav-cart" onclick="mobileNav('cart-view')">
+                <span class="nav-icon">🛍️</span>Bolsa <span class="cart-badge-count" id="mobile-cart-qty" style="background:var(--accent-dark);">0</span>
+            </li>
+        </ul>
+    </nav>
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbz9NGc87e63NXBt2wbqU3HbftqPL2E39X9h-qBrT8Cvc7RH_c8azeUm4jRpn66FqDNUKg/exec";
@@ -449,13 +560,20 @@
             if (target) target.classList.add('active-view');
             window.scrollTo(0, 0);
 
+            // Ocultar nav móvil en admin/auth
+            const mobileNav = document.getElementById('mobile-bottom-nav');
+            if (mobileNav) {
+                mobileNav.style.display = (viewId === 'admin-view' || viewId === 'auth-gate-view') ? 'none' : 'block';
+            }
+
             if (viewId === 'home-view') renderHome();
             if (viewId === 'catalog-view') renderCatalog();
             if (viewId === 'cart-view') renderCart();
         }
 
         function handleRouting() {
-            if (window.location.hash === '#admin') {
+            const hash = window.location.hash;
+            if (hash === '#admin') {
                 if (isAdminLoggedIn) {
                     renderAdminDashboard();
                     navigateTo('admin-view');
@@ -463,6 +581,7 @@
                     navigateTo('auth-gate-view');
                 }
             } else {
+                // Cualquier hash que no sea #admin → ir a home
                 navigateTo('home-view');
             }
         }
@@ -558,12 +677,21 @@
             if (!container || !dbData.products) return;
 
             let itemsToDisplay = [...dbData.products];
-            if (activeHomeFilter === 'hombre') itemsToDisplay = itemsToDisplay.filter(p => p.gender === 'hombre');
-            if (activeHomeFilter === 'mujer') itemsToDisplay = itemsToDisplay.filter(p => p.gender === 'mujer');
-            if (activeHomeFilter === 'recientes') itemsToDisplay = itemsToDisplay.slice(-4);
 
-            itemsToDisplay.reverse();
-            if(itemsToDisplay.length === 0) {
+            if (activeHomeFilter === 'all') {
+                // Solo destacados en inicio; si no hay ninguno, mostrar todos
+                const featured = itemsToDisplay.filter(p => p.featured);
+                itemsToDisplay = featured.length > 0 ? featured : itemsToDisplay;
+            } else if (activeHomeFilter === 'hombre') {
+                itemsToDisplay = itemsToDisplay.filter(p => p.gender === 'hombre');
+            } else if (activeHomeFilter === 'mujer') {
+                itemsToDisplay = itemsToDisplay.filter(p => p.gender === 'mujer');
+            } else if (activeHomeFilter === 'recientes') {
+                itemsToDisplay = itemsToDisplay.slice(-4);
+            }
+
+            itemsToDisplay = [...itemsToDisplay].reverse();
+            if (itemsToDisplay.length === 0) {
                 container.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No hay referencias disponibles.</p>`;
                 return;
             }
@@ -586,21 +714,37 @@
         function ArrayToCardHTML(p) {
             const isOut = p.stock <= 0;
             let defaultImg = 'https://via.placeholder.com/300';
-            
             if (p.variants && p.variants[0] && p.variants[0].images && p.variants[0].images[0]) {
                 defaultImg = p.variants[0].images[0];
             }
-            
+
+            // Precio con descuento
+            let priceHTML = '';
+            if (p.priceOld && p.priceOld > p.price) {
+                const pct = Math.round((1 - p.price / p.priceOld) * 100);
+                priceHTML = `
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span class="price-original">${formatCOP(p.priceOld)}</span>
+                        <span class="discount-badge">-${pct}%</span>
+                    </div>
+                    <div class="price-sale">${formatCOP(p.price)}</div>`;
+            } else {
+                priceHTML = `<div class="price-normal">${formatCOP(p.price)}</div>`;
+            }
+
+            const featuredBadge = p.featured ? `<span class="featured-ribbon">⭐ Destacado</span>` : '';
+
             return `
                 <div class="product-item-card" onclick="viewProductDetails('${p.id}')">
                     <div class="product-image-frame">
+                        ${featuredBadge}
                         <span class="stock-tag ${isOut ? 'out-of-stock' : ''}">${isOut ? 'AGOTADO' : 'Stock: ' + p.stock}</span>
-                        <img src="${defaultImg}" alt="">
+                        <img src="${defaultImg}" alt="${p.title}">
                     </div>
                     <div class="product-details-frame">
                         <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">${p.brand} • ${p.gender}</span>
-                        <h3 style="font-size:16px; margin:4px 0 8px 0; flex-grow:1;">${p.title}</h3>
-                        <div style="font-weight:700; color:var(--text-main);">${formatCOP(p.price)}</div>
+                        <h3 style="font-size:15px; margin:4px 0 8px 0; flex-grow:1;">${p.title}</h3>
+                        ${priceHTML}
                     </div>
                 </div>
             `;
@@ -675,7 +819,16 @@
                             
                             ${colorChipsHTML}
                             
-                            <h2 style="font-size:24px; margin:20px 0; color:var(--accent-dark);">${formatCOP(p.price)}</h2>
+                            ${p.priceOld && p.priceOld > p.price ? `
+                                <div style="margin:20px 0;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                        <span class="price-original" style="font-size:16px;">${formatCOP(p.priceOld)}</span>
+                                        <span class="discount-badge" style="font-size:12px; padding:3px 8px;">-${Math.round((1 - p.price/p.priceOld)*100)}%</span>
+                                    </div>
+                                    <div class="price-sale" style="font-size:28px;">${formatCOP(p.price)}</div>
+                                </div>` :
+                                `<h2 style="font-size:28px; margin:20px 0; color:var(--accent-dark);">${formatCOP(p.price)}</h2>`
+                            }
                             <div style="margin-bottom:30px; font-size:15px; color:#475569; white-space: pre-wrap;">${p.desc}</div>
                             
                             <div style="display:flex; gap:12px;">
@@ -757,9 +910,21 @@
             window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
         }
 
+        function mobileNav(viewId) {
+            navigateTo(viewId);
+            // Highlight activo
+            document.querySelectorAll('.mobile-bottom-nav li').forEach(li => li.classList.remove('active-nav'));
+            const map = { 'home-view': 'mnav-home', 'catalog-view': 'mnav-catalog', 'cart-view': 'mnav-cart' };
+            const target = document.getElementById(map[viewId]);
+            if (target) target.classList.add('active-nav');
+        }
+
         function updateCartBadge() {
+            const total = cart.reduce((acc, c) => acc + c.quantity, 0);
             const badge = document.getElementById('global-cart-qty');
-            if(badge) badge.innerText = cart.reduce((acc, c) => acc + c.quantity, 0);
+            const mbadge = document.getElementById('mobile-cart-qty');
+            if (badge) badge.innerText = total;
+            if (mbadge) mbadge.innerText = total;
         }
 
         function renderCart() {
@@ -860,14 +1025,12 @@
             e.preventDefault();
             const id = document.getElementById('form-p-id').value || Date.now().toString();
 
-            // Validar que al menos la variante 1 tenga al menos 1 imagen
             const firstVariantImages = runtimeVariants[0]?.images.filter(u => u && u.trim() !== '') || [];
             if (firstVariantImages.length === 0) {
-                alert("Por favor, sube al menos una foto para la primera variante (Foto 1 Principal).");
+                alert("Por favor, sube al menos una foto para la primera variante.");
                 return;
             }
 
-            // Construir variantes limpias
             const cleanVariants = runtimeVariants
                 .filter(v => v.images.some(u => u && u.trim() !== ''))
                 .map(v => ({
@@ -875,16 +1038,20 @@
                     images: v.images.filter(u => u && u.trim() !== '')
                 }));
 
+            const priceOldVal = parseInt(document.getElementById('form-p-price-old').value) || 0;
+
             const productPayload = {
-                id: id,
-                title: document.getElementById('form-p-title').value.trim(),
-                brand: document.getElementById('form-p-brand').value.trim().toLowerCase(),
-                gender: document.getElementById('form-p-gender').value,
-                price: parseInt(document.getElementById('form-p-price').value),
-                cost: parseInt(document.getElementById('form-p-cost').value),
-                stock: parseInt(document.getElementById('form-p-stock').value),
+                id:       id,
+                title:    document.getElementById('form-p-title').value.trim(),
+                brand:    document.getElementById('form-p-brand').value.trim().toLowerCase(),
+                gender:   document.getElementById('form-p-gender').value,
+                price:    parseInt(document.getElementById('form-p-price').value),
+                priceOld: priceOldVal,
+                cost:     parseInt(document.getElementById('form-p-cost').value),
+                stock:    parseInt(document.getElementById('form-p-stock').value),
                 provider: document.getElementById('form-p-provider').value,
-                desc: document.getElementById('form-p-desc').value.trim(),
+                desc:     document.getElementById('form-p-desc').value.trim(),
+                featured: document.getElementById('form-p-featured').checked,
                 variants: cleanVariants
             };
 
@@ -896,17 +1063,18 @@
             const p = dbData.products.find(prod => prod.id === id);
             if (!p) return;
 
-            document.getElementById('form-p-id').value = p.id;
-            document.getElementById('form-p-title').value = p.title;
-            document.getElementById('form-p-brand').value = p.brand;
-            document.getElementById('form-p-gender').value = p.gender;
-            document.getElementById('form-p-price').value = p.price;
-            document.getElementById('form-p-cost').value = p.cost;
-            document.getElementById('form-p-stock').value = p.stock;
-            document.getElementById('form-p-provider').value = p.provider;
-            document.getElementById('form-p-desc').value = p.desc;
+            document.getElementById('form-p-id').value        = p.id;
+            document.getElementById('form-p-title').value     = p.title;
+            document.getElementById('form-p-brand').value     = p.brand;
+            document.getElementById('form-p-gender').value    = p.gender;
+            document.getElementById('form-p-price').value     = p.price;
+            document.getElementById('form-p-price-old').value = p.priceOld || '';
+            document.getElementById('form-p-cost').value      = p.cost;
+            document.getElementById('form-p-stock').value     = p.stock;
+            document.getElementById('form-p-provider').value  = p.provider;
+            document.getElementById('form-p-desc').value      = p.desc;
+            document.getElementById('form-p-featured').checked = !!p.featured;
 
-            // Cargar variantes existentes
             if (p.variants && p.variants.length > 0) {
                 runtimeVariants = p.variants.map(v => ({
                     colorName: v.colorName || 'Único',
@@ -925,6 +1093,8 @@
         function resetProductForm() {
             document.getElementById('form-p-id').value = "";
             document.getElementById('product-admin-form').reset();
+            document.getElementById('form-p-price-old').value = '';
+            document.getElementById('form-p-featured').checked = false;
             initVariantsForNew();
             document.getElementById('form-product-title').innerText = "Registrar Nuevo Calzado";
             document.getElementById('btn-cancel-edit').style.display = "none";
