@@ -151,8 +151,9 @@
         .store-text-block { padding:20px 0; margin-bottom:16px; }
         .store-banner2-block { border-radius:10px; overflow:hidden; margin-bottom:24px; }
         .store-banner2-block img { width:100%; height:auto; display:block; object-fit:cover; }
-        .store-video-block { border-radius:10px; overflow:hidden; margin-bottom:24px; aspect-ratio:16/9; background:#000; }
-        .store-video-block iframe { width:100%; height:100%; border:none; }
+        .store-video-block { border-radius:10px; overflow:hidden; margin-bottom:24px; aspect-ratio:16/9; background:#000; position:relative; }
+        .store-video-block iframe { position:absolute; top:-60px; left:-2px; width:calc(100% + 4px); height:calc(100% + 120px); border:none; pointer-events:auto; }
+        .store-video-block video { width:100%; height:100%; object-fit:cover; border-radius:10px; }
         .store-promo-block { background:var(--accent-dark); color:#fff; text-align:center; padding:14px 20px; border-radius:8px; margin-bottom:24px; font-weight:700; font-size:15px; letter-spacing:.3px; }
         .store-spacer-block { margin-bottom:24px; }
         .store-categories-block { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:28px; }
@@ -255,15 +256,7 @@
         <div id="top-notice-bar" style="display:flex; white-space:nowrap; animation:marqueeScroll 20s linear infinite; padding:10px 0; font-size:11px; font-weight:700; letter-spacing:1px;">
             <span id="notice-bar-content">STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA &nbsp;&nbsp;•&nbsp;&nbsp; STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA &nbsp;&nbsp;•&nbsp;&nbsp;</span>
         </div>
-        <!-- Controles flotantes de la barra -->
-        <div id="notice-bar-controls" style="position:absolute; right:0; top:0; bottom:0; display:flex; align-items:center; gap:4px; padding:0 8px; background:linear-gradient(90deg,transparent,#020617 30%); z-index:10;">
-            <button id="btn-bar-slower" onclick="changeBarSpeed(1)" title="Más lento" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">🐢</button>
-            <button id="btn-bar-pause" onclick="toggleBarPause()" title="Pausar/Reanudar" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">⏸</button>
-            <button id="btn-bar-faster" onclick="changeBarSpeed(-1)" title="Más rápido" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">🐇</button>
-            <button onclick="toggleBarVisibility()" title="Ocultar barra" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center;">✕</button>
-        </div>
     </div>
-    <!-- Botón para mostrar la barra cuando está oculta -->
     <div id="notice-bar-show-btn" onclick="toggleBarVisibility()" style="display:none; background:#020617; color:#fff; text-align:center; padding:3px; font-size:10px; font-weight:700; cursor:pointer; letter-spacing:0.5px;">▼ Mostrar barra de aviso</div>
     <style>
         @keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -436,12 +429,20 @@
         <!-- CONFIGURACIÓN DE NAVEGACIÓN -->
         <div class="admin-section" style="margin-bottom:30px;">
             <h2>🧭 Barra de Aviso y Navegación</h2>
-            <div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end;">
+            <div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; margin-bottom:14px;">
                 <div>
                     <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:5px;">Texto de la barra superior</label>
                     <input id="notice-bar-text" type="text" placeholder="Ej: ENVÍOS A TODA COLOMBIA 🚚 · PIDE HOY · PAGA AL RECIBIR" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;" value="">
                 </div>
                 <button class="btn-action" style="padding:9px 20px;" onclick="saveNoticeBar()">Guardar</button>
+            </div>
+            <!-- Controles de la barra (solo visibles en admin) -->
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid var(--border-color);">
+                <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Controles:</span>
+                <button onclick="changeBarSpeed(1)" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;">🐢 Más lento</button>
+                <button id="btn-bar-pause" onclick="toggleBarPause()" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;">⏸ Pausar</button>
+                <button onclick="changeBarSpeed(-1)" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;">🐇 Más rápido</button>
+                <button onclick="toggleBarVisibility()" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;" id="btn-bar-toggle">👁 Ocultar barra</button>
             </div>
         </div>
 
@@ -2168,11 +2169,13 @@
                 if (d.tipo === 'youtube') {
                     const match = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
                     if (match) {
-                        // autoplay + muted + sin branding YouTube + sin controles nativos de YT
-                        let ytParams = 'rel=0&modestbranding=1&showinfo=0&controls=1&iv_load_policy=3&disablekb=0&fs=1&color=white&playsinline=1';
+                        // youtube-nocookie = sin tracking ni branding
+                        // controls=0 oculta barra, loop=1 repite, playlist=ID necesario para loop
+                        // modestbranding+rel+showinfo eliminan logo y sugerencias
+                        let ytParams = `rel=0&modestbranding=1&showinfo=0&controls=0&iv_load_policy=3&fs=0&color=white&playsinline=1&loop=1&playlist=${match[1]}`;
                         if (autoplay) ytParams += '&autoplay=1';
                         if (muted)    ytParams += '&mute=1';
-                        src = `https://www.youtube.com/embed/${match[1]}?${ytParams}`;
+                        src = `https://www.youtube-nocookie.com/embed/${match[1]}?${ytParams}`;
                     }
                 } else if (d.tipo === 'vimeo') {
                     const match = url.match(/vimeo\.com\/(\d+)/);
@@ -2386,10 +2389,12 @@
         function toggleBarVisibility() {
             const wrapper = document.getElementById('top-notice-bar-wrapper');
             const showBtn = document.getElementById('notice-bar-show-btn');
-            if (!wrapper || !showBtn) return;
+            const adminBtn = document.getElementById('btn-bar-toggle');
+            if (!wrapper) return;
             const hidden = wrapper.style.display === 'none';
             wrapper.style.display = hidden ? 'flex' : 'none';
-            showBtn.style.display = hidden ? 'none' : 'block';
+            if (showBtn) showBtn.style.display = hidden ? 'none' : 'block';
+            if (adminBtn) adminBtn.textContent = hidden ? '👁 Ocultar barra' : '👁 Mostrar barra';
         }
 
         // ─────────────────────────────────────────────
