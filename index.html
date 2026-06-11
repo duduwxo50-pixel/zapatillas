@@ -460,6 +460,77 @@
             </div>
         </div>
 
+        <!-- GESTIÓN DE USUARIOS Y PERMISOS -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-users-section" data-rol="admin">
+            <h2>👥 Usuarios y Permisos</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Administra quién puede acceder al panel. Roles: <strong>admin</strong> (acceso total) y <strong>vendedor</strong> (solo ventas y pedidos).</p>
+            <div id="users-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
+            <button class="btn-action secondary" onclick="openUserForm()">+ Agregar Usuario</button>
+
+            <!-- Formulario inline para crear/editar usuario -->
+            <div id="user-form-panel" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid var(--border-color); border-radius:10px; padding:18px;">
+                <h3 id="user-form-title" style="margin:0 0 14px 0; font-size:15px;">Nuevo Usuario</h3>
+                <input type="hidden" id="user-original-name">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                    <div>
+                        <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Usuario</label>
+                        <input type="text" id="user-form-usuario" placeholder="Ej: maria" style="width:100%; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Contraseña</label>
+                        <input type="text" id="user-form-contrasena" placeholder="Contraseña" style="width:100%; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Rol</label>
+                        <select id="user-form-rol" style="width:100%; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                            <option value="admin">👑 Admin</option>
+                            <option value="vendedor">🧾 Vendedor</option>
+                        </select>
+                    </div>
+                    <div style="display:flex; align-items:flex-end;">
+                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; cursor:pointer; padding-bottom:9px;">
+                            <input type="checkbox" id="user-form-activo" checked style="width:16px; height:16px; cursor:pointer;">
+                            Usuario activo
+                        </label>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-action" onclick="saveUserHandler()">💾 Guardar</button>
+                    <button class="btn-action secondary" onclick="closeUserForm()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             MÓDULOS DINÁMICOS — ADMINISTRACIÓN
+        ═══════════════════════════════════════════════════════ -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-modules-section" data-rol="admin">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h2 style="border-bottom:none; margin-bottom:0; padding-bottom:0;">🧩 Módulos Dinámicos</h2>
+                <button class="btn-action secondary" style="padding:8px 16px; font-size:12px;" onclick="openModuleForm()">+ Nuevo Módulo</button>
+            </div>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px; border-bottom:1px solid var(--border-color); padding-bottom:14px;">Crea colecciones personalizadas (CRM, servicios, gastos, lo que necesites). Cada módulo genera su propia hoja en Google Sheets.</p>
+
+            <div id="modules-list" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+            <!-- Panel de registros de un módulo -->
+            <div id="module-records-panel" style="display:none; margin-top:20px; border:2px solid var(--accent-dark); border-radius:10px; overflow:hidden;">
+                <div style="background:var(--accent-dark); color:#fff; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <span id="module-records-icon" style="font-size:20px; margin-right:8px;"></span>
+                        <span id="module-records-title" style="font-size:16px; font-weight:800; text-transform:uppercase;"></span>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="openModuleRecordForm(currentModuloId)" style="background:rgba(255,255,255,0.2); color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer;">+ Nuevo Registro</button>
+                        <button onclick="closeModuleRecordsPanel()" style="background:rgba(255,255,255,0.15); color:#fff; border:none; border-radius:6px; padding:7px 12px; font-size:12px; cursor:pointer;">✕ Cerrar</button>
+                    </div>
+                </div>
+                <div style="padding:16px; overflow-x:auto;">
+                    <div id="module-records-table"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- CONFIGURACIÓN DE NAVEGACIÓN -->
         <div class="admin-section" style="margin-bottom:30px;">
             <h2>🧭 Barra de Aviso y Navegación</h2>
@@ -686,12 +757,13 @@
         async function saveCfg(key, value) {
             if (!dbData.config) dbData.config = {};
             dbData.config[key] = value;
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'saveConfig', key, value })
-            });
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: 'saveConfig', key, value })
+                });
+            } catch(e) { console.error('saveCfg error:', e); }
         }
         
         let runtimeVariants = [];
@@ -1081,16 +1153,25 @@
         async function sendPostRequest(payload) {
             showLoading(true);
             try {
-                await fetch(API_URL, {
+                // NOTA: Content-Type text/plain evita el preflight CORS de OPTIONS
+                // que Apps Script no maneja bien — el JSON sigue siendo válido en el body.
+                const resp = await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                let json = {};
+                try { json = await resp.json(); } catch(e) { /* respuesta vacía o HTML de error */ }
+                if (json.success === false) {
+                    console.warn('⚠️ GAS respondió error:', json.message);
+                    // Aún así sincronizamos para reflejar el estado real
+                }
                 await syncWithGoogleSheets();
+                return json;
             } catch (err) {
                 console.error("Error al guardar:", err);
+                alert('❌ Error de red al contactar Google Sheets. Revisa tu conexión o el despliegue de la Web App.');
+                throw err;
             } finally {
                 showLoading(false);
             }
@@ -2146,18 +2227,41 @@
         }
 
         // ─────────────────────────────────────────────
-        // PEDIDOS PENDIENTES — localStorage
+        // PEDIDOS PENDIENTES — Google Sheets (Ordenes)
         // ─────────────────────────────────────────────
-        function savePendingOrder(pedido) {
-            let orders = getPendingOrders();
-            orders.push(pedido);
-            localStorage.setItem('pending_orders', JSON.stringify(orders));
+        async function savePendingOrder(pedido) {
+            // Guardar en Sheets
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({
+                        action: 'saveOrder',
+                        order: {
+                            orderId:    pedido.id,
+                            fecha:      pedido.fecha,
+                            cliente:    pedido.cliente,
+                            telefono:   pedido.celular,
+                            ciudad:     pedido.ciudad,
+                            dir:        pedido.dir,
+                            metodoPago: pedido.metodoPago,
+                            items:      JSON.stringify(pedido.items),
+                            total:      pedido.total,
+                            estado:     'pendiente'
+                        }
+                    })
+                });
+                // Re-sync para que el admin vea el pedido
+                await syncWithGoogleSheets();
+            } catch(err) {
+                console.error('savePendingOrder error:', err);
+            }
             if (isAdminLoggedIn) renderPendingOrders();
         }
 
         function getPendingOrders() {
-            try { return JSON.parse(localStorage.getItem('pending_orders')) || []; }
-            catch(e) { return []; }
+            // Lee desde dbData.orders (ya cargado desde Sheets en syncWithGoogleSheets)
+            return (dbData.orders || []).filter(o => o.estado === 'pendiente');
         }
 
         function renderPendingOrders() {
@@ -2726,10 +2830,20 @@
                     label, value
                 });
             });
-            await saveCfg('store_categories', cats);
-            localStorage.removeItem('store_categories'); // limpiar viejo
-            renderPillsFromCategories();
-            alert('✅ Categorías guardadas en Google Sheets.');
+            if (cats.length === 0) { alert('⚠️ Agrega al menos una categoría.'); return; }
+            showLoading(true);
+            try {
+                await saveCfg('store_categories', cats);
+                // Esperar a que Sheets procese y luego re-sincronizar
+                await new Promise(r => setTimeout(r, 1800));
+                await syncWithGoogleSheets();
+                alert('✅ Categorías guardadas correctamente en Google Sheets.');
+            } catch(err) {
+                alert('❌ Error al guardar categorías. Intenta de nuevo.');
+                console.error(err);
+            } finally {
+                showLoading(false);
+            }
         }
 
         function addCategory() {
@@ -2741,12 +2855,30 @@
             renderCategoriesEditor();
         }
 
+        function getCategoryFilterOptions() {
+            // Opciones base siempre disponibles
+            const base = [
+                { value: 'all',       label: 'Todo el stock' },
+                { value: 'recientes', label: 'Recientes / Nuevos' },
+            ];
+            // Agregar géneros configurados dinámicamente
+            const genders = getCfg('gender_options', ['hombre','mujer','niño']);
+            const genderOpts = Array.isArray(genders)
+                ? genders.map(g => ({ value: g.toLowerCase().replace(/\s+/g,'_'), label: g }))
+                : [];
+            return [...base, ...genderOpts];
+        }
+
         function renderCategoriesEditor() {
             const cont = document.getElementById('categories-editor');
             if (!cont) return;
             const cats = getCategories();
+            const filterOpts = getCategoryFilterOptions();
             cont.innerHTML = cats.map((cat) => {
                 const iconType = cat.imgUrl ? 'imagen' : (cat.emoji ? 'emoji' : 'ninguno');
+                const filterSelectOptions = filterOpts.map(opt =>
+                    `<option value="${opt.value}" ${cat.value === opt.value ? 'selected' : ''}>${opt.label}</option>`
+                ).join('');
                 return `
                 <div class="cat-row" style="flex-wrap:wrap; gap:8px; align-items:flex-end;">
                     <div style="display:flex; flex-direction:column; gap:4px;">
@@ -2772,11 +2904,7 @@
                     <div style="display:flex; flex-direction:column; gap:4px; min-width:110px;">
                         <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Filtro</label>
                         <select data-cat="value" style="padding:7px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px;">
-                            <option value="all"      ${cat.value==='all'      ?'selected':''}>Todo el stock</option>
-                            <option value="hombre"   ${cat.value==='hombre'   ?'selected':''}>Hombre</option>
-                            <option value="mujer"    ${cat.value==='mujer'    ?'selected':''}>Mujer</option>
-                            <option value="niño"     ${cat.value==='niño'||cat.value==='nino'?'selected':''}>Niño</option>
-                            <option value="recientes"${cat.value==='recientes'?'selected':''}>Recientes</option>
+                            ${filterSelectOptions}
                         </select>
                     </div>
                     <button onclick="this.closest('.cat-row').remove()" title="Eliminar" style="align-self:flex-end; background:none; border:none; color:var(--danger-color); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:4px; line-height:1; flex-shrink:0; margin-bottom:2px;">×</button>
@@ -3146,6 +3274,454 @@
                 _sendWhatsApp(p, null);
             }
         }
+
+        // ══════════════════════════════════════════════════════════
+        //  GESTIÓN DE USUARIOS
+        // ══════════════════════════════════════════════════════════
+        function renderUsersAdmin() {
+            const cont = document.getElementById('users-list');
+            if (!cont) return;
+            const users = dbData.users || [];
+            if (users.length === 0) {
+                cont.innerHTML = '<p style="color:var(--text-muted); font-size:13px; padding:8px 0;">Sin usuarios registrados. Agrega uno abajo.</p>';
+                return;
+            }
+            cont.innerHTML = users.map(u => `
+                <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:#fff; border:1px solid var(--border-color); border-radius:8px; flex-wrap:wrap;">
+                    <div style="width:36px; height:36px; border-radius:50%; background:${u.rol==='admin'?'#6366f1':'#10b981'}; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">
+                        ${u.rol==='admin'?'👑':'🧾'}
+                    </div>
+                    <div style="flex:1; min-width:100px;">
+                        <div style="font-weight:700; font-size:14px;">${u.usuario}</div>
+                        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">${u.rol} · ${u.activo ? '🟢 Activo' : '🔴 Inactivo'}</div>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button onclick="editUserHandler('${u.usuario}')" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;">✏️ Editar</button>
+                        <button onclick="deleteUserHandler('${u.usuario}')" style="background:#fee2e2; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700; color:#dc2626;">🗑️ Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openUserForm(usuario) {
+            document.getElementById('user-form-panel').style.display = 'block';
+            document.getElementById('user-form-title').innerText = usuario ? 'Editar Usuario' : 'Nuevo Usuario';
+            document.getElementById('user-original-name').value = usuario || '';
+            if (!usuario) {
+                document.getElementById('user-form-usuario').value = '';
+                document.getElementById('user-form-contrasena').value = '';
+                document.getElementById('user-form-rol').value = 'vendedor';
+                document.getElementById('user-form-activo').checked = true;
+            }
+        }
+
+        function closeUserForm() {
+            document.getElementById('user-form-panel').style.display = 'none';
+        }
+
+        function editUserHandler(nombre) {
+            const u = (dbData.users || []).find(x => x.usuario === nombre);
+            if (!u) return;
+            openUserForm(nombre);
+            document.getElementById('user-form-usuario').value = u.usuario;
+            document.getElementById('user-form-contrasena').value = u.contrasena;
+            document.getElementById('user-form-rol').value = u.rol || 'vendedor';
+            document.getElementById('user-form-activo').checked = u.activo !== false;
+        }
+
+        async function saveUserHandler() {
+            const usuario    = document.getElementById('user-form-usuario').value.trim();
+            const contrasena = document.getElementById('user-form-contrasena').value.trim();
+            const rol        = document.getElementById('user-form-rol').value;
+            const activo     = document.getElementById('user-form-activo').checked;
+            const original   = document.getElementById('user-original-name').value.trim();
+            if (!usuario || !contrasena) { alert('⚠️ Completa usuario y contraseña.'); return; }
+            try {
+                await sendPostRequest({ action: 'saveUser', user: { usuario, contrasena, rol, activo, originalUsuario: original } });
+                closeUserForm();
+                renderUsersAdmin();
+                alert(`✅ Usuario "${usuario}" guardado correctamente.`);
+            } catch(err) {
+                alert('❌ Error al guardar usuario.'); console.error(err);
+            }
+        }
+
+        async function deleteUserHandler(nombre) {
+            if (nombre === 'admin') { alert('⚠️ No puedes eliminar el usuario admin principal.'); return; }
+            if (!confirm(`¿Eliminar el usuario "${nombre}"?`)) return;
+            try {
+                await sendPostRequest({ action: 'deleteUser', usuario: nombre });
+                renderUsersAdmin();
+                alert(`✅ Usuario "${nombre}" eliminado.`);
+            } catch(err) {
+                alert('❌ Error al eliminar usuario.'); console.error(err);
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  MÓDULOS DINÁMICOS — SISTEMA COMPLETO DE FRONTEND
+        // ══════════════════════════════════════════════════════════════
+
+        let currentModuloId = null;
+        let editingModulo = null; // módulo en edición en el form
+
+        // ── Renderiza la lista de módulos en el admin ──
+        function renderDynamicModulesAdmin() {
+            const cont = document.getElementById('modules-list');
+            if (!cont) return;
+            const mods = (dbData.modules || []).filter(m => m.moduloId);
+            if (mods.length === 0) {
+                cont.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:10px 0; text-align:center;">Sin módulos creados. Haz clic en <strong>+ Nuevo Módulo</strong> para empezar.</p>`;
+                return;
+            }
+            cont.innerHTML = mods.map(m => {
+                const count = (dbData.moduleData && dbData.moduleData[m.moduloId]) ? dbData.moduleData[m.moduloId].length : 0;
+                const active = m.activo !== false;
+                return `
+                <div style="display:flex; align-items:center; gap:12px; background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px;">
+                    <span style="font-size:24px; flex-shrink:0;">${m.icono || '📦'}</span>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:800; font-size:15px;">${m.nombre}</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">
+                            ID: <code style="background:#e2e8f0; padding:1px 6px; border-radius:3px;">${m.moduloId}</code>
+                            · Hoja: <code style="background:#e2e8f0; padding:1px 6px; border-radius:3px;">${m.hojaDestino}</code>
+                            · ${(m.campos||[]).length} campo(s)
+                            · <strong>${count}</strong> registro(s)
+                            · ${active ? '<span style="color:#16a34a;">🟢 Activo</span>' : '<span style="color:#94a3b8;">⚪ Oculto</span>'}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:6px; flex-shrink:0;">
+                        <button onclick="openModuleRecords('${m.moduloId}')" style="background:var(--accent-dark); color:#fff; border:none; border-radius:6px; padding:7px 12px; cursor:pointer; font-size:12px; font-weight:700;" title="Ver registros">📋 Registros</button>
+                        <button onclick="editModuleHandler('${m.moduloId}')" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; padding:7px 12px; cursor:pointer; font-size:12px; font-weight:700;" title="Editar módulo">✏️</button>
+                        <button onclick="deleteModuleHandler('${m.moduloId}')" style="background:#fee2e2; border:none; border-radius:6px; padding:7px 12px; cursor:pointer; font-size:12px; font-weight:700; color:#dc2626;" title="Eliminar módulo">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ── Abre el panel de registros de un módulo ──
+        function openModuleRecords(moduloId) {
+            const mod = (dbData.modules || []).find(m => m.moduloId === moduloId);
+            if (!mod) return;
+            currentModuloId = moduloId;
+            document.getElementById('module-records-icon').textContent = mod.icono || '📦';
+            document.getElementById('module-records-title').textContent = mod.nombre;
+            document.getElementById('module-records-panel').style.display = 'block';
+            renderModuleRecordsTable(moduloId);
+            // Scroll al panel
+            setTimeout(() => document.getElementById('module-records-panel').scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+        }
+
+        function closeModuleRecordsPanel() {
+            document.getElementById('module-records-panel').style.display = 'none';
+            currentModuloId = null;
+        }
+
+        // ── Renderiza la tabla de registros del módulo ──
+        function renderModuleRecordsTable(moduloId) {
+            const cont = document.getElementById('module-records-table');
+            if (!cont) return;
+            const mod = (dbData.modules || []).find(m => m.moduloId === moduloId);
+            if (!mod) return;
+            const records = (dbData.moduleData && dbData.moduleData[moduloId]) ? dbData.moduleData[moduloId] : [];
+            const campos = mod.campos || [];
+
+            if (records.length === 0) {
+                cont.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:20px; text-align:center;">Sin registros. Haz clic en <strong>+ Nuevo Registro</strong> para agregar el primero.</p>`;
+                return;
+            }
+
+            const headersHTML = campos.map(c => `<th>${c.label || c.key}</th>`).join('');
+            const rowsHTML = records.map(r => {
+                const cells = campos.map(c => {
+                    let v = r[c.key] !== undefined ? r[c.key] : '';
+                    if (typeof v === 'object') v = JSON.stringify(v);
+                    return `<td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${String(v).replace(/"/g,'&quot;')}">${v}</td>`;
+                }).join('');
+                return `<tr>
+                    ${cells}
+                    <td style="white-space:nowrap;">
+                        <button onclick="editModuleRecordHandler('${moduloId}', '${r.id}')" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; font-weight:700; margin-right:4px;">✏️</button>
+                        <button onclick="deleteModuleRecordHandler('${moduloId}', '${r.id}')" style="background:#fee2e2; border:none; border-radius:4px; padding:4px 8px; cursor:pointer; font-size:11px; font-weight:700; color:#dc2626;">🗑️</button>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            cont.innerHTML = `
+                <table class="data-table" style="min-width:100%;">
+                    <thead><tr>${headersHTML}<th>Acciones</th></tr></thead>
+                    <tbody>${rowsHTML}</tbody>
+                </table>`;
+        }
+
+        // ── FORMULARIO DE MÓDULO (crear / editar) ──
+        function openModuleForm(moduloId) {
+            editingModulo = moduloId
+                ? JSON.parse(JSON.stringify((dbData.modules || []).find(m => m.moduloId === moduloId) || {}))
+                : { moduloId:'', nombre:'', icono:'📦', hojaDestino:'', campos:[], permisos:{ ver:['admin'], editar:['admin'] }, orden:0, activo:true };
+
+            const overlay = document.createElement('div');
+            overlay.id = 'module-form-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(4px);';
+
+            overlay.innerHTML = `
+                <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUpModal .3s ease;">
+                    <div style="padding:18px 22px 14px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;border-radius:12px 12px 0 0;">
+                        <h3 style="font-size:16px;font-weight:800;text-transform:uppercase;">${moduloId ? '✏️ Editar Módulo' : '🆕 Nuevo Módulo'}</h3>
+                        <button onclick="closeModuleForm()" style="background:#f1f5f9;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;">✕</button>
+                    </div>
+                    <div style="padding:20px 22px;">
+                        <!-- Datos básicos -->
+                        <div style="display:grid;grid-template-columns:80px 1fr 1fr;gap:12px;margin-bottom:14px;">
+                            <div>
+                                <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Ícono</label>
+                                <input type="text" id="mf-icono" value="${editingModulo.icono||'📦'}" maxlength="4" style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:22px;text-align:center;outline:none;">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Nombre visible *</label>
+                                <input type="text" id="mf-nombre" value="${editingModulo.nombre||''}" placeholder="Ej: Clientes CRM" style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">ID del módulo *</label>
+                                <input type="text" id="mf-id" value="${editingModulo.moduloId||''}" placeholder="Ej: clientes_crm" ${moduloId ? 'readonly style="background:#f1f5f9;"' : ''} style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">
+                                <small style="color:var(--text-muted);font-size:10px;">Solo letras, números y _</small>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+                            <div>
+                                <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Hoja destino en Sheets</label>
+                                <input type="text" id="mf-hoja" value="${editingModulo.hojaDestino||''}" placeholder="Auto: Mod_id_del_modulo" style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Orden en menú</label>
+                                <input type="number" id="mf-orden" value="${editingModulo.orden||0}" min="0" style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">
+                            </div>
+                        </div>
+                        <div style="margin-bottom:18px;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer;">
+                                <input type="checkbox" id="mf-activo" ${editingModulo.activo !== false ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer;">
+                                Módulo activo (visible en panel)
+                            </label>
+                        </div>
+
+                        <!-- CAMPOS -->
+                        <div style="border-top:1px solid var(--border-color);padding-top:16px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                                <span style="font-size:13px;font-weight:800;text-transform:uppercase;">Campos / Columnas</span>
+                                <button onclick="addModuleField()" style="background:#f1f5f9;border:1px solid var(--border-color);border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">+ Agregar Campo</button>
+                            </div>
+                            <div id="mf-fields-list" style="display:flex;flex-direction:column;gap:8px;min-height:40px;">
+                                ${(editingModulo.campos||[]).map((c,i) => buildFieldRow(c,i)).join('')}
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:14px;border-top:1px solid var(--border-color);">
+                            <button onclick="closeModuleForm()" style="background:transparent;color:var(--accent-dark);border:1px solid var(--accent-dark);padding:10px 22px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+                            <button onclick="saveModuleHandler()" class="btn-action" style="padding:10px 26px;">💾 Guardar Módulo</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if (e.target === overlay) closeModuleForm(); });
+        }
+
+        function buildFieldRow(campo, idx) {
+            const tipos = ['texto','numero','fecha','select','booleano','email','url','textarea'];
+            return `
+            <div class="mf-field-row" style="display:grid;grid-template-columns:1fr 1fr 1.2fr auto;gap:8px;align-items:center;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid var(--border-color);">
+                <div>
+                    <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:3px;">ID campo</label>
+                    <input class="mf-field-key" type="text" value="${campo.key||''}" placeholder="Ej: nombre" style="width:100%;padding:6px 8px;border:1px solid var(--border-color);border-radius:5px;font-size:12px;outline:none;font-family:monospace;">
+                </div>
+                <div>
+                    <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:3px;">Etiqueta visible</label>
+                    <input class="mf-field-label" type="text" value="${campo.label||''}" placeholder="Ej: Nombre completo" style="width:100%;padding:6px 8px;border:1px solid var(--border-color);border-radius:5px;font-size:12px;outline:none;">
+                </div>
+                <div>
+                    <label style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:3px;">Tipo · Opciones (si select)</label>
+                    <div style="display:flex;gap:4px;">
+                        <select class="mf-field-tipo" style="padding:6px 5px;border:1px solid var(--border-color);border-radius:5px;font-size:12px;outline:none;flex:0 0 90px;">
+                            ${tipos.map(t => `<option value="${t}" ${campo.tipo===t?'selected':''}>${t}</option>`).join('')}
+                        </select>
+                        <input class="mf-field-opciones" type="text" value="${(campo.opciones||[]).join(',')}" placeholder="op1,op2,op3" style="flex:1;padding:6px 7px;border:1px solid var(--border-color);border-radius:5px;font-size:11px;outline:none;" title="Opciones para tipo 'select' separadas por coma">
+                    </div>
+                </div>
+                <button onclick="this.closest('.mf-field-row').remove()" style="background:none;border:none;color:var(--danger-color);font-size:20px;cursor:pointer;padding:2px 6px;align-self:flex-end;line-height:1;" title="Quitar campo">×</button>
+            </div>`;
+        }
+
+        function addModuleField() {
+            const list = document.getElementById('mf-fields-list');
+            if (!list) return;
+            const idx = list.querySelectorAll('.mf-field-row').length;
+            const div = document.createElement('div');
+            div.innerHTML = buildFieldRow({ key:'', label:'', tipo:'texto', opciones:[] }, idx);
+            list.appendChild(div.firstElementChild);
+        }
+
+        function closeModuleForm() {
+            const el = document.getElementById('module-form-overlay');
+            if (el) el.remove();
+            editingModulo = null;
+        }
+
+        async function saveModuleHandler() {
+            const id     = document.getElementById('mf-id')?.value.trim();
+            const nombre = document.getElementById('mf-nombre')?.value.trim();
+            const icono  = document.getElementById('mf-icono')?.value.trim() || '📦';
+            const hoja   = document.getElementById('mf-hoja')?.value.trim();
+            const orden  = parseInt(document.getElementById('mf-orden')?.value) || 0;
+            const activo = document.getElementById('mf-activo')?.checked !== false;
+
+            if (!id || !nombre) { alert('⚠️ El nombre y el ID son obligatorios.'); return; }
+
+            // Recoger campos
+            const campos = [];
+            document.querySelectorAll('#mf-fields-list .mf-field-row').forEach(row => {
+                const key     = row.querySelector('.mf-field-key')?.value.trim();
+                const label   = row.querySelector('.mf-field-label')?.value.trim();
+                const tipo    = row.querySelector('.mf-field-tipo')?.value || 'texto';
+                const opcStr  = row.querySelector('.mf-field-opciones')?.value.trim();
+                const opciones = opcStr ? opcStr.split(',').map(s=>s.trim()).filter(Boolean) : [];
+                if (!key) return;
+                campos.push({ key, label: label||key, tipo, opciones, requerido: false });
+            });
+
+            const modPayload = {
+                moduloId: editingModulo?.moduloId || id,
+                originalModuloId: editingModulo?.moduloId || id,
+                nombre, icono, hojaDestino: hoja, campos,
+                permisos: editingModulo?.permisos || { ver:['admin'], editar:['admin'] },
+                orden, activo
+            };
+
+            showLoading(true);
+            try {
+                await sendPostRequest({ action: 'saveModule', module: modPayload });
+                closeModuleForm();
+                alert(`✅ Módulo "${nombre}" guardado. La hoja en Sheets se creó automáticamente.`);
+            } catch(err) {
+                alert('❌ Error al guardar módulo.'); console.error(err);
+            } finally { showLoading(false); }
+        }
+
+        function editModuleHandler(moduloId) {
+            openModuleForm(moduloId);
+        }
+
+        async function deleteModuleHandler(moduloId) {
+            const mod = (dbData.modules || []).find(m => m.moduloId === moduloId);
+            if (!confirm(`¿Eliminar el módulo "${mod?.nombre || moduloId}"?\n\nNota: La hoja con sus datos en Google Sheets NO se elimina automáticamente — puedes borrarla manualmente si lo deseas.`)) return;
+            try {
+                await sendPostRequest({ action: 'deleteModule', moduloId });
+                closeModuleRecordsPanel();
+                alert(`✅ Módulo eliminado.`);
+            } catch(err) {
+                alert('❌ Error al eliminar módulo.'); console.error(err);
+            }
+        }
+
+        // ── REGISTROS de un módulo dinámico ──
+        function openModuleRecordForm(moduloId, recordId) {
+            const mod = (dbData.modules || []).find(m => m.moduloId === moduloId);
+            if (!mod) return;
+            const isEdit = !!recordId;
+            const existing = isEdit
+                ? ((dbData.moduleData && dbData.moduleData[moduloId]) || []).find(r => r.id === recordId)
+                : null;
+
+            const overlay = document.createElement('div');
+            overlay.id = 'module-record-form-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:3100;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;backdrop-filter:blur(4px);';
+
+            const fieldsHTML = (mod.campos || []).map(c => {
+                const val = existing ? (existing[c.key] !== undefined ? existing[c.key] : '') : '';
+                let input = '';
+                if (c.tipo === 'select' && c.opciones && c.opciones.length) {
+                    input = `<select id="mrf-${c.key}" style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">
+                        <option value="">-- Seleccionar --</option>
+                        ${c.opciones.map(op => `<option value="${op}" ${val===op?'selected':''}>${op}</option>`).join('')}
+                    </select>`;
+                } else if (c.tipo === 'textarea') {
+                    input = `<textarea id="mrf-${c.key}" rows="3" style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;resize:vertical;">${val}</textarea>`;
+                } else if (c.tipo === 'booleano') {
+                    input = `<label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;"><input type="checkbox" id="mrf-${c.key}" ${val===true||val==='TRUE'||val==='true'||val===1?'checked':''} style="width:16px;height:16px;"> Sí</label>`;
+                } else {
+                    const t = c.tipo === 'numero' ? 'number' : c.tipo === 'fecha' ? 'date' : c.tipo === 'email' ? 'email' : c.tipo === 'url' ? 'url' : 'text';
+                    input = `<input type="${t}" id="mrf-${c.key}" value="${val}" placeholder="${c.label||c.key}" style="width:100%;padding:9px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">`;
+                }
+                return `<div style="margin-bottom:12px;">
+                    <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">${c.label||c.key}${c.requerido?' *':''}</label>
+                    ${input}
+                </div>`;
+            }).join('');
+
+            overlay.innerHTML = `
+                <div style="background:#fff;border-radius:12px;width:100%;max-width:540px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:slideUpModal .3s ease;">
+                    <div style="padding:16px 20px 12px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;border-radius:12px 12px 0 0;">
+                        <h3 style="font-size:15px;font-weight:800;text-transform:uppercase;">${mod.icono} ${isEdit ? 'Editar' : 'Nuevo'} — ${mod.nombre}</h3>
+                        <button onclick="document.getElementById('module-record-form-overlay').remove()" style="background:#f1f5f9;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;">✕</button>
+                    </div>
+                    <div style="padding:20px;">
+                        <input type="hidden" id="mrf-id" value="${recordId || ''}">
+                        ${fieldsHTML}
+                        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
+                            <button onclick="document.getElementById('module-record-form-overlay').remove()" style="background:transparent;color:var(--accent-dark);border:1px solid var(--accent-dark);padding:10px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+                            <button onclick="saveModuleRecordHandler('${moduloId}')" class="btn-action" style="padding:10px 24px;">💾 Guardar</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        }
+
+        async function saveModuleRecordHandler(moduloId) {
+            const mod = (dbData.modules || []).find(m => m.moduloId === moduloId);
+            if (!mod) return;
+            const id = document.getElementById('mrf-id')?.value || Date.now().toString();
+            const record = { id };
+            (mod.campos || []).forEach(c => {
+                const el = document.getElementById('mrf-' + c.key);
+                if (!el) return;
+                if (c.tipo === 'booleano') {
+                    record[c.key] = el.checked;
+                } else if (c.tipo === 'numero') {
+                    record[c.key] = parseFloat(el.value) || 0;
+                } else {
+                    record[c.key] = el.value;
+                }
+            });
+
+            showLoading(true);
+            try {
+                await sendPostRequest({ action: 'saveModuleRecord', moduloId, record });
+                document.getElementById('module-record-form-overlay')?.remove();
+                if (currentModuloId === moduloId) renderModuleRecordsTable(moduloId);
+                alert('✅ Registro guardado.');
+            } catch(err) {
+                alert('❌ Error al guardar registro.'); console.error(err);
+            } finally { showLoading(false); }
+        }
+
+        function editModuleRecordHandler(moduloId, recordId) {
+            openModuleRecordForm(moduloId, recordId);
+        }
+
+        async function deleteModuleRecordHandler(moduloId, recordId) {
+            if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+            showLoading(true);
+            try {
+                await sendPostRequest({ action: 'deleteModuleRecord', moduloId, recordId });
+                if (currentModuloId === moduloId) renderModuleRecordsTable(moduloId);
+                alert('✅ Registro eliminado.');
+            } catch(err) {
+                alert('❌ Error al eliminar registro.'); console.error(err);
+            } finally { showLoading(false); }
+        }
+
+        // ══════════════════════════════════════════════════════════════
 
         document.addEventListener('DOMContentLoaded', () => {
             // Limpiar categorías viejas del localStorage para forzar defaults actualizados
