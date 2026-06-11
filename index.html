@@ -22,10 +22,12 @@
         body { background-color: var(--bg-light); color: var(--text-main); line-height: 1.5; }
         a { text-decoration: none; color: inherit; }
 
+        @keyframes slideUpModal { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .top-notice-bar { background-color: var(--accent-dark); color: #ffffff; text-align: center; padding: 10px; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
         header { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; }
         .header-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 15px 24px; }
-        .brand-logo { font-size: 24px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: -0.5px; }
+        .brand-logo { font-size: 24px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .brand-logo img { height: 38px; width: 38px; object-fit: contain; border-radius: 6px; }
         
         .navigation-menu { display: flex; gap: 25px; list-style: none; }
         .navigation-menu li { font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -208,11 +210,13 @@
 <body>
 
     <div id="loading-spinner" class="loading-overlay">Cargando productos de la base de datos...</div>
-    <div class="top-notice-bar">STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA</div>
+    <div class="top-notice-bar" id="top-notice-bar">STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA</div>
 
     <header>
         <div class="header-container">
-            <div class="brand-logo" onclick="navigateTo('home-view')">StivZapat</div>
+            <div class="brand-logo" onclick="navigateTo('home-view')" id="header-brand">
+                <span id="header-brand-text">StivZapat</span>
+            </div>
             <nav>
                 <ul class="navigation-menu">
                     <li onclick="navigateTo('catalog-view')">Ver Catálogo</li>
@@ -281,7 +285,7 @@
                 <h3 style="text-transform:uppercase; margin-bottom:15px;">Resumen</h3>
                 <p style="display:flex; justify-content:space-between; margin-bottom:10px;">Total pares: <span id="summary-qty">0</span></p>
                 <h2 style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:20px;">Total: <span id="summary-total">$ 0</span></h2>
-                <button class="btn-action" style="width:100%; background-color:var(--whatsapp-color);" onclick="processOrderSale()">Confirmar y Enviar a WhatsApp</button>
+                <button class="btn-action" style="width:100%;" onclick="openCheckoutModal()">Finalizar Pedido</button>
             </div>
         </div>
     </section>
@@ -299,6 +303,38 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
             <h1 style="text-transform:uppercase;">Consola de Control Integral</h1>
             <button class="btn-action secondary" onclick="logoutAdmin()">Cerrar Sesión</button>
+        </div>
+
+        <!-- IDENTIDAD DE MARCA -->
+        <div class="admin-section" style="margin-bottom:30px;">
+            <h2>Identidad de Marca</h2>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; align-items:end;">
+                <div>
+                    <label style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Nombre de la Tienda</label>
+                    <input type="text" id="brand-name-input" placeholder="Ej: StivZapat" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Logo (imagen)</label>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img id="brand-logo-preview" src="" style="width:44px; height:44px; object-fit:contain; border-radius:6px; border:1px solid var(--border-color); background:#f1f5f9; display:none;">
+                        <div style="flex:1;">
+                            <input type="file" id="brand-logo-file" accept="image/*" onchange="uploadBrandLogo(this)" style="font-size:12px; width:100%;">
+                            <span id="brand-logo-status" style="font-size:11px; color:var(--text-muted);"></span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn-action" style="width:100%; padding:12px;" onclick="saveBrandConfig()">Aplicar Cambios</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MEDIOS DE PAGO -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagos-section">
+            <h2>Medios de Pago</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Configura los datos de cada método. Solo los que actives aparecerán al cliente en el checkout.</p>
+            <div id="admin-pagos-list"></div>
+            <button class="btn-action" style="margin-top:10px; padding:10px 20px; font-size:13px;" onclick="savePagosConfig()">Guardar Medios de Pago</button>
         </div>
 
         <div class="dashboard-grid">
@@ -341,7 +377,7 @@
                         <div style="display:flex; gap:20px; align-items:center; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid var(--border-color);">
                             <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer;">
                                 <input type="checkbox" id="form-p-featured" style="width:16px; height:16px; cursor:pointer;">
-                                ⭐ Mostrar en página principal (Destacado)
+                                Mostrar en página principal (Destacado)
                             </label>
                         </div>
 
@@ -409,17 +445,28 @@
         </div>
     </section>
 
+    <!-- MODAL CHECKOUT MEDIOS DE PAGO -->
+    <div id="checkout-overlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+        <div style="background:#fff; border-radius:12px; width:100%; max-width:540px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25); animation:slideUpModal .3s ease;">
+            <div style="padding:20px 24px 16px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#fff; z-index:1;">
+                <h3 id="checkout-title" style="font-size:17px; font-weight:800; text-transform:uppercase; letter-spacing:-0.3px;">Finalizar Pedido</h3>
+                <button onclick="closeCheckoutModal()" style="background:#f1f5f9; border:none; border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <div id="checkout-modal-body" style="padding:22px 24px;"></div>
+        </div>
+    </div>
+
     <!-- NAV INFERIOR MÓVIL -->
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
         <ul>
             <li id="mnav-home" onclick="mobileNav('home-view')" class="active-nav">
-                <span class="nav-icon">🏠</span>Inicio
+                <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Inicio
             </li>
             <li id="mnav-catalog" onclick="mobileNav('catalog-view')">
-                <span class="nav-icon">👟</span>Catálogo
+                <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span>Catálogo
             </li>
             <li id="mnav-cart" onclick="mobileNav('cart-view')">
-                <span class="nav-icon">🛍️</span>Bolsa <span class="cart-badge-count" id="mobile-cart-qty" style="background:var(--accent-dark);">0</span>
+                <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg></span>Bolsa <span class="cart-badge-count" id="mobile-cart-qty" style="background:var(--accent-dark);">0</span>
             </li>
         </ul>
     </nav>
@@ -433,9 +480,88 @@
         let isAdminLoggedIn = false;
         let activeHomeFilter = "all";
         
-        let runtimeVariants = []; // [{colorName, images:[url,url,...]}, ...]
+        let runtimeVariants = [];
         let carouselInterval = null;
         let currentImageIndex = 0;
+
+        // ─────────────────────────────────────────────
+        // IDENTIDAD DE MARCA (localStorage)
+        // ─────────────────────────────────────────────
+        function applyBrandConfig() {
+            const name    = localStorage.getItem('brand_name') || 'StivZapat';
+            const logoUrl = localStorage.getItem('brand_logo') || '';
+
+            // Header
+            const brandText = document.getElementById('header-brand-text');
+            const brandEl   = document.getElementById('header-brand');
+            if (brandText) brandText.innerText = name;
+
+            // Logo en header
+            const existingImg = brandEl ? brandEl.querySelector('img') : null;
+            if (logoUrl) {
+                if (existingImg) {
+                    existingImg.src = logoUrl;
+                } else if (brandEl) {
+                    const img = document.createElement('img');
+                    img.src = logoUrl;
+                    brandEl.insertBefore(img, brandEl.firstChild);
+                }
+            } else if (existingImg) {
+                existingImg.remove();
+            }
+
+            // Tab del navegador
+            document.title = name;
+
+            // Favicon dinámico desde logo
+            if (logoUrl) {
+                let link = document.querySelector("link[rel~='icon']");
+                if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+                link.href = logoUrl;
+            }
+
+            // Barra superior
+            const bar = document.getElementById('top-notice-bar');
+            if (bar) bar.innerText = `${name.toUpperCase()} • SISTEMA INTEGRADO DE GESTIÓN`;
+
+            // Preview en admin si está abierto
+            const preview = document.getElementById('brand-logo-preview');
+            const nameInput = document.getElementById('brand-name-input');
+            if (preview && logoUrl) { preview.src = logoUrl; preview.style.display = 'block'; }
+            if (nameInput) nameInput.value = name;
+        }
+
+        async function uploadBrandLogo(inputEl) {
+            const file = inputEl.files[0];
+            if (!file) return;
+            const statusEl = document.getElementById('brand-logo-status');
+            const preview  = document.getElementById('brand-logo-preview');
+            statusEl.innerText = '⏳ Subiendo...';
+            try {
+                const base64 = await new Promise((res, rej) => {
+                    const fr = new FileReader();
+                    fr.onload = e => res(e.target.result);
+                    fr.onerror = () => rej();
+                    fr.readAsDataURL(file);
+                });
+                const url = await uploadToImgHost(base64);
+                localStorage.setItem('brand_logo', url);
+                preview.src = url;
+                preview.style.display = 'block';
+                statusEl.innerText = '✓ Logo listo';
+                statusEl.style.color = '#16a34a';
+            } catch(err) {
+                statusEl.innerText = '✗ Error al subir';
+                statusEl.style.color = 'var(--danger-color)';
+            }
+        }
+
+        function saveBrandConfig() {
+            const name = document.getElementById('brand-name-input').value.trim();
+            if (name) localStorage.setItem('brand_name', name);
+            applyBrandConfig();
+            alert('✓ Identidad aplicada correctamente');
+        }
 
         // ─────────────────────────────────────────────
         // IMGBB UPLOAD (gratuito, key propia)
@@ -576,6 +702,7 @@
             if (hash === '#admin') {
                 if (isAdminLoggedIn) {
                     renderAdminDashboard();
+                    renderAdminPagos();
                     navigateTo('admin-view');
                 } else {
                     navigateTo('auth-gate-view');
@@ -1147,9 +1274,210 @@
             }
         }
 
+        // ─────────────────────────────────────────────
+        // MEDIOS DE PAGO COLOMBIANOS
+        // ─────────────────────────────────────────────
+        const PAGOS_DEFAULT = {
+            nequi:       { activo: true,  numero: '', titular: '', label: 'Nequi',        instruccion: 'Envía el valor al número Nequi y adjunta el comprobante por WhatsApp.' },
+            bancolombia: { activo: true,  numero: '', titular: '', tipo: 'Ahorros', label: 'Bancolombia', instruccion: 'Transfiere a la cuenta y envía el soporte.' },
+            daviplata:   { activo: false, numero: '', titular: '', label: 'Daviplata',    instruccion: 'Envía el valor al número Daviplata registrado.' },
+            pse:         { activo: false, numero: '', titular: '', label: 'PSE',          instruccion: 'Recibirás un enlace de pago PSE al confirmar.' },
+            addi:        { activo: false, numero: '', titular: '', label: 'Addi',         instruccion: 'Paga en cuotas quincenales o mensuales sin tarjeta de crédito.' },
+            efectivo:    { activo: true,  numero: '', titular: '', label: 'Efectivo',     instruccion: 'Pago contra entrega o en tienda física.' },
+        };
+
+        function getPagosConfig() {
+            try { return JSON.parse(localStorage.getItem('pagos_config')) || PAGOS_DEFAULT; }
+            catch(e) { return PAGOS_DEFAULT; }
+        }
+
+        function savePagosConfig() {
+            const cfg = {};
+            Object.keys(PAGOS_DEFAULT).forEach(key => {
+                const num    = document.getElementById('pago-num-'+key);
+                const tit    = document.getElementById('pago-tit-'+key);
+                const act    = document.getElementById('pago-act-'+key);
+                const tipo   = document.getElementById('pago-tipo-'+key);
+                cfg[key] = {
+                    ...PAGOS_DEFAULT[key],
+                    ...(getPagosConfig()[key] || {}),
+                    numero:  num  ? num.value.trim()  : '',
+                    titular: tit  ? tit.value.trim()  : '',
+                    activo:  act  ? act.checked        : false,
+                    tipo:    tipo ? tipo.value         : 'Ahorros',
+                    label:   PAGOS_DEFAULT[key].label,
+                    instruccion: PAGOS_DEFAULT[key].instruccion,
+                };
+            });
+            localStorage.setItem('pagos_config', JSON.stringify(cfg));
+            alert('Medios de pago guardados correctamente.');
+        }
+
+        function renderAdminPagos() {
+            const cfg = getPagosConfig();
+            const cont = document.getElementById('admin-pagos-list');
+            if (!cont) return;
+            const COLORES = { nequi:'#e40078', bancolombia:'#fdda24', daviplata:'#e31837', pse:'#003087', addi:'#00d4aa', efectivo:'#374151' };
+            const TEXTO   = { nequi:'#fff', bancolombia:'#333', daviplata:'#fff', pse:'#fff', addi:'#fff', efectivo:'#fff' };
+            cont.innerHTML = Object.entries(cfg).map(([key, val]) => `
+                <div style="display:flex; align-items:flex-start; gap:14px; padding:14px 16px; border:1px solid var(--border-color); border-radius:8px; background:#f8fafc; margin-bottom:10px;">
+                    <div style="width:56px; height:32px; border-radius:6px; background:${COLORES[key]}; color:${TEXTO[key]}; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; letter-spacing:.3px;">${val.label.toUpperCase()}</div>
+                    <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px; align-items:end;">
+                        <div>
+                            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Número / Cuenta</label>
+                            <input id="pago-num-${key}" type="text" value="${val.numero || ''}" placeholder="Ej: 3001234567" style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                        </div>
+                        <div>
+                            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Titular / Instrucciones</label>
+                            <input id="pago-tit-${key}" type="text" value="${val.titular || ''}" placeholder="Nombre del titular" style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                        </div>
+                        ${key === 'bancolombia' ? `<div><label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Tipo de cuenta</label><select id="pago-tipo-bancolombia" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;"><option ${val.tipo==='Ahorros'?'selected':''}>Ahorros</option><option ${val.tipo==='Corriente'?'selected':''}>Corriente</option></select></div>` : `<div></div>`}
+                        <div style="display:flex; align-items:center; gap:8px; padding-top:4px;">
+                            <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; cursor:pointer;">
+                                <input id="pago-act-${key}" type="checkbox" ${val.activo ? 'checked' : ''} style="width:15px; height:15px; cursor:pointer;"> Activo en tienda
+                            </label>
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        // ─────────────────────────────────────────────
+        // CHECKOUT MODAL
+        // ─────────────────────────────────────────────
+        let selectedPago = null;
+
+        function openCheckoutModal() {
+            if (cart.length === 0) return;
+            selectedPago = null;
+            document.getElementById('checkout-overlay').style.display = 'flex';
+            renderCheckoutModal();
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-overlay').style.display = 'none';
+        }
+
+        function renderCheckoutModal() {
+            const cfg = getPagosConfig();
+            const activos = Object.entries(cfg).filter(([k,v]) => v.activo);
+            let total = 0, qty = 0;
+            cart.forEach(i => { total += i.price * i.quantity; qty += i.quantity; });
+            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+
+            const COLORES = { nequi:'#e40078', bancolombia:'#fdda24', daviplata:'#e31837', pse:'#003087', addi:'#00d4aa', efectivo:'#374151' };
+            const TEXTO   = { nequi:'#fff', bancolombia:'#333', daviplata:'#fff', pse:'#fff', addi:'#fff', efectivo:'#fff' };
+
+            document.getElementById('checkout-modal-body').innerHTML = `
+                <!-- Resumen -->
+                <div style="margin-bottom:20px;">
+                    <p style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; letter-spacing:.08em;">Resumen del Pedido</p>
+                    ${cart.map(i => `<div style="display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom:1px solid var(--border-color);"><span>${i.title} × ${i.quantity}</span><strong>${formatCOP(i.price * i.quantity)}</strong></div>`).join('')}
+                    <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; padding:12px 0 0; margin-top:4px; border-top:2px solid #0f172a;"><span>Total</span><span>${formatCOP(total)}</span></div>
+                </div>
+
+                <!-- Datos cliente -->
+                <p style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; letter-spacing:.08em;">Tus Datos</p>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+                    <div><label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Nombre completo</label><input id="chk-nombre" type="text" placeholder="Juan Pérez" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;"></div>
+                    <div><label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Celular / WhatsApp</label><input id="chk-cel" type="tel" placeholder="3001234567" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;"></div>
+                    <div><label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Ciudad</label><input id="chk-ciudad" type="text" placeholder="Cali, Medellín..." style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;"></div>
+                    <div><label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Dirección de envío</label><input id="chk-dir" type="text" placeholder="Calle 10 # 5-30" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;"></div>
+                </div>
+
+                <!-- Métodos de pago -->
+                <p style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; letter-spacing:.08em;">Método de Pago</p>
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px;">
+                    ${activos.map(([key, val]) => `
+                        <div id="pago-chip-${key}" onclick="selectPagoChip('${key}')" style="padding:12px 8px; border:2px solid var(--border-color); border-radius:8px; cursor:pointer; text-align:center; transition:all .18s;">
+                            <div style="width:52px; height:30px; border-radius:5px; background:${COLORES[key]}; color:${TEXTO[key]}; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; margin:0 auto 6px; letter-spacing:.3px;">${val.label.toUpperCase()}</div>
+                            <span style="font-size:10px; font-weight:700; color:var(--text-muted);">${val.label}</span>
+                        </div>`).join('')}
+                </div>
+                <div id="pago-info-box" style="margin-bottom:20px;"></div>
+
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button class="btn-action secondary" onclick="closeCheckoutModal()">Volver</button>
+                    <button class="btn-action" onclick="confirmCheckout()">Confirmar Pedido</button>
+                </div>
+            `;
+        }
+
+        function selectPagoChip(key) {
+            selectedPago = key;
+            document.querySelectorAll('[id^="pago-chip-"]').forEach(el => {
+                el.style.borderColor = 'var(--border-color)';
+                el.style.background = '#fff';
+            });
+            const chip = document.getElementById('pago-chip-' + key);
+            if (chip) { chip.style.borderColor = '#020617'; chip.style.background = '#f8fafc'; }
+
+            const cfg = getPagosConfig();
+            const val = cfg[key];
+            const total = cart.reduce((s,i)=>s+i.price*i.quantity,0);
+            const box = document.getElementById('pago-info-box');
+            let html = `<div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; font-size:13px; color:#475569; line-height:1.7;">`;
+            if (key === 'nequi' || key === 'daviplata') {
+                html += `<strong style="color:#0f172a;">${val.label}</strong><br>${val.instruccion}`;
+                if (val.numero) html += `<br>Número: <span id="num-copy-${key}" onclick="copiarDato('${val.numero}')" style="font-family:monospace; font-weight:700; color:#020617; background:#fff; padding:3px 10px; border-radius:5px; border:1px solid #e2e8f0; cursor:pointer;" title="Clic para copiar">${val.numero} &#128203;</span>`;
+                if (val.titular) html += `<br>A nombre de: <strong>${val.titular}</strong>`;
+            } else if (key === 'bancolombia') {
+                html += `<strong style="color:#0f172a;">Bancolombia</strong><br>${val.instruccion}`;
+                if (val.numero) html += `<br>Cuenta ${val.tipo || 'Ahorros'}: <span id="num-copy-bancolombia" onclick="copiarDato('${val.numero}')" style="font-family:monospace; font-weight:700; color:#020617; background:#fff; padding:3px 10px; border-radius:5px; border:1px solid #e2e8f0; cursor:pointer;" title="Clic para copiar">${val.numero} &#128203;</span>`;
+                if (val.titular) html += `<br>A nombre de: <strong>${val.titular}</strong>`;
+            } else if (key === 'pse') {
+                html += `<strong style="color:#003087;">PSE</strong><br>${val.instruccion}`;
+            } else if (key === 'addi') {
+                html += `<strong style="color:#00d4aa;">Addi</strong> — Compra a cuotas<br>${val.instruccion}<br><small>Aplica para compras desde $ 100.000. Sin tarjeta de crédito.</small>`;
+            } else if (key === 'efectivo') {
+                html += `<strong style="color:#0f172a;">Efectivo</strong><br>${val.titular || val.instruccion}`;
+            }
+            html += `<br><small style="color:#94a3b8; display:block; margin-top:8px;">Envía el comprobante de pago por WhatsApp para confirmar tu pedido.</small></div>`;
+            box.innerHTML = html;
+        }
+
+        function copiarDato(txt) {
+            navigator.clipboard.writeText(txt).then(() => {
+                const msg = document.createElement('div');
+                msg.style.cssText = 'position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:#020617; color:#fff; padding:8px 18px; border-radius:6px; font-size:13px; font-weight:600; z-index:9999;';
+                msg.textContent = 'Copiado: ' + txt;
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 2200);
+            });
+        }
+
+        async function confirmCheckout() {
+            const nombre  = document.getElementById('chk-nombre')?.value.trim();
+            const celular = document.getElementById('chk-cel')?.value.trim();
+            const ciudad  = document.getElementById('chk-ciudad')?.value.trim();
+            const dir     = document.getElementById('chk-dir')?.value.trim();
+            if (!nombre || !celular || !ciudad || !dir) { alert('Por favor completa todos tus datos.'); return; }
+            if (!selectedPago) { alert('Selecciona un método de pago.'); return; }
+
+            const cfg = getPagosConfig();
+            const metodoPago = cfg[selectedPago]?.label || selectedPago;
+            let total = 0;
+            let msg = `*${(localStorage.getItem('brand_name') || 'STIVZAPAT').toUpperCase()} - NUEVA SOLICITUD DE PEDIDO*\n\n`;
+            msg += `*Cliente:* ${nombre}\n*Celular:* ${celular}\n*Ciudad:* ${ciudad}\n*Dirección:* ${dir}\n\n`;
+            cart.forEach((item, i) => {
+                total += item.price * item.quantity;
+                msg += `[${i+1}] ${item.title} (${item.brand.toUpperCase()})\n    Pares: ${item.quantity} | Total: ${formatCOP(item.price * item.quantity)}\n\n`;
+            });
+            msg += `*VALOR TOTAL:* ${formatCOP(total)}\n*Método de pago:* ${metodoPago}\n\nDeseo confirmar este pedido.`;
+
+            await sendPostRequest({ action: 'registerSale', cart: cart });
+
+            window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
+            cart = [];
+            updateCartBadge();
+            closeCheckoutModal();
+            navigateTo('home-view');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initVariantsForNew();
             syncWithGoogleSheets();
+            applyBrandConfig();
+            renderAdminPagos();
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
         });
