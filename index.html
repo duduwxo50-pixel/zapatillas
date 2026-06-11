@@ -567,6 +567,9 @@
         </div>
     </div>
 
+    <!-- SPINNER DE CARGA -->
+    <div id="loading-spinner" class="loading-overlay" style="display:none;">Cargando...</div>
+
     <!-- NAV INFERIOR MÓVIL -->
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
         <ul>
@@ -882,7 +885,8 @@
         }
 
         function showLoading(show) {
-            document.getElementById('loading-spinner').style.display = show ? 'flex' : 'none';
+            const el = document.getElementById('loading-spinner');
+            if (el) el.style.display = show ? 'flex' : 'none';
         }
 
         function formatCOP(val) {
