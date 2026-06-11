@@ -57,10 +57,22 @@
         .btn-action.secondary { background: transparent; color: var(--accent-dark); border: 1px solid var(--accent-dark); }
 
         .featured-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-        .product-item-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; position: relative; transition: transform 0.2s ease; }
-        .product-item-card:hover { transform: translateY(-4px); }
+        .product-item-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; position: relative; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+        .product-item-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.13); }
         .product-image-frame { background-color: #f1f5f9; aspect-ratio: 1 / 1; overflow: hidden; position: relative; }
-        .product-image-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .product-image-frame img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+        .product-item-card:hover .product-image-frame img { transform: scale(1.04); }
+
+        /* ── PRICE HOVER OVERLAY ── */
+        .product-price-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(2,6,23,0.88)); padding: 28px 14px 14px; transform: translateY(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; gap: 3px; pointer-events: none; }
+        .product-item-card:hover .product-price-overlay { transform: translateY(0); }
+        .ppo-brand { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.8px; }
+        .ppo-title { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.2; }
+        .ppo-price-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+        .ppo-price-sale { font-size: 22px; font-weight: 900; color: #fff; }
+        .ppo-price-old { font-size: 13px; color: rgba(255,255,255,0.55); text-decoration: line-through; }
+        .ppo-badge { background: #dc2626; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 3px; }
+
         .product-details-frame { padding: 16px; flex-grow: 1; display: flex; flex-direction: column; }
         .stock-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.75); color: #fff; padding: 4px 8px; font-size: 11px; font-weight: 700; border-radius: 4px; z-index: 10; }
         .out-of-stock { background: var(--danger-color) !important; }
@@ -152,7 +164,7 @@
         .store-banner2-block { border-radius:10px; overflow:hidden; margin-bottom:24px; }
         .store-banner2-block img { width:100%; height:auto; display:block; object-fit:cover; }
         .store-video-block { border-radius:10px; overflow:hidden; margin-bottom:24px; aspect-ratio:16/9; background:#000; position:relative; }
-        .store-video-block iframe { position:absolute; top:-60px; left:-2px; width:calc(100% + 4px); height:calc(100% + 120px); border:none; pointer-events:auto; }
+        .store-video-block iframe { position:absolute; top:-80px; left:-2px; width:calc(100% + 4px); height:calc(100% + 160px); border:none; pointer-events:auto; }
         .store-video-block video { width:100%; height:100%; object-fit:cover; border-radius:10px; }
         .store-promo-block { background:var(--accent-dark); color:#fff; text-align:center; padding:14px 20px; border-radius:8px; margin-bottom:24px; font-weight:700; font-size:15px; letter-spacing:.3px; }
         .store-spacer-block { margin-bottom:24px; }
@@ -252,8 +264,8 @@
 </head>
 <body>
 
-    <div id="top-notice-bar-wrapper" style="background-color:#020617; color:#fff; overflow:hidden; position:relative; display:flex; align-items:center;">
-        <div id="top-notice-bar" style="display:flex; white-space:nowrap; animation:marqueeScroll 20s linear infinite; padding:10px 0; font-size:11px; font-weight:700; letter-spacing:1px;">
+    <div id="top-notice-bar-wrapper" style="background-color:#020617; color:#fff; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center;">
+        <div id="top-notice-bar" style="display:flex; white-space:nowrap; animation:marqueeScroll 20s linear infinite; padding:10px 0; font-size:11px; font-weight:700; letter-spacing:1px; text-align:center;">
             <span id="notice-bar-content">STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA &nbsp;&nbsp;•&nbsp;&nbsp; STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA &nbsp;&nbsp;•&nbsp;&nbsp;</span>
         </div>
     </div>
@@ -953,13 +965,19 @@
 
         function ArrayToCardHTML(p) {
             const isOut = p.stock <= 0;
-            let defaultImg = 'https://via.placeholder.com/300';
-            if (p.variants && p.variants[0] && p.variants[0].images && p.variants[0].images[0]) {
-                defaultImg = p.variants[0].images[0];
+            // Recopilar todas las imágenes de todas las variantes
+            let allImgs = [];
+            if (p.variants) {
+                p.variants.forEach(v => { if (v.images) v.images.forEach(img => { if (img && !allImgs.includes(img)) allImgs.push(img); }); });
             }
+            const defaultImg = allImgs[0] || 'https://via.placeholder.com/300';
+            const imgsJson = JSON.stringify(allImgs).replace(/"/g, '&quot;');
 
             // Precio con descuento
             let priceHTML = '';
+            let ppoPrice = '';
+            let ppoOld = '';
+            let ppoBadge = '';
             if (p.priceOld && p.priceOld > p.price) {
                 const pct = Math.round((1 - p.price / p.priceOld) * 100);
                 priceHTML = `
@@ -968,18 +986,35 @@
                         <span class="discount-badge">-${pct}%</span>
                     </div>
                     <div class="price-sale">${formatCOP(p.price)}</div>`;
+                ppoPrice = formatCOP(p.price);
+                ppoOld   = formatCOP(p.priceOld);
+                ppoBadge = `<span class="ppo-badge">-${pct}%</span>`;
             } else {
                 priceHTML = `<div class="price-normal">${formatCOP(p.price)}</div>`;
+                ppoPrice = formatCOP(p.price);
             }
 
             const featuredBadge = p.featured ? `<span class="featured-ribbon">⭐ Destacado</span>` : '';
+            const cardId = 'card-img-' + p.id;
 
             return `
-                <div class="product-item-card" onclick="viewProductDetails('${p.id}')">
+                <div class="product-item-card"
+                    onclick="viewProductDetails('${p.id}')"
+                    onmouseenter="startImgCycle('${cardId}', ${imgsJson})"
+                    onmouseleave="stopImgCycle('${cardId}', '${defaultImg.replace(/'/g,"\\'")}')">
                     <div class="product-image-frame">
                         ${featuredBadge}
                         <span class="stock-tag ${isOut ? 'out-of-stock' : ''}">${isOut ? 'AGOTADO' : 'Stock: ' + p.stock}</span>
-                        <img src="${defaultImg}" alt="${p.title}">
+                        <img id="${cardId}" src="${defaultImg}" alt="${p.title}">
+                        <div class="product-price-overlay">
+                            <span class="ppo-brand">${p.brand} • ${p.gender}</span>
+                            <span class="ppo-title">${p.title}</span>
+                            <div class="ppo-price-row">
+                                <span class="ppo-price-sale">${ppoPrice}</span>
+                                ${ppoOld ? `<span class="ppo-price-old">${ppoOld}</span>` : ''}
+                                ${ppoBadge}
+                            </div>
+                        </div>
                     </div>
                     <div class="product-details-frame">
                         <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">${p.brand} • ${p.gender}</span>
@@ -988,6 +1023,26 @@
                     </div>
                 </div>
             `;
+        }
+
+        // ── CICLO DE IMÁGENES EN HOVER ──
+        const _imgCycleTimers = {};
+        function startImgCycle(imgId, imgs) {
+            if (!imgs || imgs.length < 2) return;
+            let idx = 0;
+            const el = document.getElementById(imgId);
+            if (!el) return;
+            _imgCycleTimers[imgId] = setInterval(() => {
+                idx = (idx + 1) % imgs.length;
+                el.style.opacity = '0';
+                setTimeout(() => { el.src = imgs[idx]; el.style.opacity = '1'; }, 150);
+            }, 900);
+            el.style.transition = 'opacity 0.15s ease';
+        }
+        function stopImgCycle(imgId, defaultImg) {
+            if (_imgCycleTimers[imgId]) { clearInterval(_imgCycleTimers[imgId]); delete _imgCycleTimers[imgId]; }
+            const el = document.getElementById(imgId);
+            if (el) { el.style.opacity = '0'; setTimeout(() => { el.src = defaultImg; el.style.opacity = '1'; }, 150); }
         }
 
         function engineFilter() {
