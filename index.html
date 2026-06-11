@@ -191,20 +191,31 @@
         .mobile-bottom-nav li span.nav-icon { font-size: 20px; }
         .mobile-bottom-nav li.active-nav { color: var(--accent-dark); }
 
+        /* Nav inferior y ajustes SOLO en móvil táctil */
+        @media (max-width: 768px) and (pointer: coarse) {
+            .navigation-menu { display: none; }
+            .mobile-bottom-nav { display: block; }
+            .spa-view { margin: 20px auto 120px; padding: 0 14px; }
+        }
+
+        /* Pantallas pequeñas de escritorio (laptop/tablet con mouse) */
+        @media (max-width: 768px) and (pointer: fine) {
+            .navigation-menu { display: none; }
+            .mobile-bottom-nav { display: none; }
+            .spa-view { margin: 20px auto 40px; padding: 0 14px; }
+        }
+        .mobile-bottom-nav li span.nav-icon { font-size: 20px; }
+        .mobile-bottom-nav li.active-nav { color: var(--accent-dark); }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 768px) {
 
-            /* Ocultar search en header, mostrar nav inferior */
+            /* Ocultar search en header */
             .navigation-menu { display: none; }
             .search-input-field { width: 140px; font-size: 13px; }
             .search-input-field:focus { width: 160px; }
             .header-container { padding: 12px 16px; }
             .brand-logo { font-size: 20px; }
-
-            .mobile-bottom-nav { display: block; }
-
-            /* Ajustar vistas para que no queden tapadas por el nav inferior */
-            .spa-view { margin: 20px auto 120px; padding: 0 14px; }
 
             /* Hero más compacto */
             .hero-banner { height: auto; min-height: 200px; padding: 24px 20px; background: linear-gradient(180deg, #ffffff 50%, transparent), url('https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80') center/cover; margin-bottom: 24px; }
