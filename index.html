@@ -988,18 +988,22 @@
             let itemsToDisplay = [...dbData.products];
 
             if (activeHomeFilter === 'all') {
-                // Solo destacados en inicio; si no hay ninguno, mostrar todos
-                const featured = itemsToDisplay.filter(p => p.featured);
-                itemsToDisplay = featured.length > 0 ? featured : itemsToDisplay;
-            } else if (activeHomeFilter === 'hombre') {
-                itemsToDisplay = itemsToDisplay.filter(p => p.gender === 'hombre');
-            } else if (activeHomeFilter === 'mujer') {
-                itemsToDisplay = itemsToDisplay.filter(p => p.gender === 'mujer');
+                // Mostrar todos los productos
+                // (los destacados aparecen primero)
+                const featured    = itemsToDisplay.filter(p => p.featured);
+                const notFeatured = itemsToDisplay.filter(p => !p.featured);
+                itemsToDisplay = [...featured, ...notFeatured];
             } else if (activeHomeFilter === 'recientes') {
-                itemsToDisplay = itemsToDisplay.slice(-4);
+                itemsToDisplay = [...itemsToDisplay].slice(-8).reverse();
+            } else {
+                // Filtrar por género dinámicamente (hombre, mujer, niño, etc.)
+                itemsToDisplay = itemsToDisplay.filter(p => p.gender === activeHomeFilter);
             }
 
-            itemsToDisplay = [...itemsToDisplay].reverse();
+            if (activeHomeFilter !== 'recientes') {
+                itemsToDisplay = [...itemsToDisplay].reverse();
+            }
+
             if (itemsToDisplay.length === 0) {
                 container.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No hay referencias disponibles.</p>`;
                 return;
