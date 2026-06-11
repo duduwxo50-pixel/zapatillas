@@ -930,7 +930,9 @@
             try {
                 const response = await fetch(`${API_URL}?action=readAll`);
                 dbData = await response.json();
+                // Re-renderizar con el filtro que esté activo en ese momento
                 renderHome();
+                renderCatalog();
                 buildBrandFilters();
                 updateCartBadge();
                 if(isAdminLoggedIn) renderAdminDashboard();
@@ -993,7 +995,7 @@
             let itemsToDisplay = [...dbData.products];
 
             if (activeHomeFilter === 'all') {
-                // Destacados primero, luego el resto (más recientes al frente)
+                // Mostrar TODOS — destacados primero, luego el resto, ambos más recientes al frente
                 const featured    = itemsToDisplay.filter(p => p.featured).reverse();
                 const notFeatured = itemsToDisplay.filter(p => !p.featured).reverse();
                 itemsToDisplay = [...featured, ...notFeatured];
@@ -2616,6 +2618,7 @@
                             <option value="all"      ${cat.value==='all'      ?'selected':''}>Todo el stock</option>
                             <option value="hombre"   ${cat.value==='hombre'   ?'selected':''}>Hombre</option>
                             <option value="mujer"    ${cat.value==='mujer'    ?'selected':''}>Mujer</option>
+                            <option value="niño"     ${cat.value==='niño'||cat.value==='nino'?'selected':''}>Niño</option>
                             <option value="recientes"${cat.value==='recientes'?'selected':''}>Recientes</option>
                         </select>
                     </div>
@@ -2649,7 +2652,8 @@
         function selectQuickFilterFromPill(btn, value) {
             document.querySelectorAll('#pills-dynamic-container .filter-pill-btn').forEach(b => b.classList.remove('active-pill'));
             btn.classList.add('active-pill');
-            selectQuickFilter(value);
+            activeHomeFilter = value;
+            renderHome();
         }
 
         // ── Barra de aviso ──
