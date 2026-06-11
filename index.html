@@ -21,13 +21,13 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-        body { background-color: var(--bg-light); color: var(--text-main); line-height: 1.5; }
+        body { background-color: var(--bg-light); color: var(--text-main); line-height: 1.5; overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
 
         @keyframes slideUpModal { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         .top-notice-bar { background-color: var(--accent-dark); color: #ffffff; text-align: center; padding: 10px; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
         header { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; }
-        .header-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 15px 24px; }
+        .header-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 15px clamp(14px, 3vw, 40px); }
         .brand-logo { font-size: 24px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
         .brand-logo img { height: 38px; width: 38px; object-fit: contain; border-radius: 6px; }
         
@@ -40,7 +40,7 @@
         .cart-icon-wrapper { cursor: pointer; display: flex; align-items: center; gap: 6px; background: #ffffff; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); font-size: 14px; font-weight: 600; }
         .cart-badge-count { background-color: var(--accent-dark); color: #ffffff; border-radius: 50%; min-width: 18px; height: 18px; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
 
-        .spa-view { display: none; max-width: 1400px; margin: 40px auto; padding: 0 24px; }
+        .spa-view { display: none; max-width: 1400px; width: 100%; margin: 40px auto; padding: 0 clamp(14px, 3vw, 40px); }
         .spa-view.active-view { display: block; }
 
         .hero-banner { background: linear-gradient(90deg, #ffffff 40%, transparent), url('https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80') center/cover; height: 400px; display: flex; align-items: center; padding: 40px; border-radius: 12px; margin-bottom: 40px; border: 1px solid var(--border-color); }
@@ -56,7 +56,7 @@
         .btn-action.danger { background-color: var(--danger-color); }
         .btn-action.secondary { background: transparent; color: var(--accent-dark); border: 1px solid var(--accent-dark); }
 
-        .featured-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        .featured-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 20px; }
         .product-item-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; position: relative; transition: transform 0.25s ease, box-shadow 0.25s ease; }
         .product-item-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.13); }
         .product-image-frame { background-color: #f1f5f9; aspect-ratio: 4 / 3; overflow: hidden; position: relative; }
@@ -1142,6 +1142,14 @@
                             }
                             <div style="margin-bottom:30px; font-size:15px; color:#475569; white-space: pre-wrap;">${p.desc}</div>
                             
+                            <div style="margin-bottom:20px;">
+                                ${p.sizes && p.sizes.length ? `
+                                <p style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Tallas disponibles:</p>
+                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+                                    ${p.sizes.map(s=>`<span style="padding:6px 13px;border:1.5px solid var(--border-color);border-radius:6px;font-size:13px;font-weight:700;">${s}</span>`).join('')}
+                                </div>` : ''}
+                            </div>
+
                             <div style="display:flex; gap:12px;">
                                 ${p.stock > 0 ? 
                                     `<button class="btn-action" style="flex:1; padding:14px;" onclick="addToBag('${p.id}')">Añadir a la Bolsa</button>
@@ -1197,27 +1205,129 @@
             const p = dbData.products.find(prod => prod.id === id);
             if (!p) return;
 
+            // Si el producto tiene tallas, mostrar modal de selección
+            if (p.sizes && p.sizes.length > 0) {
+                openSizePickerModal(p);
+            } else {
+                // Sin tallas configuradas: agregar directo
+                _commitAddToBag(p, null);
+            }
+        }
+
+        function openSizePickerModal(p, onConfirm) {
+            // Quitar modal previo si existe
+            const prev = document.getElementById('size-picker-overlay');
+            if (prev) prev.remove();
+
+            const img = p.variants && p.variants[0] && p.variants[0].images[0] ? p.variants[0].images[0] : '';
+
+            const overlay = document.createElement('div');
+            overlay.id = 'size-picker-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(4px);';
+
+            overlay.innerHTML = `
+                <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:24px 24px 32px;box-shadow:0 -8px 40px rgba(0,0,0,.2);animation:slideUpModal .3s ease;">
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+                        ${img ? `<img src="${img}" style="width:64px;height:64px;object-fit:cover;border-radius:10px;border:1px solid var(--border-color);">` : ''}
+                        <div style="flex:1;min-width:0;">
+                            <p style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">${p.brand}</p>
+                            <p style="font-size:15px;font-weight:800;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.title}</p>
+                            <p style="font-size:16px;font-weight:900;color:var(--accent-dark);margin-top:2px;">${formatCOP(p.price)}</p>
+                        </div>
+                        <button id="sp-close" style="background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;">×</button>
+                    </div>
+
+                    <p style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">Selecciona tu talla:</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;" id="sp-sizes-grid">
+                        ${p.sizes.map(s => `
+                            <button class="sp-size-btn" data-size="${s}"
+                                style="padding:10px 16px;border:2px solid var(--border-color);background:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;min-width:52px;">
+                                ${s}
+                            </button>`).join('')}
+                    </div>
+
+                    <button id="sp-confirm-btn" disabled
+                        style="width:100%;padding:15px;background:#94a3b8;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:not-allowed;text-transform:uppercase;letter-spacing:.5px;transition:all .2s;">
+                        Elige una talla
+                    </button>
+                </div>`;
+
+            document.body.appendChild(overlay);
+
+            let selectedSize = null;
+
+            // Lógica de selección de talla
+            overlay.querySelectorAll('.sp-size-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    overlay.querySelectorAll('.sp-size-btn').forEach(b => {
+                        b.style.background = '#fff';
+                        b.style.borderColor = 'var(--border-color)';
+                        b.style.color = 'var(--text-main)';
+                    });
+                    btn.style.background = 'var(--accent-dark)';
+                    btn.style.borderColor = 'var(--accent-dark)';
+                    btn.style.color = '#fff';
+                    selectedSize = btn.getAttribute('data-size');
+
+                    const confirmBtn = overlay.querySelector('#sp-confirm-btn');
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.background = 'var(--accent-dark)';
+                    confirmBtn.style.cursor = 'pointer';
+                    confirmBtn.textContent = `Añadir talla ${selectedSize} a la bolsa`;
+                });
+            });
+
+            overlay.querySelector('#sp-confirm-btn').addEventListener('click', () => {
+                if (!selectedSize) return;
+                if (typeof onConfirm === 'function') {
+                    onConfirm(selectedSize);
+                } else {
+                    _commitAddToBag(p, selectedSize);
+                    const badge = document.getElementById('global-cart-qty');
+                    if (badge) { badge.style.transform = 'scale(1.6)'; setTimeout(() => badge.style.transform = 'scale(1)', 300); }
+                }
+                overlay.remove();
+            });
+
+            overlay.querySelector('#sp-close').addEventListener('click', () => overlay.remove());
+            // Cerrar al tocar el fondo oscuro
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        }
+
+        function _commitAddToBag(p, size) {
             const img = p.variants && p.variants[0] && p.variants[0].images[0] ? p.variants[0].images[0] : 'https://via.placeholder.com/100';
-            const existing = cart.find(item => item.id === id);
+            const cartKey = p.id + (size ? '__' + size : '');
+            const existing = cart.find(item => item.cartKey === cartKey);
 
             if (existing) {
-                if(existing.quantity < p.stock) existing.quantity++;
+                if (existing.quantity < p.stock) existing.quantity++;
             } else {
-                cart.push({ id: p.id, title: p.title, brand: p.brand, price: p.price, quantity: 1, image: img });
+                cart.push({ cartKey, id: p.id, title: p.title, brand: p.brand, price: p.price, quantity: 1, image: img, size: size });
             }
             updateCartBadge();
         }
 
-        function buyDirectWhatsApp(id) {
+        function buyDirectWhatsApp(id, size) {
             const p = dbData.products.find(prod => prod.id === id);
             if (!p) return;
-            
+
+            if (p.sizes && p.sizes.length > 0 && !size) {
+                // Reusar el modal de talla, luego abrir WhatsApp
+                openSizePickerModal(p, selectedSize => {
+                    _sendWhatsApp(p, selectedSize);
+                });
+                return;
+            }
+            _sendWhatsApp(p, size);
+        }
+
+        function _sendWhatsApp(p, size) {
             let msg = `*STIVZAPAT - INTERÉS DE COMPRA*\n\n`;
             msg += `👟 *Modelo:* ${p.title}\n`;
             msg += `🏷️ *Marca:* ${p.brand.toUpperCase()}\n`;
+            if (size) msg += `📏 *Talla:* ${size}\n`;
             msg += `💰 *Precio:* ${formatCOP(p.price)}\n\n`;
             msg += `Me gustaría consultar la disponibilidad de este calzado para coordinar la compra.`;
-
             window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
         }
 
@@ -1257,8 +1367,9 @@
                         <div style="flex-grow:1;">
                             <h4 style="font-size:16px;">${item.title}</h4>
                             <p style="font-size:12px; color:var(--text-muted); text-transform:uppercase;">${item.brand}</p>
-                            <p style="font-size:13px; font-weight:700; margin-top:4px;">Cantidad: ${item.quantity} par(es)</p>
-                            <button onclick="removeFromBag('${item.id}')" style="background:none; border:none; color:var(--danger-color); font-size:12px; cursor:pointer; text-decoration:underline; margin-top:6px;">Eliminar</button>
+                            ${item.size ? `<p style="font-size:13px; font-weight:700; color:var(--accent-dark); margin-top:3px;">Talla: ${item.size}</p>` : ''}
+                            <p style="font-size:13px; font-weight:700; margin-top:2px;">Cantidad: ${item.quantity} par(es)</p>
+                            <button onclick="removeFromBag('${item.cartKey || item.id}')" style="background:none; border:none; color:var(--danger-color); font-size:12px; cursor:pointer; text-decoration:underline; margin-top:6px;">Eliminar</button>
                         </div>
                         <div style="font-weight:700;">${formatCOP(item.price * item.quantity)}</div>
                     </div>
@@ -1269,8 +1380,8 @@
             document.getElementById('summary-total').innerText = formatCOP(total);
         }
 
-        function removeFromBag(id) {
-            cart = cart.filter(item => item.id !== id);
+        function removeFromBag(key) {
+            cart = cart.filter(item => (item.cartKey || item.id) !== key);
             updateCartBadge();
             renderCart();
         }
