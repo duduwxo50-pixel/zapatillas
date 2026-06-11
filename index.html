@@ -87,13 +87,15 @@
         .filter-group h4 { margin-bottom: 10px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
         .filter-group label { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 14px; cursor: pointer; }
 
-        .product-detail-layout { display: grid; grid-template-columns: 1fr 450px; gap: 40px; }
-        .main-product-preview { width: 100%; aspect-ratio: 1/1; background: #f1f5f9; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); position: relative; }
-        .main-product-preview img { width: 100%; height: 100%; object-fit: cover; }
-        .thumbnails-strip { display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .thumbnail-card { width: 60px; height: 60px; border-radius: 4px; overflow: hidden; border: 2px solid transparent; cursor: pointer; background: #f1f5f9; flex-shrink: 0; }
+        .product-detail-layout { display: grid; grid-template-columns: minmax(0, 480px) 1fr; gap: 40px; align-items: start; }
+        .product-detail-img-col { display: flex; flex-direction: column; max-width: 480px; }
+        .main-product-preview { width: 100%; aspect-ratio: 4/3; background: #f1f5f9; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); position: relative; }
+        .main-product-preview img { width: 100%; height: 100%; object-fit: contain; padding: 10px; transition: opacity 0.2s; }
+        .thumbnails-strip { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
+        .thumbnail-card { width: 64px; height: 64px; border-radius: 6px; overflow: hidden; border: 2px solid transparent; cursor: pointer; background: #f1f5f9; flex-shrink: 0; transition: border-color .15s; }
+        .thumbnail-card:hover { border-color: #94a3b8; }
         .thumbnail-card.active-thumb { border-color: var(--accent-dark); }
-        .thumbnail-card img { width: 100%; height: 100%; object-fit: cover; }
+        .thumbnail-card img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
 
         .color-selector-wrapper { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
         .color-chip-btn { padding: 8px 16px; border: 1px solid var(--border-color); background: white; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
@@ -239,8 +241,9 @@
 
             /* Detalle del producto: apilado */
             .product-detail-layout { grid-template-columns: 1fr; gap: 20px; }
+            .product-detail-img-col { max-width: 100%; }
             .product-detail-layout h1 { font-size: 22px; }
-            .thumbnail-card { width: 48px; height: 48px; }
+            .thumbnail-card { width: 52px; height: 52px; }
 
             /* Carrito: apilado */
             .cart-layout { grid-template-columns: 1fr; gap: 20px; }
@@ -839,10 +842,12 @@
             if (target) target.classList.add('active-view');
             window.scrollTo(0, 0);
 
-            // Ocultar nav móvil en admin/auth
+            // Mostrar nav móvil SOLO en dispositivos táctiles y vistas normales
             const mobileNav = document.getElementById('mobile-bottom-nav');
             if (mobileNav) {
-                mobileNav.style.display = (viewId === 'admin-view' || viewId === 'auth-gate-view') ? 'none' : 'block';
+                const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+                const hideForView = (viewId === 'admin-view' || viewId === 'auth-gate-view');
+                mobileNav.style.display = (isTouchDevice && !hideForView) ? 'block' : 'none';
             }
 
             if (viewId === 'home-view') renderHome();
@@ -1128,7 +1133,7 @@
 
                 container.innerHTML = `
                     <div class="product-detail-layout">
-                        <div>
+                        <div class="product-detail-img-col">
                             <div class="main-product-preview">
                                 <img id="detail-master-img" src="${validImages[0]}">
                             </div>
