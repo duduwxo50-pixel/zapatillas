@@ -509,8 +509,34 @@
                                 </select>
                                 <button type="button" onclick="openGenderManager()" title="Personalizar líneas/géneros" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:15px; flex-shrink:0; height:42px;">⚙️</button>
                             </div>
-                            <input type="number" id="form-p-price" placeholder="Precio de Venta COP" required>
-                            <input type="number" id="form-p-price-old" placeholder="Precio anterior (opcional, para descuento)">
+                            <!-- Precio + Descuento interactivo -->
+                            <div style="grid-column:1/-1; background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px;">
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; align-items:end;">
+                                    <div>
+                                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Precio de Venta</label>
+                                        <input type="number" id="form-p-price" placeholder="Ej: 199000" required
+                                            style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"
+                                            oninput="onPriceInput()">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Precio Anterior (sin dcto)</label>
+                                        <input type="number" id="form-p-price-old" placeholder="Ej: 499000 (opcional)"
+                                            style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"
+                                            oninput="onPriceOldInput()">
+                                    </div>
+                                    <div>
+                                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">% Descuento</label>
+                                        <div style="display:flex;gap:6px;align-items:center;">
+                                            <input type="number" id="form-p-discount" placeholder="Ej: 20" min="0" max="99"
+                                                style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"
+                                                oninput="onDiscountInput()">
+                                            <button type="button" title="Quitar descuento" onclick="clearDiscount()"
+                                                style="flex-shrink:0;background:#fee2e2;border:none;border-radius:6px;padding:10px 10px;cursor:pointer;font-size:14px;color:#dc2626;font-weight:700;">✕</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="discount-preview" style="margin-top:8px;font-size:12px;font-weight:700;color:#dc2626;display:none;"></div>
+                            </div>
                             <input type="number" id="form-p-cost" placeholder="Costo de Fábrica COP" required>
                             <input type="number" id="form-p-stock" placeholder="Cantidad Inicial Stock" required>
                             <select id="form-p-provider" required>
@@ -1465,6 +1491,59 @@
             `).join('');
         }
 
+        // ── DESCUENTO INTERACTIVO ─────────────────────────────
+        function onPriceInput() {
+            const price    = parseFloat(document.getElementById('form-p-price').value) || 0;
+            const priceOld = parseFloat(document.getElementById('form-p-price-old').value) || 0;
+            if (priceOld > 0 && price > 0) {
+                const pct = Math.round((1 - price / priceOld) * 100);
+                document.getElementById('form-p-discount').value = pct > 0 ? pct : '';
+            }
+            updateDiscountPreview();
+        }
+        function onPriceOldInput() {
+            const price    = parseFloat(document.getElementById('form-p-price').value) || 0;
+            const priceOld = parseFloat(document.getElementById('form-p-price-old').value) || 0;
+            if (priceOld > 0 && price > 0) {
+                const pct = Math.round((1 - price / priceOld) * 100);
+                document.getElementById('form-p-discount').value = pct > 0 ? pct : '';
+            }
+            updateDiscountPreview();
+        }
+        function onDiscountInput() {
+            const pct      = parseFloat(document.getElementById('form-p-discount').value) || 0;
+            const priceOld = parseFloat(document.getElementById('form-p-price-old').value) || 0;
+            const price    = parseFloat(document.getElementById('form-p-price').value) || 0;
+            if (pct > 0 && priceOld > 0) {
+                // Descuento sobre precio anterior → calcula precio final
+                const newPrice = Math.round(priceOld * (1 - pct / 100));
+                document.getElementById('form-p-price').value = newPrice;
+            } else if (pct > 0 && price > 0) {
+                // No hay precio anterior → calcula precio anterior desde precio actual
+                const newOld = Math.round(price / (1 - pct / 100));
+                document.getElementById('form-p-price-old').value = newOld;
+            }
+            updateDiscountPreview();
+        }
+        function clearDiscount() {
+            document.getElementById('form-p-price-old').value = '';
+            document.getElementById('form-p-discount').value  = '';
+            document.getElementById('discount-preview').style.display = 'none';
+        }
+        function updateDiscountPreview() {
+            const price    = parseFloat(document.getElementById('form-p-price').value) || 0;
+            const priceOld = parseFloat(document.getElementById('form-p-price-old').value) || 0;
+            const preview  = document.getElementById('discount-preview');
+            if (priceOld > price && price > 0) {
+                const pct = Math.round((1 - price / priceOld) * 100);
+                preview.style.display = 'block';
+                preview.innerHTML = `🏷️ El cliente ve: <span style="text-decoration:line-through;color:#94a3b8;">${formatCOP(priceOld)}</span> → <strong style="color:#dc2626;">${formatCOP(price)}</strong> <span style="background:#dc2626;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px;">-${pct}%</span>`;
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+        // ─────────────────────────────────────────────────────
+
         async function saveProductHandler(e) {
             e.preventDefault();
             const id = document.getElementById('form-p-id').value || Date.now().toString();
@@ -1514,6 +1593,14 @@
             document.getElementById('form-p-gender').value    = p.gender;
             document.getElementById('form-p-price').value     = p.price;
             document.getElementById('form-p-price-old').value = p.priceOld || '';
+            // Calcular % de descuento si aplica
+            if (p.priceOld && p.priceOld > p.price) {
+                const pct = Math.round((1 - p.price / p.priceOld) * 100);
+                document.getElementById('form-p-discount').value = pct;
+            } else {
+                document.getElementById('form-p-discount').value = '';
+            }
+            updateDiscountPreview();
             document.getElementById('form-p-cost').value      = p.cost;
             document.getElementById('form-p-stock').value     = p.stock;
             document.getElementById('form-p-provider').value  = p.provider;
@@ -1539,7 +1626,9 @@
         function resetProductForm() {
             document.getElementById('form-p-id').value = "";
             document.getElementById('product-admin-form').reset();
-            document.getElementById('form-p-price-old').value = '';
+            document.getElementById("form-p-price-old").value = "";
+            if(document.getElementById("form-p-discount")) document.getElementById("form-p-discount").value = "";
+            if(document.getElementById("discount-preview")) document.getElementById("discount-preview").style.display = "none";
             document.getElementById('form-p-featured').checked = false;
             renderAdminSizesChips([]);
             initVariantsForNew();
