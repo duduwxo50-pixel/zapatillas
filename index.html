@@ -499,8 +499,10 @@
                     <form id="product-admin-form" onsubmit="saveProductHandler(event)">
                         <input type="hidden" id="form-p-id">
                         <div class="admin-form">
-                            <input type="text" id="form-p-title" placeholder="Nombre de la Referencia" required>
-                            <input type="text" id="form-p-brand" placeholder="Marca" required>
+                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Nombre del Producto</label>
+                            <input type="text" id="form-p-title" placeholder="Ej: Nike Quest 6" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Marca</label>
+                            <input type="text" id="form-p-brand" placeholder="Ej: Nike" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
                             <div style="display:flex; gap:6px; align-items:center; grid-column:auto;">
                                 <select id="form-p-gender" required style="flex:1; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; outline:none; min-width:0;">
                                     <option value="">-- Línea / Género --</option>
@@ -537,11 +539,14 @@
                                 </div>
                                 <div id="discount-preview" style="margin-top:8px;font-size:12px;font-weight:700;color:#dc2626;display:none;"></div>
                             </div>
-                            <input type="number" id="form-p-cost" placeholder="Costo de Fábrica COP" required>
-                            <input type="number" id="form-p-stock" placeholder="Cantidad Inicial Stock" required>
-                            <select id="form-p-provider" required>
-                                <option value="">-- Asociar Proveedor --</option>
-                            </select>
+                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Costo de Fábrica (COP)</label>
+                            <input type="number" id="form-p-cost" placeholder="Ej: 150000" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Stock (unidades)</label>
+                            <input type="number" id="form-p-stock" placeholder="Ej: 10" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
+                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Proveedor</label>
+                            <select id="form-p-provider" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;">
+                                <option value="">-- Seleccionar Proveedor --</option>
+                            </select></div>
                         </div>
                         <div style="display:flex; gap:20px; align-items:center; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid var(--border-color);">
                             <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer;">
@@ -988,19 +993,16 @@
             let itemsToDisplay = [...dbData.products];
 
             if (activeHomeFilter === 'all') {
-                // Mostrar todos los productos
-                // (los destacados aparecen primero)
+                // Destacados primero, luego el resto
                 const featured    = itemsToDisplay.filter(p => p.featured);
                 const notFeatured = itemsToDisplay.filter(p => !p.featured);
-                itemsToDisplay = [...featured, ...notFeatured];
+                itemsToDisplay = [...featured, ...notFeatured].reverse();
             } else if (activeHomeFilter === 'recientes') {
-                itemsToDisplay = [...itemsToDisplay].slice(-8).reverse();
+                itemsToDisplay = [...itemsToDisplay].reverse().slice(0, 8);
             } else {
-                // Filtrar por género dinámicamente (hombre, mujer, niño, etc.)
-                itemsToDisplay = itemsToDisplay.filter(p => p.gender === activeHomeFilter);
-            }
-
-            if (activeHomeFilter !== 'recientes') {
+                // Filtrar por género — normalizar acentos para comparar
+                const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+                itemsToDisplay = itemsToDisplay.filter(p => norm(p.gender) === norm(activeHomeFilter));
                 itemsToDisplay = [...itemsToDisplay].reverse();
             }
 
@@ -2538,10 +2540,11 @@
         // ══════════════════════════════════════════════════════
 
         const DEFAULT_CATEGORIES = [
-            { emoji:'👟', label:'Todo el Stock',         value:'all' },
-            { emoji:'🔥', label:'Línea Masculina',       value:'hombre' },
-            { emoji:'✨', label:'Línea Femenina',        value:'mujer' },
+            { emoji:'👟', label:'Todo el Stock',         value:'all'       },
+            { emoji:'🔥', label:'Línea Masculina',       value:'hombre'    },
+            { emoji:'✨', label:'Línea Femenina',        value:'mujer'     },
             { emoji:'⚡', label:'Lanzamientos Recientes',value:'recientes' },
+            { emoji:'👦', label:'Línea Niños',           value:'niño'      },
         ];
 
         function getCategories() {
@@ -2973,6 +2976,18 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Limpiar categorías viejas del localStorage para forzar defaults actualizados
+            try {
+                const saved = JSON.parse(localStorage.getItem('store_categories'));
+                if (saved) {
+                    // Si tiene "LÍNEA NINOS" con valor incorrecto, resetear
+                    const hasWrongNino = saved.some(c =>
+                        c.label && c.label.toUpperCase().includes('NI') &&
+                        c.value !== 'niño' && c.value !== 'nino'
+                    );
+                    if (hasWrongNino) localStorage.removeItem('store_categories');
+                }
+            } catch(e) {}
             initVariantsForNew();
             populateGenderSelect();
             syncWithGoogleSheets();
