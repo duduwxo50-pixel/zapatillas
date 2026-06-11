@@ -251,8 +251,24 @@
 </head>
 <body>
 
-    <div id="loading-spinner" class="loading-overlay">Cargando productos de la base de datos...</div>
-    <div class="top-notice-bar" id="top-notice-bar">STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA</div>
+    <div id="top-notice-bar-wrapper" style="background-color:#020617; color:#fff; overflow:hidden; position:relative; display:flex; align-items:center;">
+        <div id="top-notice-bar" style="display:flex; white-space:nowrap; animation:marqueeScroll 20s linear infinite; padding:10px 0; font-size:11px; font-weight:700; letter-spacing:1px;">
+            <span id="notice-bar-content">STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA &nbsp;&nbsp;•&nbsp;&nbsp; STIVZAPAT • SISTEMA INTEGRADO DE GESTIÓN AUTOMÁTICA &nbsp;&nbsp;•&nbsp;&nbsp;</span>
+        </div>
+        <!-- Controles flotantes de la barra -->
+        <div id="notice-bar-controls" style="position:absolute; right:0; top:0; bottom:0; display:flex; align-items:center; gap:4px; padding:0 8px; background:linear-gradient(90deg,transparent,#020617 30%); z-index:10;">
+            <button id="btn-bar-slower" onclick="changeBarSpeed(1)" title="Más lento" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">🐢</button>
+            <button id="btn-bar-pause" onclick="toggleBarPause()" title="Pausar/Reanudar" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">⏸</button>
+            <button id="btn-bar-faster" onclick="changeBarSpeed(-1)" title="Más rápido" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center;">🐇</button>
+            <button onclick="toggleBarVisibility()" title="Ocultar barra" style="background:rgba(255,255,255,0.15); border:none; color:#fff; border-radius:4px; width:22px; height:22px; cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center;">✕</button>
+        </div>
+    </div>
+    <!-- Botón para mostrar la barra cuando está oculta -->
+    <div id="notice-bar-show-btn" onclick="toggleBarVisibility()" style="display:none; background:#020617; color:#fff; text-align:center; padding:3px; font-size:10px; font-weight:700; cursor:pointer; letter-spacing:0.5px;">▼ Mostrar barra de aviso</div>
+    <style>
+        @keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        #top-notice-bar-wrapper.paused #top-notice-bar { animation-play-state: paused; }
+    </style>
 
     <header>
         <div class="header-container">
@@ -453,11 +469,14 @@
                         <div class="admin-form">
                             <input type="text" id="form-p-title" placeholder="Nombre de la Referencia" required>
                             <input type="text" id="form-p-brand" placeholder="Marca" required>
-                            <select id="form-p-gender" required>
-                                <option value="">-- Línea / Género --</option>
-                                <option value="hombre">Hombre</option>
-                                <option value="mujer">Mujer</option>
-                            </select>
+                            <div style="position:relative; display:flex; gap:6px; align-items:center;">
+                                <select id="form-p-gender" required style="flex:1; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; outline:none;">
+                                    <option value="">-- Línea / Género --</option>
+                                    <option value="hombre">Hombre</option>
+                                    <option value="mujer">Mujer</option>
+                                </select>
+                                <button type="button" onclick="openGenderManager()" title="Personalizar opciones" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:14px; flex-shrink:0;" title="Gestionar líneas">⚙️</button>
+                            </div>
                             <input type="number" id="form-p-price" placeholder="Precio de Venta COP" required>
                             <input type="number" id="form-p-price-old" placeholder="Precio anterior (opcional, para descuento)">
                             <input type="number" id="form-p-cost" placeholder="Costo de Fábrica COP" required>
@@ -2028,7 +2047,21 @@
                         </select>
                     </div>
                     <div class="pb-field"><label>URL del video (pega el enlace completo)</label><input data-field="url" value="${escHtml(block.data.url||'')}" placeholder="https://www.youtube.com/watch?v=..."></div>
-                    <div class="pb-field"><label>Título opcional (aparece encima del video)</label><input data-field="titulo" value="${escHtml(block.data.titulo||'')}" placeholder="Ej: Nuestra nueva colección"></div>`;
+                    <div class="pb-field"><label>Título opcional (aparece encima del video)</label><input data-field="titulo" value="${escHtml(block.data.titulo||'')}" placeholder="Ej: Nuestra nueva colección"></div>
+                    <div class="pb-grid-2">
+                        <div class="pb-field"><label>🔁 Reproducción automática</label>
+                            <select data-field="autoplay">
+                                <option value="1" ${(block.data.autoplay==='1'||block.data.autoplay===undefined||block.data.autoplay==='')?'selected':''}>Sí, auto</option>
+                                <option value="0" ${block.data.autoplay==='0'?'selected':''}>No, esperar clic</option>
+                            </select>
+                        </div>
+                        <div class="pb-field"><label>🔊 Audio</label>
+                            <select data-field="muted">
+                                <option value="1" ${(block.data.muted==='1'||block.data.muted===undefined||block.data.muted==='')?'selected':''}>Sin sonido (muted)</option>
+                                <option value="0" ${block.data.muted==='0'?'selected':''}>Con sonido</option>
+                            </select>
+                        </div>
+                    </div>`;
             } else if (block.type === 'text') {
                 fields = `
                     <div class="pb-grid-2">
@@ -2117,6 +2150,8 @@
             if (block.type === 'video') {
                 let src = '';
                 const url = (d.url || '').trim();
+                const autoplay = d.autoplay !== '0';
+                const muted    = d.muted    !== '0';
                 if (!url) {
                     return `<div style="margin-bottom:24px;">
                         ${d.titulo ? `<h2 style="text-transform:uppercase; font-size:18px; margin-bottom:14px;">${d.titulo}</h2>` : ''}
@@ -2127,20 +2162,31 @@
                     </div>`;
                 }
                 if (d.tipo === 'youtube') {
-                    // Soporta: watch?v=, youtu.be/, embed/, shorts/
                     const match = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-                    src = match ? `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1` : '';
+                    if (match) {
+                        // autoplay + muted + sin branding YouTube + sin controles nativos de YT
+                        let ytParams = 'rel=0&modestbranding=1&showinfo=0&controls=1&iv_load_policy=3&disablekb=0&fs=1&color=white&playsinline=1';
+                        if (autoplay) ytParams += '&autoplay=1';
+                        if (muted)    ytParams += '&mute=1';
+                        src = `https://www.youtube.com/embed/${match[1]}?${ytParams}`;
+                    }
                 } else if (d.tipo === 'vimeo') {
                     const match = url.match(/vimeo\.com\/(\d+)/);
-                    src = match ? `https://player.vimeo.com/video/${match[1]}` : '';
+                    if (match) {
+                        let vimeoParams = 'badge=0&autopause=0&title=0&byline=0&portrait=0';
+                        if (autoplay) vimeoParams += '&autoplay=1';
+                        if (muted)    vimeoParams += '&muted=1';
+                        src = `https://player.vimeo.com/video/${match[1]}?${vimeoParams}`;
+                    }
                 } else {
                     src = url;
                 }
+                const directAttrs = `${autoplay ? 'autoplay' : ''} ${muted ? 'muted' : ''} loop playsinline controls`;
                 return `<div style="margin-bottom:24px;">
                     ${d.titulo ? `<h2 style="text-transform:uppercase; font-size:18px; margin-bottom:14px;">${d.titulo}</h2>` : ''}
                     <div class="store-video-block">
                         ${d.tipo === 'directo'
-                            ? `<video controls style="width:100%; height:100%; object-fit:cover; border-radius:10px;"><source src="${url}"></video>`
+                            ? `<video ${directAttrs} style="width:100%; height:100%; object-fit:cover; border-radius:10px;"><source src="${url}"></video>`
                             : src
                                 ? `<iframe src="${src}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="width:100%; height:100%; border:none; border-radius:10px;"></iframe>`
                                 : `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:8px;border-radius:10px;background:#1a1a1a;"><span style="font-size:32px;">⚠️</span><p style="color:#aaa;font-size:13px;">URL de video no válida. Revisala en el admin.</p></div>`}
@@ -2313,8 +2359,125 @@
             if (input && txt) input.value = txt;
         }
 
+        // ─────────────────────────────────────────────
+        // BARRA DE AVISO — CONTROLES
+        // ─────────────────────────────────────────────
+        let barSpeed = 20;
+        let barPaused = false;
+
+        function changeBarSpeed(delta) {
+            barSpeed = Math.min(60, Math.max(4, barSpeed + delta * 5));
+            const bar = document.getElementById('top-notice-bar');
+            if (bar) bar.style.animationDuration = barSpeed + 's';
+        }
+
+        function toggleBarPause() {
+            barPaused = !barPaused;
+            const wrapper = document.getElementById('top-notice-bar-wrapper');
+            const btn = document.getElementById('btn-bar-pause');
+            if (wrapper) wrapper.classList.toggle('paused', barPaused);
+            if (btn) btn.textContent = barPaused ? '▶' : '⏸';
+        }
+
+        function toggleBarVisibility() {
+            const wrapper = document.getElementById('top-notice-bar-wrapper');
+            const showBtn = document.getElementById('notice-bar-show-btn');
+            if (!wrapper || !showBtn) return;
+            const hidden = wrapper.style.display === 'none';
+            wrapper.style.display = hidden ? 'flex' : 'none';
+            showBtn.style.display = hidden ? 'none' : 'block';
+        }
+
+        // ─────────────────────────────────────────────
+        // LÍNEA / GÉNERO — GESTIÓN DINÁMICA
+        // ─────────────────────────────────────────────
+        const DEFAULT_GENDER_OPTIONS = [
+            { label: 'Hombre', value: 'hombre' },
+            { label: 'Mujer',  value: 'mujer'  }
+        ];
+
+        function getGenderOptions() {
+            try { return JSON.parse(localStorage.getItem('gender_options')) || DEFAULT_GENDER_OPTIONS; }
+            catch(e) { return DEFAULT_GENDER_OPTIONS; }
+        }
+
+        function saveGenderOptions(opts) {
+            localStorage.setItem('gender_options', JSON.stringify(opts));
+        }
+
+        function populateGenderSelect() {
+            const sel = document.getElementById('form-p-gender');
+            if (!sel) return;
+            const current = sel.value;
+            const opts = getGenderOptions();
+            sel.innerHTML = '<option value="">-- Línea / Género --</option>' +
+                opts.map(o => '<option value="' + o.value + '"' + (o.value === current ? ' selected' : '') + '>' + o.label + '</option>').join('');
+        }
+
+        function openGenderManager() {
+            const opts = getGenderOptions();
+            const overlay = document.createElement('div');
+            overlay.id = 'gender-manager-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+            overlay.innerHTML = '<div style="background:#fff;border-radius:12px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUpModal .3s ease;">'
+                + '<div style="padding:18px 22px 14px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;">'
+                + '<h3 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:-.2px;">Gestionar Líneas / Géneros</h3>'
+                + '<button onclick="closeGenderManager()" style="background:#f1f5f9;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;">✕</button>'
+                + '</div>'
+                + '<div style="padding:18px 22px;">'
+                + '<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Agrega, edita o elimina las opciones del selector Línea / Género.</p>'
+                + '<div id="gender-opts-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">'
+                + opts.map(function(o) { return '<div class="gender-opt-row" style="display:flex;gap:8px;align-items:center;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid var(--border-color);">'
+                    + '<input type="text" class="go-label" value="' + o.label + '" placeholder="Nombre visible" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
+                    + '<input type="text" class="go-value" value="' + o.value + '" placeholder="valor" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
+                    + '<button onclick="this.closest('.gender-opt-row').remove()" style="background:none;border:none;color:var(--danger-color);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;">×</button>'
+                    + '</div>'; }).join('')
+                + '</div>'
+                + '<button onclick="addGenderRow()" style="background:#f1f5f9;border:1px solid var(--border-color);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-bottom:14px;">+ Agregar opción</button>'
+                + '<div style="display:flex;gap:10px;justify-content:flex-end;">'
+                + '<button onclick="closeGenderManager()" style="background:transparent;color:var(--accent-dark);border:1px solid var(--accent-dark);padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>'
+                + '<button onclick="applyGenderOptions()" style="background:var(--accent-dark);color:#fff;border:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Guardar</button>'
+                + '</div></div></div>';
+            document.body.appendChild(overlay);
+        }
+
+        function addGenderRow() {
+            const list = document.getElementById('gender-opts-list');
+            if (!list) return;
+            const row = document.createElement('div');
+            row.className = 'gender-opt-row';
+            row.style.cssText = 'display:flex;gap:8px;align-items:center;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid var(--border-color);';
+            row.innerHTML = '<input type="text" class="go-label" placeholder="Nombre visible" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
+                + '<input type="text" class="go-value" placeholder="valor" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
+                + '<button onclick="this.closest('.gender-opt-row').remove()" style="background:none;border:none;color:var(--danger-color);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;">×</button>';
+            list.appendChild(row);
+            row.querySelector('.go-label').focus();
+        }
+
+        function applyGenderOptions() {
+            const rows = document.querySelectorAll('.gender-opt-row');
+            const opts = [];
+            rows.forEach(function(row) {
+                const label = row.querySelector('.go-label') ? row.querySelector('.go-label').value.trim() : '';
+                let value   = row.querySelector('.go-value') ? row.querySelector('.go-value').value.trim() : '';
+                if (!label) return;
+                if (!value) value = label.toLowerCase().replace(/\s+/g, '_');
+                opts.push({ label: label, value: value });
+            });
+            if (opts.length === 0) { alert('Debes tener al menos una opción.'); return; }
+            saveGenderOptions(opts);
+            populateGenderSelect();
+            closeGenderManager();
+        }
+
+        function closeGenderManager() {
+            var el = document.getElementById('gender-manager-overlay');
+            if (el) el.remove();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initVariantsForNew();
+            populateGenderSelect();
             syncWithGoogleSheets();
             applyBrandConfig();
             renderAdminPagos();
