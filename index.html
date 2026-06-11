@@ -469,13 +469,13 @@
                         <div class="admin-form">
                             <input type="text" id="form-p-title" placeholder="Nombre de la Referencia" required>
                             <input type="text" id="form-p-brand" placeholder="Marca" required>
-                            <div style="position:relative; display:flex; gap:6px; align-items:center;">
-                                <select id="form-p-gender" required style="flex:1; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; outline:none;">
+                            <div style="display:flex; gap:6px; align-items:center; grid-column:auto;">
+                                <select id="form-p-gender" required style="flex:1; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; outline:none; min-width:0;">
                                     <option value="">-- Línea / Género --</option>
                                     <option value="hombre">Hombre</option>
                                     <option value="mujer">Mujer</option>
                                 </select>
-                                <button type="button" onclick="openGenderManager()" title="Personalizar opciones" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:14px; flex-shrink:0;" title="Gestionar líneas">⚙️</button>
+                                <button type="button" onclick="openGenderManager()" title="Personalizar líneas/géneros" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:15px; flex-shrink:0; height:42px;">⚙️</button>
                             </div>
                             <input type="number" id="form-p-price" placeholder="Precio de Venta COP" required>
                             <input type="number" id="form-p-price-old" placeholder="Precio anterior (opcional, para descuento)">
@@ -2415,45 +2415,65 @@
         }
 
         function openGenderManager() {
-            const opts = getGenderOptions();
-            const overlay = document.createElement('div');
+            var opts = getGenderOptions();
+            var overlay = document.createElement('div');
             overlay.id = 'gender-manager-overlay';
             overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
-            overlay.innerHTML = '<div style="background:#fff;border-radius:12px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUpModal .3s ease;">'
-                + '<div style="padding:18px 22px 14px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;">'
-                + '<h3 style="font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:-.2px;">Gestionar Líneas / Géneros</h3>'
-                + '<button onclick="closeGenderManager()" style="background:#f1f5f9;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;">✕</button>'
+            var modal = document.createElement('div');
+            modal.style.cssText = 'background:#fff;border-radius:12px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUpModal .3s ease;';
+            modal.innerHTML = '<div style="padding:18px 22px 14px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;">'
+                + '<h3 style="font-size:16px;font-weight:800;text-transform:uppercase;">Gestionar Líneas / Géneros</h3>'
+                + '<button type="button" id="gm-close-btn" style="background:#f1f5f9;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;">✕</button>'
                 + '</div>'
                 + '<div style="padding:18px 22px;">'
                 + '<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Agrega, edita o elimina las opciones del selector Línea / Género.</p>'
-                + '<div id="gender-opts-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">'
-                + opts.map(function(o) { return '<div class="gender-opt-row" style="display:flex;gap:8px;align-items:center;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid var(--border-color);">'
-                    + '<input type="text" class="go-label" value="' + o.label + '" placeholder="Nombre visible" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
-                    + '<input type="text" class="go-value" value="' + o.value + '" placeholder="valor" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
-                    + '<button onclick="this.closest('.gender-opt-row').remove()" style="background:none;border:none;color:var(--danger-color);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;">×</button>'
-                    + '</div>'; }).join('')
-                + '</div>'
-                + '<button onclick="addGenderRow()" style="background:#f1f5f9;border:1px solid var(--border-color);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-bottom:14px;">+ Agregar opción</button>'
+                + '<div id="gender-opts-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>'
+                + '<button type="button" id="gm-add-btn" style="background:#f1f5f9;border:1px solid var(--border-color);padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-bottom:14px;">+ Agregar opción</button>'
                 + '<div style="display:flex;gap:10px;justify-content:flex-end;">'
-                + '<button onclick="closeGenderManager()" style="background:transparent;color:var(--accent-dark);border:1px solid var(--accent-dark);padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>'
-                + '<button onclick="applyGenderOptions()" style="background:var(--accent-dark);color:#fff;border:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Guardar</button>'
-                + '</div></div></div>';
+                + '<button type="button" id="gm-cancel-btn" style="background:transparent;color:var(--accent-dark);border:1px solid var(--accent-dark);padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>'
+                + '<button type="button" id="gm-save-btn" style="background:var(--accent-dark);color:#fff;border:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Guardar</button>'
+                + '</div></div>';
+            overlay.appendChild(modal);
             document.body.appendChild(overlay);
+
+            // Populate existing options
+            var list = overlay.querySelector('#gender-opts-list');
+            opts.forEach(function(o) { addGenderRowToList(list, o.label, o.value); });
+
+            // Wire up buttons
+            overlay.querySelector('#gm-close-btn').addEventListener('click', closeGenderManager);
+            overlay.querySelector('#gm-cancel-btn').addEventListener('click', closeGenderManager);
+            overlay.querySelector('#gm-add-btn').addEventListener('click', function(){ addGenderRow(); });
+            overlay.querySelector('#gm-save-btn').addEventListener('click', applyGenderOptions);
         }
 
-        function addGenderRow() {
-            const list = document.getElementById('gender-opts-list');
-            if (!list) return;
-            const row = document.createElement('div');
+        function addGenderRowToList(list, labelVal, valueVal) {
+            var row = document.createElement('div');
             row.className = 'gender-opt-row';
             row.style.cssText = 'display:flex;gap:8px;align-items:center;background:#f8fafc;padding:10px 12px;border-radius:6px;border:1px solid var(--border-color);';
-            row.innerHTML = '<input type="text" class="go-label" placeholder="Nombre visible" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
-                + '<input type="text" class="go-value" placeholder="valor" style="flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;">'
-                + '<button onclick="this.closest('.gender-opt-row').remove()" style="background:none;border:none;color:var(--danger-color);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;">×</button>';
+            var lbl = document.createElement('input');
+            lbl.type = 'text'; lbl.className = 'go-label'; lbl.placeholder = 'Nombre visible';
+            lbl.value = labelVal || '';
+            lbl.style.cssText = 'flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;';
+            var val = document.createElement('input');
+            val.type = 'text'; val.className = 'go-value'; val.placeholder = 'valor';
+            val.value = valueVal || '';
+            val.style.cssText = 'flex:1;padding:7px 10px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;outline:none;';
+            var del = document.createElement('button');
+            del.type = 'button'; del.textContent = '×';
+            del.style.cssText = 'background:none;border:none;color:var(--danger-color);font-size:20px;cursor:pointer;padding:2px 6px;line-height:1;';
+            del.addEventListener('click', function(){ row.remove(); });
+            row.appendChild(lbl); row.appendChild(val); row.appendChild(del);
             list.appendChild(row);
-            row.querySelector('.go-label').focus();
+            return row;
         }
 
+                function addGenderRow() {
+            var list = document.getElementById('gender-opts-list');
+            if (!list) return;
+            var row = addGenderRowToList(list, '', '');
+            row.querySelector('.go-label').focus();
+        }
         function applyGenderOptions() {
             const rows = document.querySelectorAll('.gender-opt-row');
             const opts = [];
