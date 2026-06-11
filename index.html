@@ -371,13 +371,16 @@
     </section>
 
     <section id="admin-view" class="spa-view">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h1 style="text-transform:uppercase;">Consola de Control Integral</h1>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:10px;">
+            <div>
+                <h1 style="text-transform:uppercase; margin:0;">Consola de Control Integral</h1>
+                <p id="admin-user-label" style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;"></p>
+            </div>
             <button class="btn-action secondary" onclick="logoutAdmin()">Cerrar Sesión</button>
         </div>
 
         <!-- IDENTIDAD DE MARCA -->
-        <div class="admin-section" style="margin-bottom:30px;">
+        <div class="admin-section" style="margin-bottom:30px;" data-rol="admin">
             <h2>Identidad de Marca</h2>
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; align-items:end;">
                 <div>
@@ -410,7 +413,7 @@
         </div>
 
         <!-- MEDIOS DE PAGO -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagos-section">
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagos-section" data-rol="admin">
             <h2>Medios de Pago</h2>
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Configura los datos de cada método. Solo los que actives aparecerán al cliente en el checkout.</p>
             <div id="admin-pagos-list"></div>
@@ -420,7 +423,7 @@
         <!-- ═══════════════════════════════════════════════════════
              EDITOR DE PÁGINA — PAGE BUILDER
         ═══════════════════════════════════════════════════════ -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagebuilder-section">
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagebuilder-section" data-rol="admin">
             <h2>🎨 Editor de Página — Bloques de Contenido</h2>
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Agrega, ordena y personaliza cada sección de tu tienda. Arrastra para reordenar. Los cambios se aplican en tiempo real.</p>
 
@@ -447,7 +450,7 @@
         </div>
 
         <!-- EDITOR DE CATEGORÍAS / PILLS DE FILTRO -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-categories-section">
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-categories-section" data-rol="admin">
             <h2>🗂️ Categorías y Filtros de Tienda</h2>
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Personaliza las píldoras de filtro que aparecen en la tienda. Puedes editar nombres, emojis y valores de filtro.</p>
             <div id="categories-editor" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
@@ -665,6 +668,7 @@
         let dbData = { products: [], providers: [], billing: { total: 0, profit: 0 }, config: {} };
         let cart = [];
         let isAdminLoggedIn = false;
+        let currentUser = null; // { usuario, rol } al loguearse
         let activeHomeFilter = "all";
 
         // ══════════════════════════════════════════════════════════
@@ -934,21 +938,51 @@
             }
         }
 
-        function checkAuthAdmin() {
+        async function checkAuthAdmin() {
             const u = document.getElementById('auth-user').value.trim();
             const p = document.getElementById('auth-pass').value.trim();
-            if (u === 'admin' && p === 'Pag12345') {
-                isAdminLoggedIn = true;
-                document.getElementById('auth-user').value = "";
-                document.getElementById('auth-pass').value = "";
-                handleRouting();
-            } else {
-                alert('Credenciales inválidas.');
+            if (!u || !p) { alert('Escribe usuario y contraseña.'); return; }
+
+            const btn = document.querySelector('#auth-gate-view .btn-action');
+            if (btn) { btn.textContent = 'Verificando...'; btn.disabled = true; }
+
+            try {
+                // Buscar usuario en los datos ya cargados de Sheets
+                const users = dbData.users || [];
+                const match = users.find(x =>
+                    x.usuario === u &&
+                    x.contrasena === p &&
+                    (x.activo === true || x.activo === 'TRUE' || x.activo === 1)
+                );
+
+                if (match) {
+                    isAdminLoggedIn = true;
+                    currentUser = { usuario: match.usuario, rol: match.rol || 'admin' };
+                    document.getElementById('auth-user').value = '';
+                    document.getElementById('auth-pass').value = '';
+                    handleRouting();
+                } else {
+                    // Fallback: credencial hardcodeada de emergencia
+                    if (u === 'admin' && p === 'Pag12345') {
+                        isAdminLoggedIn = true;
+                        currentUser = { usuario: 'admin', rol: 'admin' };
+                        document.getElementById('auth-user').value = '';
+                        document.getElementById('auth-pass').value = '';
+                        handleRouting();
+                    } else {
+                        alert('Usuario o contraseña incorrectos, o cuenta inactiva.');
+                    }
+                }
+            } catch(err) {
+                alert('Error al verificar credenciales. Intenta de nuevo.');
+            } finally {
+                if (btn) { btn.textContent = 'Ingresar'; btn.disabled = false; }
             }
         }
 
         function logoutAdmin() {
             isAdminLoggedIn = false;
+            currentUser = null;
             window.location.hash = "";
             handleRouting();
         }
@@ -1565,6 +1599,23 @@
         }
 
         // PANEL DE ADMINISTRACIÓN
+        function applyRolePermissions() {
+            if (!currentUser) return;
+            const rol = currentUser.rol || 'admin';
+            // Mostrar usuario y rol en el header
+            const label = document.getElementById('admin-user-label');
+            const rolLabel = rol === 'admin' ? '👑 Administrador' : '🧾 Vendedor';
+            if (label) label.textContent = `${currentUser.usuario} — ${rolLabel}`;
+            // Ocultar secciones restringidas según rol
+            document.querySelectorAll('[data-rol="admin"]').forEach(el => {
+                el.style.display = (rol === 'admin') ? '' : 'none';
+            });
+            // Ocultar botones de editar/eliminar productos si es vendedor
+            document.querySelectorAll('#table-inventory-body button').forEach(btn => {
+                btn.style.display = (rol === 'admin') ? '' : 'none';
+            });
+        }
+
         function renderAdminDashboard() {
             document.getElementById('kpi-sales').innerText = formatCOP(dbData.billing.total);
             document.getElementById('kpi-profit').innerText = formatCOP(dbData.billing.profit);
@@ -1598,6 +1649,8 @@
                     </td>
                 </tr>
             `).join('');
+            // Aplicar permisos de rol después de renderizar
+            applyRolePermissions();
         }
 
         // ── DESCUENTO INTERACTIVO ─────────────────────────────
