@@ -59,7 +59,12 @@
         .featured-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
         .product-item-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; position: relative; transition: transform 0.25s ease, box-shadow 0.25s ease; }
         .product-item-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.13); }
-        .product-image-frame { background-color: #f1f5f9; aspect-ratio: 1 / 1; overflow: hidden; position: relative; }
+        .product-image-frame { background-color: #f1f5f9; aspect-ratio: 4 / 3; overflow: hidden; position: relative; }
+
+        /* ── TALLAS EN CARD ── */
+        .card-sizes-strip { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+        .card-size-chip { font-size:10px; font-weight:700; padding:3px 7px; border:1px solid #cbd5e1; border-radius:4px; color:var(--text-muted); background:#f8fafc; line-height:1; }
+        .card-size-chip.agotado { opacity:0.4; text-decoration:line-through; }
         .product-image-frame img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
         .product-item-card:hover .product-image-frame img { transform: scale(1.04); }
 
@@ -503,6 +508,16 @@
                                 <input type="checkbox" id="form-p-featured" style="width:16px; height:16px; cursor:pointer;">
                                 Mostrar en página principal (Destacado)
                             </label>
+                        </div>
+
+                        <!-- TALLAS -->
+                        <div style="margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid var(--border-color);">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Tallas Disponibles</span>
+                                <button type="button" onclick="openSizesManager()" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:4px 10px; cursor:pointer; font-size:12px; font-weight:700;">⚙️ Gestionar Tallas</button>
+                            </div>
+                            <div id="sizes-chips-admin" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+                            <input type="hidden" id="form-p-sizes">
                         </div>
 
                         <div style="margin-bottom: 20px;">
@@ -1020,6 +1035,7 @@
                         <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">${p.brand} • ${p.gender}</span>
                         <h3 style="font-size:15px; margin:4px 0 8px 0; flex-grow:1;">${p.title}</h3>
                         ${priceHTML}
+                        ${p.sizes && p.sizes.length ? `<div class="card-sizes-strip">${p.sizes.map(s=>`<span class="card-size-chip">${s}</span>`).join('')}</div>` : ''}
                     </div>
                 </div>
             `;
@@ -1347,6 +1363,7 @@
                 provider: document.getElementById('form-p-provider').value,
                 desc:     document.getElementById('form-p-desc').value.trim(),
                 featured: document.getElementById('form-p-featured').checked,
+                sizes:    (document.getElementById('form-p-sizes').value || '').split(',').map(s=>s.trim()).filter(Boolean),
                 variants: cleanVariants
             };
 
@@ -1369,6 +1386,7 @@
             document.getElementById('form-p-provider').value  = p.provider;
             document.getElementById('form-p-desc').value      = p.desc;
             document.getElementById('form-p-featured').checked = !!p.featured;
+            renderAdminSizesChips(p.sizes || []);
 
             if (p.variants && p.variants.length > 0) {
                 runtimeVariants = p.variants.map(v => ({
@@ -1390,6 +1408,7 @@
             document.getElementById('product-admin-form').reset();
             document.getElementById('form-p-price-old').value = '';
             document.getElementById('form-p-featured').checked = false;
+            renderAdminSizesChips([]);
             initVariantsForNew();
             document.getElementById('form-product-title').innerText = "Registrar Nuevo Calzado";
             document.getElementById('btn-cancel-edit').style.display = "none";
@@ -2559,6 +2578,120 @@
             if (el) el.remove();
         }
 
+        // ══════════════════════════════════════════════
+        //  SISTEMA DE TALLAS
+        // ══════════════════════════════════════════════
+        const DEFAULT_SIZES = ['35','36','37','38','39','40','41','42','43','44','45'];
+
+        function getSizeOptions() {
+            try { return JSON.parse(localStorage.getItem('size_options')) || DEFAULT_SIZES; }
+            catch(e) { return DEFAULT_SIZES; }
+        }
+        function saveSizeOptions(arr) {
+            localStorage.setItem('size_options', JSON.stringify(arr));
+        }
+
+        // Renderiza los chips clickeables en el admin (para seleccionar/deseleccionar tallas del producto)
+        function renderAdminSizesChips(selected) {
+            selected = selected || [];
+            const opts = getSizeOptions();
+            const container = document.getElementById('sizes-chips-admin');
+            if (!container) return;
+            container.innerHTML = opts.map(s => {
+                const active = selected.includes(s);
+                return `<span class="admin-size-chip${active ? ' active' : ''}"
+                    onclick="toggleAdminSizeChip(this,'${s}')"
+                    style="display:inline-block; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; border:2px solid ${active ? 'var(--accent-dark)' : 'var(--border-color)'}; background:${active ? 'var(--accent-dark)' : '#fff'}; color:${active ? '#fff' : 'var(--text-main)'}; transition:all .15s;">${s}</span>`;
+            }).join('');
+            syncSizesHidden();
+        }
+
+        function toggleAdminSizeChip(el, val) {
+            const active = el.classList.toggle('active');
+            el.style.background    = active ? 'var(--accent-dark)' : '#fff';
+            el.style.color         = active ? '#fff' : 'var(--text-main)';
+            el.style.borderColor   = active ? 'var(--accent-dark)' : 'var(--border-color)';
+            syncSizesHidden();
+        }
+
+        function syncSizesHidden() {
+            const chips = document.querySelectorAll('#sizes-chips-admin .admin-size-chip.active');
+            const vals = Array.from(chips).map(c => c.textContent.trim());
+            const hidden = document.getElementById('form-p-sizes');
+            if (hidden) hidden.value = vals.join(',');
+        }
+
+        // Gestor de opciones de tallas (agregar/quitar las tallas del catálogo global)
+        function openSizesManager() {
+            const opts = getSizeOptions();
+            const overlay = document.createElement('div');
+            overlay.id = 'sizes-manager-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background:#fff;border-radius:12px;width:100%;max-width:460px;max-height:82vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:slideUpModal .3s ease;';
+            modal.innerHTML =
+                '<div style="padding:18px 22px 14px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1;">'
+                + '<h3 style="font-size:16px;font-weight:800;text-transform:uppercase;">Gestionar Tallas</h3>'
+                + '<button type="button" id="sm-close-btn" style="background:#f1f5f9;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:15px;">✕</button>'
+                + '</div>'
+                + '<div style="padding:18px 22px;">'
+                + '<p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Agrega o elimina las tallas disponibles en el catálogo. Al guardar, los chips del formulario se actualizan.</p>'
+                + '<div id="sm-chips-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:40px;padding:12px;background:#f8fafc;border-radius:8px;border:1px solid var(--border-color);"></div>'
+                + '<div style="display:flex;gap:8px;margin-bottom:14px;">'
+                + '<input id="sm-new-input" type="text" placeholder="Ej: 46 ó EU 42" style="flex:1;padding:9px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;" />'
+                + '<button type="button" id="sm-add-btn" style="background:var(--accent-dark);color:#fff;border:none;padding:9px 16px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">+ Agregar</button>'
+                + '</div>'
+                + '<div style="display:flex;gap:10px;justify-content:flex-end;">'
+                + '<button type="button" id="sm-cancel-btn" style="background:transparent;color:var(--accent-dark);border:1px solid var(--accent-dark);padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>'
+                + '<button type="button" id="sm-save-btn" style="background:var(--accent-dark);color:#fff;border:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">Guardar</button>'
+                + '</div></div>';
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            function renderSmChips() {
+                const current = JSON.parse(overlay.getAttribute('data-opts') || '[]');
+                const list = overlay.querySelector('#sm-chips-list');
+                list.innerHTML = current.map((s,i) =>
+                    `<span style="display:inline-flex;align-items:center;gap:5px;background:#fff;border:1.5px solid var(--border-color);border-radius:6px;padding:5px 10px;font-size:13px;font-weight:700;">${s}
+                        <button type="button" data-idx="${i}" style="background:none;border:none;color:var(--danger-color);font-size:15px;cursor:pointer;padding:0;line-height:1;" title="Eliminar">×</button>
+                    </span>`
+                ).join('') || '<span style="color:var(--text-muted);font-size:13px;">Sin tallas agregadas</span>';
+                list.querySelectorAll('button[data-idx]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const arr = JSON.parse(overlay.getAttribute('data-opts') || '[]');
+                        arr.splice(parseInt(btn.getAttribute('data-idx')), 1);
+                        overlay.setAttribute('data-opts', JSON.stringify(arr));
+                        renderSmChips();
+                    });
+                });
+            }
+
+            overlay.setAttribute('data-opts', JSON.stringify(opts));
+            renderSmChips();
+
+            overlay.querySelector('#sm-close-btn').addEventListener('click', () => overlay.remove());
+            overlay.querySelector('#sm-cancel-btn').addEventListener('click', () => overlay.remove());
+            overlay.querySelector('#sm-add-btn').addEventListener('click', () => {
+                const inp = overlay.querySelector('#sm-new-input');
+                const val = inp.value.trim();
+                if (!val) return;
+                const arr = JSON.parse(overlay.getAttribute('data-opts') || '[]');
+                if (!arr.includes(val)) { arr.push(val); overlay.setAttribute('data-opts', JSON.stringify(arr)); renderSmChips(); }
+                inp.value = '';
+                inp.focus();
+            });
+            overlay.querySelector('#sm-new-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); overlay.querySelector('#sm-add-btn').click(); } });
+            overlay.querySelector('#sm-save-btn').addEventListener('click', () => {
+                const arr = JSON.parse(overlay.getAttribute('data-opts') || '[]');
+                if (!arr.length) { alert('Agrega al menos una talla.'); return; }
+                saveSizeOptions(arr);
+                // Preservar selección activa y re-renderizar chips del formulario
+                const selected = (document.getElementById('form-p-sizes')?.value || '').split(',').map(s=>s.trim()).filter(Boolean);
+                renderAdminSizesChips(selected);
+                overlay.remove();
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initVariantsForNew();
             populateGenderSelect();
@@ -2569,9 +2702,11 @@
             pageBlocks = getPageBlocks();
             renderHomeBlocks();
             renderPillsFromCategories();
+            renderAdminSizesChips([]);
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
         });
+
     </script>
 </body>
 </html>
