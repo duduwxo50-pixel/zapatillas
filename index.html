@@ -662,10 +662,33 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbz9NGc87e63NXBt2wbqU3HbftqPL2E39X9h-qBrT8Cvc7RH_c8azeUm4jRpn66FqDNUKg/exec";
         const WHATSAPP_NUMBER = "573108340344";
 
-        let dbData = { products: [], providers: [], billing: { total: 0, profit: 0 } };
+        let dbData = { products: [], providers: [], billing: { total: 0, profit: 0 }, config: {} };
         let cart = [];
         let isAdminLoggedIn = false;
         let activeHomeFilter = "all";
+
+        // ══════════════════════════════════════════════════════════
+        //  CONFIG CENTRALIZADA — lee/escribe en Google Sheets Config
+        //  Claves: brand_config | store_categories | notice_bar |
+        //          gender_options | size_options
+        // ══════════════════════════════════════════════════════════
+        function getCfg(key, fallback) {
+            if (dbData.config && dbData.config[key] !== undefined && dbData.config[key] !== '') {
+                return dbData.config[key];
+            }
+            return fallback;
+        }
+
+        async function saveCfg(key, value) {
+            if (!dbData.config) dbData.config = {};
+            dbData.config[key] = value;
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'saveConfig', key, value })
+            });
+        }
         
         let runtimeVariants = [];
         let carouselInterval = null;
@@ -675,8 +698,9 @@
         // IDENTIDAD DE MARCA (localStorage)
         // ─────────────────────────────────────────────
         function applyBrandConfig() {
-            const name    = localStorage.getItem('brand_name') || 'StivZapat';
-            const logoUrl = localStorage.getItem('brand_logo') || '';
+            const bc      = getCfg('brand_config', {});
+            const name    = bc.name    || (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
+            const logoUrl = bc.logo    || localStorage.getItem('brand_logo') || '';
 
             // Header
             const brandText = document.getElementById('header-brand-text');
@@ -732,10 +756,10 @@
                     fr.readAsDataURL(file);
                 });
                 const url = await uploadToImgHost(base64);
-                localStorage.setItem('brand_logo', url);
+                localStorage.setItem('brand_logo', url); // temporal hasta guardar
                 preview.src = url;
                 preview.style.display = 'block';
-                statusEl.innerText = '✓ Logo listo';
+                statusEl.innerText = '✓ Logo listo — presiona "Guardar Identidad"';
                 statusEl.style.color = '#16a34a';
             } catch(err) {
                 statusEl.innerText = '✗ Error al subir';
@@ -743,11 +767,16 @@
             }
         }
 
-        function saveBrandConfig() {
+        async function saveBrandConfig() {
             const name = document.getElementById('brand-name-input').value.trim();
-            if (name) localStorage.setItem('brand_name', name);
+            const logoUrl = localStorage.getItem('brand_logo') || getCfg('brand_config', {}).logo || '';
+            if (!name) { alert('Escribe el nombre de la tienda.'); return; }
+            await saveCfg('brand_config', { name, logo: logoUrl });
+            // Limpiar localStorage viejo
+            localStorage.removeItem('brand_name');
+            localStorage.removeItem('brand_logo');
             applyBrandConfig();
-            alert('✓ Identidad aplicada correctamente');
+            alert('✓ Identidad guardada en Google Sheets');
         }
 
         // ─────────────────────────────────────────────
@@ -930,7 +959,13 @@
             try {
                 const response = await fetch(`${API_URL}?action=readAll`);
                 dbData = await response.json();
-                // Re-renderizar con el filtro que esté activo en ese momento
+                if (!dbData.config) dbData.config = {};
+                // Aplicar config de Sheets al frontend
+                applyBrandConfig();
+                loadNoticeBar();
+                renderPillsFromCategories();
+                populateGenderSelect();
+                // Renderizar
                 renderHome();
                 renderCatalog();
                 buildBrandFilters();
@@ -1800,7 +1835,7 @@
             const activos = Object.entries(cfg).filter(([k,v]) => v.activo);
             let total = 0, qty = 0;
             cart.forEach(i => { total += i.price * i.quantity; qty += i.quantity; });
-            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+            const storeName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
 
             const COLORES = { nequi:'#e40078', bancolombia:'#fdda24', daviplata:'#e31837', pse:'#003087', wompi:'#5b21b6', addi:'#00d4aa', efectivo:'#374151' };
             const TEXTO   = { nequi:'#fff', bancolombia:'#333', daviplata:'#fff', pse:'#fff', wompi:'#fff', addi:'#fff', efectivo:'#fff' };
@@ -1895,7 +1930,7 @@
 
             const cfg = getPagosConfig();
             const metodoPago = cfg[selectedPago]?.label || selectedPago;
-            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+            const storeName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
             let total = cart.reduce((s,i)=>s+i.price*i.quantity, 0);
 
             // ── Si elige Wompi → abrir widget de pago real ──
@@ -2087,7 +2122,7 @@
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-            const storeName = (localStorage.getItem('brand_name') || 'StivZapat').toUpperCase();
+            const storeName = ((getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat')).toUpperCase();
             const pageW = 210;
             const margin = 20;
             const col2 = 130;
@@ -2550,11 +2585,13 @@
         ];
 
         function getCategories() {
+            const fromSheets = getCfg('store_categories', null);
+            if (fromSheets && Array.isArray(fromSheets) && fromSheets.length > 0) return fromSheets;
             try { return JSON.parse(localStorage.getItem('store_categories')) || DEFAULT_CATEGORIES; }
             catch(e) { return DEFAULT_CATEGORIES; }
         }
 
-        function saveCategories() {
+        async function saveCategories() {
             const rows = document.querySelectorAll('.cat-row');
             const cats = [];
             rows.forEach(row => {
@@ -2570,15 +2607,18 @@
                     label, value
                 });
             });
-            localStorage.setItem('store_categories', JSON.stringify(cats));
+            await saveCfg('store_categories', cats);
+            localStorage.removeItem('store_categories'); // limpiar viejo
             renderPillsFromCategories();
-            alert('✅ Categorías guardadas y aplicadas.');
+            alert('✅ Categorías guardadas en Google Sheets.');
         }
 
         function addCategory() {
             const cats = getCategories();
             cats.push({ emoji:'🆕', imgUrl:'', label:'Nueva Categoría', value:'all' });
-            localStorage.setItem('store_categories', JSON.stringify(cats));
+            // Solo actualiza en memoria para edición; se guarda al hacer clic en "Guardar Categorías"
+            if (!dbData.config) dbData.config = {};
+            dbData.config['store_categories'] = cats;
             renderCategoriesEditor();
         }
 
@@ -2636,14 +2676,14 @@
             const container = document.getElementById('pills-dynamic-container');
             if (!container) return;
             container.innerHTML = cats.map((cat, i) => {
-                // Ícono: puede ser emoji, imagen URL, o nada
                 let iconHtml = '';
                 if (cat.imgUrl && cat.imgUrl.trim()) {
                     iconHtml = `<img src="${cat.imgUrl}" style="width:22px;height:22px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:4px;">`;
                 } else if (cat.emoji && cat.emoji.trim()) {
                     iconHtml = `<span style="margin-right:4px;">${cat.emoji}</span>`;
                 }
-                return `<button class="filter-pill-btn ${i===0?'active-pill':''}" data-pill-value="${cat.value}" onclick="selectQuickFilterFromPill(this, '${cat.value}')">${iconHtml}${cat.label}</button>`;
+                const isActive = cat.value === activeHomeFilter;
+                return `<button class="filter-pill-btn ${isActive ? 'active-pill' : ''}" data-pill-value="${cat.value}" onclick="selectQuickFilterFromPill(this, '${cat.value}')">${iconHtml}${cat.label}</button>`;
             }).join('');
         }
 
@@ -2655,18 +2695,21 @@
         }
 
         // ── Barra de aviso ──
-        function saveNoticeBar() {
+        async function saveNoticeBar() {
             const txt = document.getElementById('notice-bar-text')?.value.trim();
-            if (txt) { localStorage.setItem('notice_bar_text',''); localStorage.setItem('notice_bar_text', txt); }
+            await saveCfg('notice_bar', txt || '');
+            localStorage.removeItem('notice_bar_text');
             const bar = document.getElementById('top-notice-bar');
-            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+            const bc  = getCfg('brand_config', {});
+            const storeName = bc.name || 'StivZapat';
             if (bar) bar.innerText = txt || `${storeName.toUpperCase()} • SISTEMA INTEGRADO DE GESTIÓN`;
-            alert('✅ Barra guardada.');
+            alert('✅ Barra guardada en Google Sheets.');
         }
 
         function loadNoticeBar() {
-            const txt = localStorage.getItem('notice_bar_text');
-            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+            const txt = getCfg('notice_bar', '') || localStorage.getItem('notice_bar_text') || '';
+            const bc  = getCfg('brand_config', {});
+            const storeName = bc.name || (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
             const bar = document.getElementById('top-notice-bar');
             if (bar && txt) bar.innerText = txt;
             const input = document.getElementById('notice-bar-text');
@@ -2713,12 +2756,15 @@
         ];
 
         function getGenderOptions() {
+            const fromSheets = getCfg('gender_options', null);
+            if (fromSheets && Array.isArray(fromSheets) && fromSheets.length > 0) return fromSheets;
             try { return JSON.parse(localStorage.getItem('gender_options')) || DEFAULT_GENDER_OPTIONS; }
             catch(e) { return DEFAULT_GENDER_OPTIONS; }
         }
 
-        function saveGenderOptions(opts) {
-            localStorage.setItem('gender_options', JSON.stringify(opts));
+        async function saveGenderOptions(opts) {
+            await saveCfg('gender_options', opts);
+            localStorage.removeItem('gender_options');
         }
 
         function populateGenderSelect() {
@@ -2817,11 +2863,14 @@
         const DEFAULT_SIZES = ['35','36','37','38','39','40','41','42','43','44','45'];
 
         function getSizeOptions() {
+            const fromSheets = getCfg('size_options', null);
+            if (fromSheets && Array.isArray(fromSheets) && fromSheets.length > 0) return fromSheets;
             try { return JSON.parse(localStorage.getItem('size_options')) || DEFAULT_SIZES; }
             catch(e) { return DEFAULT_SIZES; }
         }
-        function saveSizeOptions(arr) {
-            localStorage.setItem('size_options', JSON.stringify(arr));
+        async function saveSizeOptions(arr) {
+            await saveCfg('size_options', arr);
+            localStorage.removeItem('size_options');
         }
 
         // Renderiza los chips clickeables en el admin (para seleccionar/deseleccionar tallas del producto)
@@ -2981,29 +3030,25 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // Limpiar categorías viejas del localStorage para forzar defaults actualizados
-            try {
-                const saved = JSON.parse(localStorage.getItem('store_categories'));
-                if (saved) {
-                    // Si tiene "LÍNEA NINOS" con valor incorrecto, resetear
-                    const hasWrongNino = saved.some(c =>
-                        c.label && c.label.toUpperCase().includes('NI') &&
-                        c.value !== 'niño' && c.value !== 'nino'
-                    );
-                    if (hasWrongNino) localStorage.removeItem('store_categories');
-                }
-            } catch(e) {}
+            // Migrado a Sheets — sin dependencia de localStorage para categorías
+            // Limpiar claves viejas de localStorage migradas a Sheets
+            ['store_categories','brand_name','brand_logo','notice_bar_text','gender_options','size_options'].forEach(k => {
+                // Solo limpiar si ya hay datos en Sheets (lo hace syncWithGoogleSheets al cargar)
+                // Por ahora dejamos fallback activo para primera carga
+            });
             initVariantsForNew();
-            populateGenderSelect();
-            syncWithGoogleSheets();
+            // Render inicial con defaults mientras llegan los datos de Sheets
             applyBrandConfig();
-            renderAdminPagos();
             loadNoticeBar();
-            pageBlocks = getPageBlocks();
-            renderHomeBlocks();
             renderPillsFromCategories();
             renderAdminSizesChips([]);
+            renderAdminPagos();
+            pageBlocks = getPageBlocks();
+            renderHomeBlocks();
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
+            // Sync con Sheets (aplica config real y re-renderiza todo)
+            syncWithGoogleSheets();
         });
 
     </script>
