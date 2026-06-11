@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StivZapat Panel & Store v3</title>
+    <!-- jsPDF para facturas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --bg-light: #f8fafc;
@@ -326,6 +328,15 @@
                 <div>
                     <button class="btn-action" style="width:100%; padding:12px;" onclick="saveBrandConfig()">Aplicar Cambios</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- PEDIDOS PENDIENTES -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-pending-orders-section">
+            <h2>📋 Pedidos Pendientes de Confirmación</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Confirma el pago recibido para descontar el stock automáticamente y generar la factura.</p>
+            <div id="admin-pending-orders-list">
+                <p style="color:var(--text-muted); font-size:13px; padding:10px 0;">Sin pedidos pendientes.</p>
             </div>
         </div>
 
@@ -703,6 +714,7 @@
                 if (isAdminLoggedIn) {
                     renderAdminDashboard();
                     renderAdminPagos();
+                    renderPendingOrders();
                     navigateTo('admin-view');
                 } else {
                     navigateTo('auth-gate-view');
@@ -1282,6 +1294,7 @@
             bancolombia: { activo: true,  numero: '', titular: '', tipo: 'Ahorros', label: 'Bancolombia', instruccion: 'Transfiere a la cuenta y envía el soporte.' },
             daviplata:   { activo: false, numero: '', titular: '', label: 'Daviplata',    instruccion: 'Envía el valor al número Daviplata registrado.' },
             pse:         { activo: false, numero: '', titular: '', label: 'PSE',          instruccion: 'Recibirás un enlace de pago PSE al confirmar.' },
+            wompi:       { activo: false, numero: '', titular: '', label: 'Wompi',        instruccion: 'Pago en línea seguro con tarjeta, PSE o Nequi (procesado por Wompi/Bancolombia).' },
             addi:        { activo: false, numero: '', titular: '', label: 'Addi',         instruccion: 'Paga en cuotas quincenales o mensuales sin tarjeta de crédito.' },
             efectivo:    { activo: true,  numero: '', titular: '', label: 'Efectivo',     instruccion: 'Pago contra entrega o en tienda física.' },
         };
@@ -1317,15 +1330,28 @@
             const cfg = getPagosConfig();
             const cont = document.getElementById('admin-pagos-list');
             if (!cont) return;
-            const COLORES = { nequi:'#e40078', bancolombia:'#fdda24', daviplata:'#e31837', pse:'#003087', addi:'#00d4aa', efectivo:'#374151' };
-            const TEXTO   = { nequi:'#fff', bancolombia:'#333', daviplata:'#fff', pse:'#fff', addi:'#fff', efectivo:'#fff' };
-            cont.innerHTML = Object.entries(cfg).map(([key, val]) => `
+            const COLORES = { nequi:'#e40078', bancolombia:'#fdda24', daviplata:'#e31837', pse:'#003087', wompi:'#5b21b6', addi:'#00d4aa', efectivo:'#374151' };
+            const TEXTO   = { nequi:'#fff', bancolombia:'#333', daviplata:'#fff', pse:'#fff', wompi:'#fff', addi:'#fff', efectivo:'#fff' };
+
+            // Campo clave pública Wompi
+            const wompiKey = localStorage.getItem('wompi_pub_key') || '';
+            let wompiExtra = `
+                <div style="margin-bottom:16px;padding:14px 16px;border:1px solid #5b21b6;border-radius:8px;background:#f5f3ff;">
+                    <p style="font-size:12px;font-weight:700;color:#5b21b6;text-transform:uppercase;margin-bottom:8px;">🔑 Wompi — Clave Pública (pub_key)</p>
+                    <p style="font-size:12px;color:#64748b;margin-bottom:10px;">Regístrate en <strong>wompi.com</strong> → Desarrollo → Llaves de API. Pega aquí tu <em>Llave pública</em> (comienza con <code>pub_test_</code> o <code>pub_prod_</code>).</p>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input id="wompi-pub-key-input" type="text" value="${wompiKey}" placeholder="pub_test_xxxxxxxxxxxxxx" style="flex:1;padding:9px 11px;border:1px solid #5b21b6;border-radius:6px;font-size:13px;font-family:monospace;">
+                        <button onclick="saveWompiKey()" style="background:#5b21b6;color:#fff;border:none;padding:9px 16px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;">Guardar</button>
+                    </div>
+                </div>`;
+
+            cont.innerHTML = wompiExtra + Object.entries(cfg).map(([key, val]) => `
                 <div style="display:flex; align-items:flex-start; gap:14px; padding:14px 16px; border:1px solid var(--border-color); border-radius:8px; background:#f8fafc; margin-bottom:10px;">
-                    <div style="width:56px; height:32px; border-radius:6px; background:${COLORES[key]}; color:${TEXTO[key]}; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; letter-spacing:.3px;">${val.label.toUpperCase()}</div>
+                    <div style="width:56px; height:32px; border-radius:6px; background:${COLORES[key]||'#374151'}; color:${TEXTO[key]||'#fff'}; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; letter-spacing:.3px;">${val.label.toUpperCase()}</div>
                     <div style="flex:1; display:grid; grid-template-columns:1fr 1fr; gap:8px; align-items:end;">
                         <div>
-                            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Número / Cuenta</label>
-                            <input id="pago-num-${key}" type="text" value="${val.numero || ''}" placeholder="Ej: 3001234567" style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                            <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">${key === 'wompi' ? 'Descripción (info)' : 'Número / Cuenta'}</label>
+                            <input id="pago-num-${key}" type="text" value="${val.numero || ''}" placeholder="${key === 'wompi' ? 'Configura la clave arriba' : 'Ej: 3001234567'}" ${key==='wompi'?'readonly style="background:#f1f5f9"':''} style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
                         </div>
                         <div>
                             <label style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Titular / Instrucciones</label>
@@ -1339,6 +1365,13 @@
                         </div>
                     </div>
                 </div>`).join('');
+        }
+
+        function saveWompiKey() {
+            const val = document.getElementById('wompi-pub-key-input')?.value.trim();
+            if (!val) { alert('Ingresa la clave pública de Wompi.'); return; }
+            localStorage.setItem('wompi_pub_key', val);
+            alert('✓ Clave Wompi guardada correctamente.');
         }
 
         // ─────────────────────────────────────────────
@@ -1364,8 +1397,8 @@
             cart.forEach(i => { total += i.price * i.quantity; qty += i.quantity; });
             const storeName = localStorage.getItem('brand_name') || 'StivZapat';
 
-            const COLORES = { nequi:'#e40078', bancolombia:'#fdda24', daviplata:'#e31837', pse:'#003087', addi:'#00d4aa', efectivo:'#374151' };
-            const TEXTO   = { nequi:'#fff', bancolombia:'#333', daviplata:'#fff', pse:'#fff', addi:'#fff', efectivo:'#fff' };
+            const COLORES = { nequi:'#e40078', bancolombia:'#fdda24', daviplata:'#e31837', pse:'#003087', wompi:'#5b21b6', addi:'#00d4aa', efectivo:'#374151' };
+            const TEXTO   = { nequi:'#fff', bancolombia:'#333', daviplata:'#fff', pse:'#fff', wompi:'#fff', addi:'#fff', efectivo:'#fff' };
 
             document.getElementById('checkout-modal-body').innerHTML = `
                 <!-- Resumen -->
@@ -1424,6 +1457,8 @@
                 html += `<strong style="color:#0f172a;">Bancolombia</strong><br>${val.instruccion}`;
                 if (val.numero) html += `<br>Cuenta ${val.tipo || 'Ahorros'}: <span id="num-copy-bancolombia" onclick="copiarDato('${val.numero}')" style="font-family:monospace; font-weight:700; color:#020617; background:#fff; padding:3px 10px; border-radius:5px; border:1px solid #e2e8f0; cursor:pointer;" title="Clic para copiar">${val.numero} &#128203;</span>`;
                 if (val.titular) html += `<br>A nombre de: <strong>${val.titular}</strong>`;
+            } else if (key === 'wompi') {
+                html += `<strong style="color:#5b21b6;">Wompi — Pago en Línea</strong><br>${val.instruccion}<br><small>Acepta tarjetas débito/crédito, PSE y Nequi. Pago 100% seguro.</small>`;
             } else if (key === 'pse') {
                 html += `<strong style="color:#003087;">PSE</strong><br>${val.instruccion}`;
             } else if (key === 'addi') {
@@ -1455,22 +1490,302 @@
 
             const cfg = getPagosConfig();
             const metodoPago = cfg[selectedPago]?.label || selectedPago;
-            let total = 0;
-            let msg = `*${(localStorage.getItem('brand_name') || 'STIVZAPAT').toUpperCase()} - NUEVA SOLICITUD DE PEDIDO*\n\n`;
+            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+            let total = cart.reduce((s,i)=>s+i.price*i.quantity, 0);
+
+            // ── Si elige Wompi → abrir widget de pago real ──
+            if (selectedPago === 'wompi') {
+                const wompiKey = localStorage.getItem('wompi_pub_key') || '';
+                if (!wompiKey) {
+                    alert('El administrador aún no ha configurado la clave pública de Wompi. Por favor selecciona otro método de pago.');
+                    return;
+                }
+                closeCheckoutModal();
+                openWompiWidget({ nombre, celular, ciudad, dir, total, storeName });
+                return;
+            }
+
+            // ── Métodos manuales: guardar pedido PENDIENTE (sin descontar stock) ──
+            const orderId = 'PED-' + Date.now();
+            const pedido = {
+                id: orderId,
+                fecha: new Date().toISOString(),
+                cliente: nombre,
+                celular,
+                ciudad,
+                dir,
+                metodoPago,
+                items: cart.map(i => ({...i})),
+                total,
+                estado: 'pendiente'
+            };
+            savePendingOrder(pedido);
+
+            // Notificar por WhatsApp
+            let msg = `*${storeName.toUpperCase()} - NUEVA SOLICITUD DE PEDIDO*\n`;
+            msg += `*N° Pedido:* ${orderId}\n\n`;
             msg += `*Cliente:* ${nombre}\n*Celular:* ${celular}\n*Ciudad:* ${ciudad}\n*Dirección:* ${dir}\n\n`;
             cart.forEach((item, i) => {
-                total += item.price * item.quantity;
                 msg += `[${i+1}] ${item.title} (${item.brand.toUpperCase()})\n    Pares: ${item.quantity} | Total: ${formatCOP(item.price * item.quantity)}\n\n`;
             });
-            msg += `*VALOR TOTAL:* ${formatCOP(total)}\n*Método de pago:* ${metodoPago}\n\nDeseo confirmar este pedido.`;
-
-            await sendPostRequest({ action: 'registerSale', cart: cart });
+            msg += `*VALOR TOTAL:* ${formatCOP(total)}\n*Método de pago:* ${metodoPago}\n\nDeseo confirmar este pedido. (ID: ${orderId})`;
 
             window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
+
             cart = [];
             updateCartBadge();
             closeCheckoutModal();
             navigateTo('home-view');
+            alert(`✅ Pedido registrado con ID: ${orderId}\n\nEl stock se descontará cuando el administrador confirme el pago recibido.`);
+        }
+
+        // ─────────────────────────────────────────────
+        // WOMPI WIDGET
+        // ─────────────────────────────────────────────
+        function openWompiWidget({ nombre, celular, ciudad, dir, total, storeName }) {
+            const wompiKey = localStorage.getItem('wompi_pub_key') || '';
+            const orderId = 'PED-' + Date.now();
+            const ref = 'SZ-' + orderId + '-' + Math.random().toString(36).substr(2,6).toUpperCase();
+
+            const overlay = document.createElement('div');
+            overlay.id = 'wompi-overlay';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;';
+            overlay.innerHTML = `
+                <div style="background:#fff;border-radius:12px;padding:30px;max-width:460px;width:95%;text-align:center;">
+                    <h3 style="margin-bottom:6px;text-transform:uppercase;font-size:16px;">Pago en Línea — Wompi</h3>
+                    <p style="font-size:13px;color:#64748b;margin-bottom:20px;">Serás redirigido a la pasarela segura de Wompi para completar tu pago.</p>
+                    <div style="background:#f8fafc;border-radius:8px;padding:14px;margin-bottom:20px;text-align:left;font-size:13px;line-height:2;">
+                        <div style="display:flex;justify-content:space-between;"><span>Cliente:</span><strong>${nombre}</strong></div>
+                        <div style="display:flex;justify-content:space-between;"><span>Referencia:</span><strong style="font-family:monospace;">${ref}</strong></div>
+                        <div style="display:flex;justify-content:space-between;font-size:16px;margin-top:6px;border-top:1px solid #e2e8f0;padding-top:8px;"><span>Total a pagar:</span><strong>${formatCOP(total)}</strong></div>
+                    </div>
+                    <form id="wompi-form" style="display:none;">
+                        <script src="https://checkout.wompi.co/widget.js"
+                            data-render="button"
+                            data-public-key="${wompiKey}"
+                            data-currency="COP"
+                            data-amount-in-cents="${total * 100}"
+                            data-reference="${ref}"
+                            data-customer-data:email="${celular}@wompi.co"
+                            data-customer-data:full-name="${nombre}"
+                            data-customer-data:phone-number="${celular}"
+                        ><\/script>
+                    </form>
+                    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+                        <button onclick="document.getElementById('wompi-form').style.display='block'; this.parentElement.innerHTML='<p style=\\'font-size:13px;color:#64748b;\\'>Cargando pasarela de pago...</p>'" 
+                            style="background:#020617;color:#fff;padding:12px 28px;border:none;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;text-transform:uppercase;">
+                            Pagar Ahora
+                        </button>
+                        <button onclick="document.getElementById('wompi-overlay').remove()" 
+                            style="background:transparent;color:#020617;padding:12px 20px;border:1px solid #020617;border-radius:6px;font-weight:700;font-size:14px;cursor:pointer;">
+                            Cancelar
+                        </button>
+                    </div>
+                    <p style="font-size:11px;color:#94a3b8;margin-top:14px;">🔒 Pago 100% seguro procesado por Wompi (Bancolombia)</p>
+                </div>`;
+            document.body.appendChild(overlay);
+        }
+
+        // ─────────────────────────────────────────────
+        // PEDIDOS PENDIENTES — localStorage
+        // ─────────────────────────────────────────────
+        function savePendingOrder(pedido) {
+            let orders = getPendingOrders();
+            orders.push(pedido);
+            localStorage.setItem('pending_orders', JSON.stringify(orders));
+            if (isAdminLoggedIn) renderPendingOrders();
+        }
+
+        function getPendingOrders() {
+            try { return JSON.parse(localStorage.getItem('pending_orders')) || []; }
+            catch(e) { return []; }
+        }
+
+        function renderPendingOrders() {
+            const cont = document.getElementById('admin-pending-orders-list');
+            if (!cont) return;
+            const orders = getPendingOrders().filter(o => o.estado === 'pendiente');
+            if (orders.length === 0) {
+                cont.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:10px 0;">Sin pedidos pendientes. ✓</p>`;
+                return;
+            }
+            cont.innerHTML = orders.map(o => `
+                <div style="border:1px solid var(--border-color);border-radius:8px;padding:16px;margin-bottom:12px;background:#fffbeb;">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+                        <div>
+                            <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">N° Pedido</span>
+                            <div style="font-family:monospace;font-size:14px;font-weight:800;">${o.id}</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${new Date(o.fecha).toLocaleString('es-CO')}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:14px;font-weight:700;">${o.cliente}</div>
+                            <div style="font-size:12px;color:var(--text-muted);">${o.celular} · ${o.ciudad}</div>
+                            <div style="font-size:12px;color:var(--text-muted);">${o.metodoPago}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:20px;font-weight:800;">${formatCOP(o.total)}</div>
+                            <div style="font-size:11px;color:#f59e0b;font-weight:700;margin-top:2px;">⏳ PENDIENTE</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px;border-top:1px solid var(--border-color);padding-top:10px;font-size:12px;color:var(--text-muted);">
+                        ${o.items.map(i=>`${i.title} × ${i.quantity} = ${formatCOP(i.price*i.quantity)}`).join(' | ')}
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
+                        <button onclick="confirmOrderPayment('${o.id}')" style="background:#16a34a;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;">
+                            ✓ Confirmar Pago Recibido
+                        </button>
+                        <button onclick="generateInvoicePDF('${o.id}')" style="background:#020617;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;">
+                            🧾 Ver Factura
+                        </button>
+                        <button onclick="rejectOrder('${o.id}')" style="background:var(--danger-color);color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;">
+                            ✕ Rechazar
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function confirmOrderPayment(orderId) {
+            if (!confirm(`¿Confirmar el pago del pedido ${orderId}?\n\nEsto descontará el stock del inventario.`)) return;
+
+            let orders = getPendingOrders();
+            const idx = orders.findIndex(o => o.id === orderId);
+            if (idx === -1) return;
+
+            orders[idx].estado = 'confirmado';
+            orders[idx].fechaConfirmacion = new Date().toISOString();
+            localStorage.setItem('pending_orders', JSON.stringify(orders));
+
+            // Descontar stock en Google Sheets
+            const pedido = orders[idx];
+            await sendPostRequest({ action: 'registerSale', cart: pedido.items });
+
+            renderPendingOrders();
+            generateInvoicePDF(orderId);
+            alert(`✅ Pago confirmado. Stock descontado. Generando factura...`);
+        }
+
+        function rejectOrder(orderId) {
+            if (!confirm(`¿Rechazar y cancelar el pedido ${orderId}?`)) return;
+            let orders = getPendingOrders();
+            const idx = orders.findIndex(o => o.id === orderId);
+            if (idx !== -1) { orders[idx].estado = 'rechazado'; localStorage.setItem('pending_orders', JSON.stringify(orders)); }
+            renderPendingOrders();
+        }
+
+        // ─────────────────────────────────────────────
+        // FACTURA PDF — PROFESIONAL SIN COLORES
+        // ─────────────────────────────────────────────
+        function generateInvoicePDF(orderId) {
+            const orders = getPendingOrders();
+            const o = orders.find(ord => ord.id === orderId);
+            if (!o) { alert('Pedido no encontrado.'); return; }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            const storeName = (localStorage.getItem('brand_name') || 'StivZapat').toUpperCase();
+            const pageW = 210;
+            const margin = 20;
+            const col2 = 130;
+
+            // ── Fuente y colores base ──
+            doc.setFont('helvetica');
+            let y = margin;
+
+            // ── Encabezado: nombre tienda ──
+            doc.setFontSize(20);
+            doc.setFont('helvetica','bold');
+            doc.text(storeName, margin, y);
+
+            // ── Título FACTURA ──
+            doc.setFontSize(20);
+            doc.text('FACTURA DE VENTA', col2, y, { align: 'left' });
+            y += 7;
+
+            doc.setFontSize(9);
+            doc.setFont('helvetica','normal');
+            doc.setTextColor(100);
+            doc.text('Calzado · Comercio al por menor', margin, y);
+            doc.text(`No. ${o.id}`, col2, y);
+            y += 5;
+            doc.text(`Fecha: ${new Date(o.fecha).toLocaleDateString('es-CO', {year:'numeric',month:'long',day:'numeric'})}`, col2, y);
+            y += 5;
+            const estadoLabel = o.estado === 'confirmado' ? 'PAGADA' : 'PENDIENTE DE PAGO';
+            doc.text(`Estado: ${estadoLabel}`, col2, y);
+            y += 10;
+
+            // ── Línea separadora ──
+            doc.setDrawColor(0);
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageW - margin, y);
+            y += 8;
+
+            // ── Datos del cliente ──
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(9);
+            doc.setTextColor(0);
+            doc.text('DATOS DEL CLIENTE', margin, y);
+            y += 5;
+            doc.setFont('helvetica','normal');
+            doc.setFontSize(10);
+            doc.text(`Nombre:     ${o.cliente}`, margin, y);      y += 5;
+            doc.text(`Celular:    ${o.celular}`, margin, y);       y += 5;
+            doc.text(`Ciudad:     ${o.ciudad}`, margin, y);        y += 5;
+            doc.text(`Dirección:  ${o.dir}`, margin, y);           y += 5;
+            doc.text(`Método de pago: ${o.metodoPago}`, margin, y); y += 10;
+
+            // ── Línea ──
+            doc.setLineWidth(0.3);
+            doc.line(margin, y, pageW - margin, y);
+            y += 6;
+
+            // ── Cabecera tabla de productos ──
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(9);
+            doc.text('DESCRIPCIÓN', margin, y);
+            doc.text('CANT.', 130, y, { align: 'right' });
+            doc.text('PRECIO UNIT.', 158, y, { align: 'right' });
+            doc.text('TOTAL', pageW - margin, y, { align: 'right' });
+            y += 4;
+            doc.setLineWidth(0.3);
+            doc.line(margin, y, pageW - margin, y);
+            y += 6;
+
+            // ── Filas de productos ──
+            doc.setFont('helvetica','normal');
+            doc.setFontSize(10);
+            o.items.forEach(item => {
+                const desc = `${item.title} — ${(item.brand||'').toUpperCase()}`;
+                doc.text(desc, margin, y, { maxWidth: 100 });
+                doc.text(`${item.quantity}`, 130, y, { align: 'right' });
+                doc.text(formatCOP(item.price), 158, y, { align: 'right' });
+                doc.text(formatCOP(item.price * item.quantity), pageW - margin, y, { align: 'right' });
+                y += 6;
+            });
+
+            y += 2;
+            doc.setLineWidth(0.3);
+            doc.line(margin, y, pageW - margin, y);
+            y += 8;
+
+            // ── Totales ──
+            doc.setFont('helvetica','bold');
+            doc.setFontSize(11);
+            doc.text('TOTAL A PAGAR:', 130, y);
+            doc.text(formatCOP(o.total), pageW - margin, y, { align: 'right' });
+            y += 10;
+
+            // ── Nota al pie ──
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageW - margin, y);
+            y += 7;
+            doc.setFont('helvetica','italic');
+            doc.setFontSize(8);
+            doc.setTextColor(120);
+            doc.text('Este documento sirve como comprobante de compra.', margin, y);
+            y += 4;
+            doc.text(`Generada el ${new Date().toLocaleString('es-CO')} · ${storeName}`, margin, y);
+
+            doc.save(`Factura_${o.id}.pdf`);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
