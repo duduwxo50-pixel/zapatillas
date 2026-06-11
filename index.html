@@ -995,10 +995,8 @@
             let itemsToDisplay = [...dbData.products];
 
             if (activeHomeFilter === 'all') {
-                // Mostrar TODOS — destacados primero, luego el resto, ambos más recientes al frente
-                const featured    = itemsToDisplay.filter(p => p.featured).reverse();
-                const notFeatured = itemsToDisplay.filter(p => !p.featured).reverse();
-                itemsToDisplay = [...featured, ...notFeatured];
+                // Mostrar absolutamente TODOS sin filtro alguno
+                itemsToDisplay = [...dbData.products];
             } else if (activeHomeFilter === 'recientes') {
                 itemsToDisplay = [...itemsToDisplay].reverse().slice(0, 8);
             } else {
