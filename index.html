@@ -126,7 +126,47 @@
         .discount-badge { background: #dc2626; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 3px; margin-left: 4px; vertical-align: middle; }
         .featured-ribbon { position: absolute; top: 10px; left: 10px; background: var(--accent-dark); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 3px; z-index: 10; letter-spacing: 0.5px; text-transform: uppercase; }
 
-        /* ── BOTTOM NAV MÓVIL ── */
+        /* ── PAGE BUILDER ── */
+        .pb-add-btn { background:#fff; border:1px solid var(--border-color); padding:7px 14px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; }
+        .pb-add-btn:hover { background:var(--accent-dark); color:#fff; border-color:var(--accent-dark); }
+        .pb-block-card { background:#fff; border:1px solid var(--border-color); border-radius:8px; overflow:hidden; transition:box-shadow .2s; }
+        .pb-block-card.dragging { opacity:.4; }
+        .pb-block-card.drag-over { border-color:var(--accent-dark); box-shadow:0 0 0 2px var(--accent-dark); }
+        .pb-block-header { display:flex; align-items:center; gap:10px; padding:10px 14px; background:#f8fafc; border-bottom:1px solid var(--border-color); cursor:grab; }
+        .pb-block-header:active { cursor:grabbing; }
+        .pb-block-drag-handle { color:#94a3b8; font-size:16px; }
+        .pb-block-label { font-size:12px; font-weight:800; text-transform:uppercase; flex:1; }
+        .pb-block-actions { display:flex; gap:6px; }
+        .pb-block-actions button { background:none; border:none; cursor:pointer; font-size:13px; padding:3px 6px; border-radius:4px; }
+        .pb-block-actions button:hover { background:#e2e8f0; }
+        .pb-block-body { padding:14px 16px; }
+        .pb-field { margin-bottom:10px; }
+        .pb-field label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; }
+        .pb-field input, .pb-field textarea, .pb-field select { width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; }
+        .pb-field textarea { resize:vertical; min-height:60px; }
+        .pb-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+        /* ── BLOQUES RENDERIZADOS EN TIENDA ── */
+        .store-hero-block { background: linear-gradient(90deg,#fff 40%,transparent), var(--hero-bg,url('https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80')) center/cover; min-height:380px; display:flex; align-items:center; padding:40px; border-radius:12px; margin-bottom:28px; border:1px solid var(--border-color); }
+        .store-text-block { padding:20px 0; margin-bottom:16px; }
+        .store-banner2-block { border-radius:10px; overflow:hidden; margin-bottom:24px; }
+        .store-banner2-block img { width:100%; height:auto; display:block; object-fit:cover; }
+        .store-video-block { border-radius:10px; overflow:hidden; margin-bottom:24px; aspect-ratio:16/9; background:#000; }
+        .store-video-block iframe { width:100%; height:100%; border:none; }
+        .store-promo-block { background:var(--accent-dark); color:#fff; text-align:center; padding:14px 20px; border-radius:8px; margin-bottom:24px; font-weight:700; font-size:15px; letter-spacing:.3px; }
+        .store-spacer-block { margin-bottom:24px; }
+        .store-categories-block { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:28px; }
+        .store-category-pill { background:#fff; border:1px solid var(--border-color); padding:12px 22px; border-radius:30px; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; }
+        .store-category-pill:hover { background:var(--accent-dark); color:#fff; border-color:var(--accent-dark); }
+
+        /* ── CAT EDITOR ── */
+        .cat-row { display:flex; gap:8px; align-items:center; background:#f8fafc; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); }
+        .cat-row input { padding:7px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; flex:1; outline:none; }
+
+        @media(max-width:768px){
+            .pb-grid-2 { grid-template-columns:1fr; }
+            .store-hero-block { min-height:220px; padding:24px 20px; background: linear-gradient(180deg,#fff 50%,transparent), var(--hero-bg,url('https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80')) center/cover; }
+        }
         .mobile-bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--border-color); z-index: 999; padding: 8px 0 12px; }
         .mobile-bottom-nav ul { display: flex; justify-content: space-around; list-style: none; margin: 0; padding: 0; }
         .mobile-bottom-nav li { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; cursor: pointer; padding: 4px 12px; border-radius: 6px; transition: color 0.2s; }
@@ -234,23 +274,18 @@
     </header>
 
     <main id="home-view" class="spa-view active-view">
-        <div class="hero-banner">
-            <div class="hero-text">
-                <h1>STOCK ACTUALIZADO EN TIEMPO REAL</h1>
-                <p>Navega por nuestros modelos exclusivos. Al comprar por WhatsApp se descontará automáticamente el par vendido del almacén.</p>
-                <button class="btn-action" onclick="navigateTo('catalog-view')">Ver Modelos</button>
+        <div id="home-blocks-container"></div>
+        <!-- Productos destacados siempre al final -->
+        <div id="home-pills-section">
+            <div class="visual-filters-container">
+                <button class="filter-pill-btn active-pill" id="pill-all" onclick="selectQuickFilter('all')">👟 Todo el Stock</button>
+                <button class="filter-pill-btn" id="pill-hombre" onclick="selectQuickFilter('hombre')">🔥 Línea Masculina</button>
+                <button class="filter-pill-btn" id="pill-mujer" onclick="selectQuickFilter('mujer')">✨ Línea Femenina</button>
+                <button class="filter-pill-btn" id="pill-promo" onclick="selectQuickFilter('recientes')">⚡ Lanzamientos Recientes</button>
             </div>
+            <h2 style="margin-bottom:20px; text-transform:uppercase; font-size:18px;" id="home-section-title">Modelos en Exhibición</h2>
+            <div class="featured-products-grid" id="home-products-grid"></div>
         </div>
-
-        <div class="visual-filters-container">
-            <button class="filter-pill-btn active-pill" id="pill-all" onclick="selectQuickFilter('all')">👟 Todo el Stock</button>
-            <button class="filter-pill-btn" id="pill-hombre" onclick="selectQuickFilter('hombre')">🔥 Línea Masculina</button>
-            <button class="filter-pill-btn" id="pill-mujer" onclick="selectQuickFilter('mujer')">✨ Línea Femenina</button>
-            <button class="filter-pill-btn" id="pill-promo" onclick="selectQuickFilter('recientes')">⚡ Lanzamientos Recientes</button>
-        </div>
-
-        <h2 style="margin-bottom:20px; text-transform:uppercase; font-size: 18px;" id="home-section-title">Modelos en Exhibición</h2>
-        <div class="featured-products-grid" id="home-products-grid"></div>
     </main>
 
     <section id="catalog-view" class="spa-view">
@@ -346,6 +381,58 @@
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Configura los datos de cada método. Solo los que actives aparecerán al cliente en el checkout.</p>
             <div id="admin-pagos-list"></div>
             <button class="btn-action" style="margin-top:10px; padding:10px 20px; font-size:13px;" onclick="savePagosConfig()">Guardar Medios de Pago</button>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             EDITOR DE PÁGINA — PAGE BUILDER
+        ═══════════════════════════════════════════════════════ -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagebuilder-section">
+            <h2>🎨 Editor de Página — Bloques de Contenido</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Agrega, ordena y personaliza cada sección de tu tienda. Arrastra para reordenar. Los cambios se aplican en tiempo real.</p>
+
+            <!-- Botones para agregar bloques -->
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding:14px; background:#f8fafc; border-radius:8px; border:1px solid var(--border-color);">
+                <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); align-self:center; margin-right:4px;">+ Agregar bloque:</span>
+                <button onclick="addBlock('hero')"        class="pb-add-btn">🖼️ Banner Hero</button>
+                <button onclick="addBlock('video')"       class="pb-add-btn">▶️ Video</button>
+                <button onclick="addBlock('text')"        class="pb-add-btn">📝 Texto / Anuncio</button>
+                <button onclick="addBlock('banner2')"     class="pb-add-btn">📸 Banner Imagen</button>
+                <button onclick="addBlock('categories')"  class="pb-add-btn">🗂️ Categorías</button>
+                <button onclick="addBlock('promo')"       class="pb-add-btn">🏷️ Banda Promocional</button>
+                <button onclick="addBlock('spacer')"      class="pb-add-btn">⬜ Separador</button>
+            </div>
+
+            <div id="page-blocks-editor" style="display:flex; flex-direction:column; gap:10px; min-height:60px;">
+                <p id="pb-empty-msg" style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">Sin bloques. Agrega uno arriba para empezar.</p>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
+                <button class="btn-action secondary" onclick="previewPageBlocks()">👁️ Vista Previa</button>
+                <button class="btn-action" onclick="savePageBlocks()">💾 Guardar Página</button>
+            </div>
+        </div>
+
+        <!-- EDITOR DE CATEGORÍAS / PILLS DE FILTRO -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-categories-section">
+            <h2>🗂️ Categorías y Filtros de Tienda</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Personaliza las píldoras de filtro que aparecen en la tienda. Puedes editar nombres, emojis y valores de filtro.</p>
+            <div id="categories-editor" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-action secondary" onclick="addCategory()">+ Agregar Categoría</button>
+                <button class="btn-action" onclick="saveCategories()">Guardar Categorías</button>
+            </div>
+        </div>
+
+        <!-- CONFIGURACIÓN DE NAVEGACIÓN -->
+        <div class="admin-section" style="margin-bottom:30px;">
+            <h2>🧭 Barra de Aviso y Navegación</h2>
+            <div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end;">
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:5px;">Texto de la barra superior</label>
+                    <input id="notice-bar-text" type="text" placeholder="Ej: ENVÍOS A TODA COLOMBIA 🚚 · PIDE HOY · PAGA AL RECIBIR" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;" value="">
+                </div>
+                <button class="btn-action" style="padding:9px 20px;" onclick="saveNoticeBar()">Guardar</button>
+            </div>
         </div>
 
         <div class="dashboard-grid">
@@ -715,6 +802,8 @@
                     renderAdminDashboard();
                     renderAdminPagos();
                     renderPendingOrders();
+                    renderBlocksEditor();
+                    renderCategoriesEditor();
                     navigateTo('admin-view');
                 } else {
                     navigateTo('auth-gate-view');
@@ -1788,11 +1877,399 @@
             doc.save(`Factura_${o.id}.pdf`);
         }
 
+        // ══════════════════════════════════════════════════════
+        // PAGE BUILDER — SISTEMA DE BLOQUES
+        // ══════════════════════════════════════════════════════
+
+        let pageBlocks = [];
+        let dragSrcIdx = null;
+
+        const BLOCK_DEFS = {
+            hero: {
+                label: '🖼️ Banner Hero',
+                defaults: { title:'NUEVA COLECCIÓN', subtitle:'Descubre los mejores modelos exclusivos para esta temporada.', btnText:'Ver Catálogo', btnLink:'catalog-view', imgUrl:'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80', overlay:'left' }
+            },
+            video: {
+                label: '▶️ Video',
+                defaults: { url:'', tipo:'youtube', titulo:'' }
+            },
+            text: {
+                label: '📝 Texto / Anuncio',
+                defaults: { titulo:'', contenido:'', align:'left', bgColor:'#ffffff', textColor:'#0f172a' }
+            },
+            banner2: {
+                label: '📸 Banner Imagen',
+                defaults: { imgUrl:'', link:'', altText:'Banner', height:'300', radius:'10' }
+            },
+            categories: {
+                label: '🗂️ Categorías Visuales',
+                defaults: { titulo:'Navega por Categoría', items:'hombre,mujer,recientes,all' }
+            },
+            promo: {
+                label: '🏷️ Banda Promocional',
+                defaults: { texto:'🔥 ENVÍOS A TODO COLOMBIA · PAGA AL RECIBIR · HASTA 12 CUOTAS', bgColor:'#020617', textColor:'#ffffff' }
+            },
+            spacer: {
+                label: '⬜ Separador',
+                defaults: { height:'20' }
+            }
+        };
+
+        function getPageBlocks() {
+            try { return JSON.parse(localStorage.getItem('page_blocks')) || getDefaultBlocks(); }
+            catch(e) { return getDefaultBlocks(); }
+        }
+
+        function getDefaultBlocks() {
+            return [
+                { id: Date.now(), type:'hero', data:{ ...BLOCK_DEFS.hero.defaults } },
+                { id: Date.now()+1, type:'promo', data:{ ...BLOCK_DEFS.promo.defaults } }
+            ];
+        }
+
+        function savePageBlocks() {
+            // Recoger datos de los formularios en el editor
+            const cards = document.querySelectorAll('#page-blocks-editor .pb-block-card');
+            cards.forEach((card, idx) => {
+                const blockId = parseInt(card.dataset.blockId);
+                const block = pageBlocks.find(b => b.id === blockId);
+                if (!block) return;
+                card.querySelectorAll('[data-field]').forEach(el => {
+                    block.data[el.dataset.field] = el.value;
+                });
+            });
+            localStorage.setItem('page_blocks', JSON.stringify(pageBlocks));
+            renderHomeBlocks();
+            alert('✅ Página guardada y aplicada.');
+        }
+
+        function previewPageBlocks() {
+            savePageBlocks();
+            navigateTo('home-view');
+        }
+
+        function addBlock(type) {
+            const block = { id: Date.now(), type, data: { ...BLOCK_DEFS[type].defaults } };
+            pageBlocks.push(block);
+            renderBlocksEditor();
+            document.getElementById('pb-empty-msg')?.remove();
+            // Scroll al nuevo bloque
+            setTimeout(() => {
+                const last = document.querySelector('#page-blocks-editor .pb-block-card:last-child');
+                if (last) last.scrollIntoView({ behavior:'smooth', block:'center' });
+            }, 100);
+        }
+
+        function removeBlock(id) {
+            pageBlocks = pageBlocks.filter(b => b.id !== id);
+            renderBlocksEditor();
+        }
+
+        function moveBlock(id, dir) {
+            const idx = pageBlocks.findIndex(b => b.id === id);
+            if (dir === -1 && idx === 0) return;
+            if (dir === 1 && idx === pageBlocks.length - 1) return;
+            const tmp = pageBlocks[idx];
+            pageBlocks[idx] = pageBlocks[idx + dir];
+            pageBlocks[idx + dir] = tmp;
+            renderBlocksEditor();
+        }
+
+        function renderBlocksEditor() {
+            const container = document.getElementById('page-blocks-editor');
+            if (!container) return;
+            const emptyMsg = document.getElementById('pb-empty-msg');
+
+            if (pageBlocks.length === 0) {
+                container.innerHTML = `<p id="pb-empty-msg" style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">Sin bloques. Agrega uno arriba para empezar.</p>`;
+                return;
+            }
+            container.innerHTML = pageBlocks.map((block, idx) => buildBlockEditorCard(block, idx)).join('');
+
+            // Drag & Drop
+            container.querySelectorAll('.pb-block-card').forEach(card => {
+                card.setAttribute('draggable', true);
+                card.addEventListener('dragstart', e => { dragSrcIdx = parseInt(card.dataset.idx); card.classList.add('dragging'); });
+                card.addEventListener('dragend', e => card.classList.remove('dragging'));
+                card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+                card.addEventListener('dragleave', e => card.classList.remove('drag-over'));
+                card.addEventListener('drop', e => {
+                    e.preventDefault();
+                    card.classList.remove('drag-over');
+                    const targetIdx = parseInt(card.dataset.idx);
+                    if (dragSrcIdx === targetIdx) return;
+                    const moved = pageBlocks.splice(dragSrcIdx, 1)[0];
+                    pageBlocks.splice(targetIdx, 0, moved);
+                    renderBlocksEditor();
+                });
+            });
+        }
+
+        function buildBlockEditorCard(block, idx) {
+            const def = BLOCK_DEFS[block.type];
+            let fields = '';
+
+            if (block.type === 'hero') {
+                fields = `
+                    <div class="pb-grid-2">
+                        <div class="pb-field"><label>Título principal</label><input data-field="title" value="${escHtml(block.data.title||'')}"></div>
+                        <div class="pb-field"><label>Subtítulo</label><input data-field="subtitle" value="${escHtml(block.data.subtitle||'')}"></div>
+                        <div class="pb-field"><label>Texto del botón</label><input data-field="btnText" value="${escHtml(block.data.btnText||'')}"></div>
+                        <div class="pb-field"><label>Enlace del botón</label>
+                            <select data-field="btnLink">
+                                <option value="catalog-view" ${block.data.btnLink==='catalog-view'?'selected':''}>Ver Catálogo</option>
+                                <option value="cart-view" ${block.data.btnLink==='cart-view'?'selected':''}>Ir al Carrito</option>
+                                <option value="home-view" ${block.data.btnLink==='home-view'?'selected':''}>Inicio</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pb-field"><label>URL de imagen de fondo (pega un enlace directo)</label><input data-field="imgUrl" value="${escHtml(block.data.imgUrl||'')}" placeholder="https://..."></div>
+                    <div class="pb-field"><label>Posición del texto</label>
+                        <select data-field="overlay">
+                            <option value="left" ${block.data.overlay==='left'?'selected':''}>Izquierda</option>
+                            <option value="center" ${block.data.overlay==='center'?'selected':''}>Centro</option>
+                            <option value="right" ${block.data.overlay==='right'?'selected':''}>Derecha</option>
+                        </select>
+                    </div>`;
+            } else if (block.type === 'video') {
+                fields = `
+                    <div class="pb-field"><label>Tipo de video</label>
+                        <select data-field="tipo">
+                            <option value="youtube" ${block.data.tipo==='youtube'?'selected':''}>YouTube</option>
+                            <option value="vimeo" ${block.data.tipo==='vimeo'?'selected':''}>Vimeo</option>
+                            <option value="directo" ${block.data.tipo==='directo'?'selected':''}>URL directa (.mp4)</option>
+                        </select>
+                    </div>
+                    <div class="pb-field"><label>URL del video (pega el enlace completo)</label><input data-field="url" value="${escHtml(block.data.url||'')}" placeholder="https://www.youtube.com/watch?v=..."></div>
+                    <div class="pb-field"><label>Título opcional (aparece encima del video)</label><input data-field="titulo" value="${escHtml(block.data.titulo||'')}" placeholder="Ej: Nuestra nueva colección"></div>`;
+            } else if (block.type === 'text') {
+                fields = `
+                    <div class="pb-grid-2">
+                        <div class="pb-field"><label>Título (opcional)</label><input data-field="titulo" value="${escHtml(block.data.titulo||'')}"></div>
+                        <div class="pb-field"><label>Alineación</label>
+                            <select data-field="align">
+                                <option value="left" ${block.data.align==='left'?'selected':''}>Izquierda</option>
+                                <option value="center" ${block.data.align==='center'?'selected':''}>Centro</option>
+                                <option value="right" ${block.data.align==='right'?'selected':''}>Derecha</option>
+                            </select>
+                        </div>
+                        <div class="pb-field"><label>Color de fondo</label><input type="color" data-field="bgColor" value="${block.data.bgColor||'#ffffff'}" style="height:36px; padding:2px 4px;"></div>
+                        <div class="pb-field"><label>Color de texto</label><input type="color" data-field="textColor" value="${block.data.textColor||'#0f172a'}" style="height:36px; padding:2px 4px;"></div>
+                    </div>
+                    <div class="pb-field"><label>Contenido (soporta saltos de línea)</label><textarea data-field="contenido" rows="3">${escHtml(block.data.contenido||'')}</textarea></div>`;
+            } else if (block.type === 'banner2') {
+                fields = `
+                    <div class="pb-field"><label>URL de la imagen</label><input data-field="imgUrl" value="${escHtml(block.data.imgUrl||'')}" placeholder="https://..."></div>
+                    <div class="pb-grid-2">
+                        <div class="pb-field"><label>Texto alternativo</label><input data-field="altText" value="${escHtml(block.data.altText||'Banner')}"></div>
+                        <div class="pb-field"><label>Altura en px (vacío = auto)</label><input type="number" data-field="height" value="${block.data.height||'300'}" placeholder="300"></div>
+                        <div class="pb-field"><label>Enlace al hacer clic (URL o vista)</label><input data-field="link" value="${escHtml(block.data.link||'')}" placeholder="catalog-view o https://..."></div>
+                        <div class="pb-field"><label>Borde redondeado (px)</label><input type="number" data-field="radius" value="${block.data.radius||'10'}"></div>
+                    </div>`;
+            } else if (block.type === 'categories') {
+                fields = `
+                    <div class="pb-field"><label>Título de sección</label><input data-field="titulo" value="${escHtml(block.data.titulo||'Navega por Categoría')}"></div>
+                    <div class="pb-field"><label>Categorías (separadas por coma — usa los valores: all, hombre, mujer, recientes)</label><input data-field="items" value="${escHtml(block.data.items||'hombre,mujer,recientes,all')}" placeholder="hombre,mujer,recientes"></div>
+                    <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Los emojis y nombres se toman de la configuración de Categorías que editas en la sección de abajo.</p>`;
+            } else if (block.type === 'promo') {
+                fields = `
+                    <div class="pb-field"><label>Texto de la banda</label><input data-field="texto" value="${escHtml(block.data.texto||'')}"></div>
+                    <div class="pb-grid-2">
+                        <div class="pb-field"><label>Color de fondo</label><input type="color" data-field="bgColor" value="${block.data.bgColor||'#020617'}" style="height:36px; padding:2px 4px;"></div>
+                        <div class="pb-field"><label>Color de texto</label><input type="color" data-field="textColor" value="${block.data.textColor||'#ffffff'}" style="height:36px; padding:2px 4px;"></div>
+                    </div>`;
+            } else if (block.type === 'spacer') {
+                fields = `<div class="pb-field"><label>Altura del separador (px)</label><input type="number" data-field="height" value="${block.data.height||'20'}" min="4" max="200"></div>`;
+            }
+
+            return `
+                <div class="pb-block-card" data-block-id="${block.id}" data-idx="${idx}">
+                    <div class="pb-block-header">
+                        <span class="pb-block-drag-handle">⠿</span>
+                        <span class="pb-block-label">${def.label}</span>
+                        <div class="pb-block-actions">
+                            <button onclick="moveBlock(${block.id}, -1)" title="Subir">▲</button>
+                            <button onclick="moveBlock(${block.id}, 1)" title="Bajar">▼</button>
+                            <button onclick="removeBlock(${block.id})" title="Eliminar" style="color:var(--danger-color);">🗑</button>
+                        </div>
+                    </div>
+                    <div class="pb-block-body">${fields}</div>
+                </div>`;
+        }
+
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // ─── Renderizar bloques en la tienda ───
+        function renderHomeBlocks() {
+            const container = document.getElementById('home-blocks-container');
+            if (!container) return;
+            const blocks = getPageBlocks();
+            container.innerHTML = blocks.map(b => renderStoreBlock(b)).join('');
+        }
+
+        function renderStoreBlock(block) {
+            const d = block.data;
+            if (block.type === 'hero') {
+                const align = d.overlay === 'center' ? 'center' : (d.overlay === 'right' ? 'flex-end' : 'flex-start');
+                const grad = d.overlay === 'center'
+                    ? 'linear-gradient(rgba(255,255,255,.8),rgba(255,255,255,.3))'
+                    : d.overlay === 'right'
+                        ? 'linear-gradient(270deg,#fff 40%,transparent)'
+                        : 'linear-gradient(90deg,#fff 40%,transparent)';
+                const imgUrl = d.imgUrl || 'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80';
+                return `<div class="store-hero-block" style="justify-content:${align}; background:${grad} center/cover, url('${imgUrl}') center/cover;">
+                    <div class="hero-text" style="text-align:${d.overlay==='center'?'center':'left'}; max-width:500px;">
+                        <h1>${d.title||''}</h1>
+                        <p>${d.subtitle||''}</p>
+                        ${d.btnText ? `<button class="btn-action" style="margin-top:14px;" onclick="navigateTo('${d.btnLink||'catalog-view'}')">${d.btnText}</button>` : ''}
+                    </div>
+                </div>`;
+            }
+            if (block.type === 'video') {
+                let src = '';
+                const url = d.url || '';
+                if (d.tipo === 'youtube') {
+                    const match = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+                    src = match ? `https://www.youtube.com/embed/${match[1]}?autoplay=0&rel=0` : '';
+                } else if (d.tipo === 'vimeo') {
+                    const match = url.match(/vimeo\.com\/(\d+)/);
+                    src = match ? `https://player.vimeo.com/video/${match[1]}` : '';
+                } else {
+                    src = url;
+                }
+                return `<div>
+                    ${d.titulo ? `<h2 style="text-transform:uppercase; font-size:18px; margin-bottom:14px;">${d.titulo}</h2>` : ''}
+                    <div class="store-video-block">
+                        ${d.tipo === 'directo'
+                            ? `<video controls style="width:100%; height:100%; object-fit:cover;"><source src="${url}"></video>`
+                            : src ? `<iframe src="${src}" allowfullscreen></iframe>` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;font-size:14px;">Configura la URL del video en el admin.</div>'}
+                    </div>
+                </div>`;
+            }
+            if (block.type === 'text') {
+                return `<div class="store-text-block" style="background:${d.bgColor||'#fff'}; padding:20px; border-radius:8px; text-align:${d.align||'left'}; color:${d.textColor||'#0f172a'};">
+                    ${d.titulo ? `<h2 style="margin-bottom:10px; font-size:20px;">${d.titulo}</h2>` : ''}
+                    <p style="font-size:15px; line-height:1.7; white-space:pre-wrap;">${d.contenido||''}</p>
+                </div>`;
+            }
+            if (block.type === 'banner2') {
+                const click = d.link ? (d.link.startsWith('http') ? `window.open('${d.link}','_blank')` : `navigateTo('${d.link}')`) : '';
+                return `<div class="store-banner2-block" style="border-radius:${d.radius||10}px; ${click?'cursor:pointer;':''}" ${click?`onclick="${click}"`:''}">
+                    <img src="${d.imgUrl||'https://via.placeholder.com/1200x300?text=Banner'}" alt="${d.altText||''}" style="width:100%; height:${d.height?d.height+'px':'auto'}; object-fit:cover;">
+                </div>`;
+            }
+            if (block.type === 'categories') {
+                const cats = getCategories();
+                const items = (d.items||'').split(',').map(s=>s.trim()).filter(Boolean);
+                const pills = items.map(key => {
+                    const cat = cats.find(c => c.value === key) || { label: key, emoji:'', value: key };
+                    return `<div class="store-category-pill" onclick="selectQuickFilter('${cat.value}')">${cat.emoji} ${cat.label}</div>`;
+                }).join('');
+                return `<div style="margin-bottom:28px;">
+                    ${d.titulo ? `<h2 style="text-transform:uppercase; font-size:16px; margin-bottom:14px;">${d.titulo}</h2>` : ''}
+                    <div class="store-categories-block">${pills}</div>
+                </div>`;
+            }
+            if (block.type === 'promo') {
+                return `<div class="store-promo-block" style="background:${d.bgColor||'#020617'}; color:${d.textColor||'#fff'};">${d.texto||''}</div>`;
+            }
+            if (block.type === 'spacer') {
+                return `<div class="store-spacer-block" style="height:${d.height||20}px;"></div>`;
+            }
+            return '';
+        }
+
+        // ══════════════════════════════════════════════════════
+        // CATEGORÍAS PERSONALIZADAS
+        // ══════════════════════════════════════════════════════
+
+        const DEFAULT_CATEGORIES = [
+            { emoji:'👟', label:'Todo el Stock',         value:'all' },
+            { emoji:'🔥', label:'Línea Masculina',       value:'hombre' },
+            { emoji:'✨', label:'Línea Femenina',        value:'mujer' },
+            { emoji:'⚡', label:'Lanzamientos Recientes',value:'recientes' },
+        ];
+
+        function getCategories() {
+            try { return JSON.parse(localStorage.getItem('store_categories')) || DEFAULT_CATEGORIES; }
+            catch(e) { return DEFAULT_CATEGORIES; }
+        }
+
+        function saveCategories() {
+            const rows = document.querySelectorAll('.cat-row');
+            const cats = [];
+            rows.forEach(row => {
+                const emoji = row.querySelector('[data-cat="emoji"]').value.trim();
+                const label = row.querySelector('[data-cat="label"]').value.trim();
+                const value = row.querySelector('[data-cat="value"]').value.trim();
+                if (label && value) cats.push({ emoji, label, value });
+            });
+            localStorage.setItem('store_categories', JSON.stringify(cats));
+            renderPillsFromCategories();
+            alert('✅ Categorías guardadas.');
+        }
+
+        function addCategory() {
+            const cats = getCategories();
+            cats.push({ emoji:'🆕', label:'Nueva Categoría', value:'all' });
+            localStorage.setItem('store_categories', JSON.stringify(cats));
+            renderCategoriesEditor();
+        }
+
+        function renderCategoriesEditor() {
+            const cont = document.getElementById('categories-editor');
+            if (!cont) return;
+            const cats = getCategories();
+            cont.innerHTML = cats.map((cat, idx) => `
+                <div class="cat-row">
+                    <input data-cat="emoji" value="${cat.emoji||''}" placeholder="😊" style="max-width:54px; text-align:center; font-size:18px;">
+                    <input data-cat="label" value="${cat.label||''}" placeholder="Nombre categoría" style="flex:2;">
+                    <input data-cat="value" value="${cat.value||''}" placeholder="Valor filtro: all, hombre, mujer, recientes" style="flex:2;">
+                    <button onclick="this.closest('.cat-row').remove()" style="background:none; border:none; color:var(--danger-color); font-size:18px; cursor:pointer; flex-shrink:0;">×</button>
+                </div>`).join('');
+        }
+
+        function renderPillsFromCategories() {
+            const cats = getCategories();
+            const pills = document.getElementById('home-pills-section');
+            if (!pills) return;
+            const container = pills.querySelector('.visual-filters-container');
+            if (!container) return;
+            container.innerHTML = cats.map((cat, i) => `
+                <button class="filter-pill-btn ${i===0?'active-pill':''}" id="pill-${cat.value}" onclick="selectQuickFilter('${cat.value}')">${cat.emoji} ${cat.label}</button>
+            `).join('');
+        }
+
+        // ── Barra de aviso ──
+        function saveNoticeBar() {
+            const txt = document.getElementById('notice-bar-text')?.value.trim();
+            if (txt) { localStorage.setItem('notice_bar_text',''); localStorage.setItem('notice_bar_text', txt); }
+            const bar = document.getElementById('top-notice-bar');
+            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+            if (bar) bar.innerText = txt || `${storeName.toUpperCase()} • SISTEMA INTEGRADO DE GESTIÓN`;
+            alert('✅ Barra guardada.');
+        }
+
+        function loadNoticeBar() {
+            const txt = localStorage.getItem('notice_bar_text');
+            const storeName = localStorage.getItem('brand_name') || 'StivZapat';
+            const bar = document.getElementById('top-notice-bar');
+            if (bar && txt) bar.innerText = txt;
+            const input = document.getElementById('notice-bar-text');
+            if (input && txt) input.value = txt;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initVariantsForNew();
             syncWithGoogleSheets();
             applyBrandConfig();
             renderAdminPagos();
+            loadNoticeBar();
+            pageBlocks = getPageBlocks();
+            renderHomeBlocks();
+            renderPillsFromCategories();
             window.addEventListener('hashchange', handleRouting);
             handleRouting();
         });
