@@ -1070,6 +1070,7 @@
                         ${ppoBadge ? `<span style="position:absolute;top:10px;left:10px;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:4px;z-index:10;">${ppoBadge.replace(/<[^>]+>/g,'').trim()}</span>` : ''}
                         ${isOut ? `<span class="stock-tag out-of-stock">AGOTADO</span>` : ''}
                         <img id="${cardId}" src="${defaultImg}" alt="${p.title}">
+
                         <div class="product-price-overlay">
                             <span class="ppo-brand">${p.brand} • ${p.gender}</span>
                             <span class="ppo-title">${p.title}</span>
@@ -1083,6 +1084,7 @@
                     <div class="product-details-frame">
                         <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">${p.brand} • ${p.gender}</span>
                         <h3 style="font-size:15px; margin:4px 0 8px 0; flex-grow:1;">${p.title}</h3>
+                        ${p.desc ? `<p style="font-size:12px;color:var(--text-muted);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.desc}</p>` : ''}
                         ${priceHTML}
                         ${p.sizes && p.sizes.length ? `<div class="card-sizes-strip">${p.sizes.map(s=>`<span class="card-size-chip">${s}</span>`).join('')}</div>` : ''}
                     </div>
