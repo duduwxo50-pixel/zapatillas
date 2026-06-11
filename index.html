@@ -993,10 +993,10 @@
             let itemsToDisplay = [...dbData.products];
 
             if (activeHomeFilter === 'all') {
-                // Destacados primero, luego el resto
-                const featured    = itemsToDisplay.filter(p => p.featured);
-                const notFeatured = itemsToDisplay.filter(p => !p.featured);
-                itemsToDisplay = [...featured, ...notFeatured].reverse();
+                // Destacados primero, luego el resto (más recientes al frente)
+                const featured    = itemsToDisplay.filter(p => p.featured).reverse();
+                const notFeatured = itemsToDisplay.filter(p => !p.featured).reverse();
+                itemsToDisplay = [...featured, ...notFeatured];
             } else if (activeHomeFilter === 'recientes') {
                 itemsToDisplay = [...itemsToDisplay].reverse().slice(0, 8);
             } else {
