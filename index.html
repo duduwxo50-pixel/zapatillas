@@ -2861,11 +2861,35 @@
                 { value: 'all',       label: 'Todo el stock' },
                 { value: 'recientes', label: 'Recientes / Nuevos' },
             ];
-            // Agregar géneros configurados dinámicamente
-            const genders = getCfg('gender_options', ['hombre','mujer','niño']);
-            const genderOpts = Array.isArray(genders)
-                ? genders.map(g => ({ value: g.toLowerCase().replace(/\s+/g,'_'), label: g }))
-                : [];
+            // Géneros desde configuración (gender_options en Sheets)
+            const genders = getCfg('gender_options', null);
+            let genderOpts = [];
+            if (genders && Array.isArray(genders) && genders.length > 0) {
+                genderOpts = genders.map(g => {
+                    if (typeof g === 'object' && g.value) return { value: g.value, label: g.label || g.value };
+                    const v = String(g).toLowerCase().trim();
+                    return { value: v, label: String(g) };
+                });
+            }
+            // Complementar con géneros reales de los productos (sin duplicar)
+            const existingValues = new Set([...base, ...genderOpts].map(o => o.value));
+            if (dbData && dbData.products) {
+                const prodGenders = [...new Set(dbData.products.map(p => (p.gender||'').toLowerCase().trim()).filter(Boolean))];
+                prodGenders.forEach(g => {
+                    if (!existingValues.has(g)) {
+                        genderOpts.push({ value: g, label: g.charAt(0).toUpperCase() + g.slice(1) });
+                        existingValues.add(g);
+                    }
+                });
+            }
+            // Defaults si todo está vacío
+            if (genderOpts.length === 0) {
+                genderOpts = [
+                    { value: 'hombre', label: 'Hombre' },
+                    { value: 'mujer',  label: 'Mujer'  },
+                    { value: 'niño',   label: 'Niño'   }
+                ];
+            }
             return [...base, ...genderOpts];
         }
 
@@ -2876,6 +2900,9 @@
             const filterOpts = getCategoryFilterOptions();
             cont.innerHTML = cats.map((cat) => {
                 const iconType = cat.imgUrl ? 'imagen' : (cat.emoji ? 'emoji' : 'ninguno');
+                // Check if current value matches a known option or is custom
+                const knownValues = filterOpts.map(o => o.value);
+                const isCustom = cat.value && !knownValues.includes(cat.value);
                 const filterSelectOptions = filterOpts.map(opt =>
                     `<option value="${opt.value}" ${cat.value === opt.value ? 'selected' : ''}>${opt.label}</option>`
                 ).join('');
@@ -2901,11 +2928,13 @@
                         <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Nombre</label>
                         <input data-cat="label" value="${cat.label||''}" placeholder="Ej: Línea Masculina" style="width:100%; padding:7px 9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; min-width:110px;">
+                    <div style="display:flex; flex-direction:column; gap:4px; min-width:140px;">
                         <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Filtro</label>
-                        <select data-cat="value" style="padding:7px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px;">
+                        <select data-cat="value" onchange="onCatFilterChange(this)" style="padding:7px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px;">
                             ${filterSelectOptions}
+                            <option value="__custom__" ${isCustom ? 'selected' : ''}>✏️ Personalizado...</option>
                         </select>
+                        <input data-cat="valueCustom" value="${isCustom ? cat.value : ''}" placeholder="género exacto del producto" style="display:${isCustom?'block':'none'}; padding:6px 9px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-top:2px;">
                     </div>
                     <button onclick="this.closest('.cat-row').remove()" title="Eliminar" style="align-self:flex-end; background:none; border:none; color:var(--danger-color); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:4px; line-height:1; flex-shrink:0; margin-bottom:2px;">×</button>
                 </div>`;
