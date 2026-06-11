@@ -1025,7 +1025,7 @@
                 ppoPrice = formatCOP(p.price);
             }
 
-            const featuredBadge = p.featured ? `<span class="featured-ribbon">⭐ Destacado</span>` : '';
+            const featuredBadge = p.featured ? `<span class="featured-ribbon" style="top:${ppoBadge ? '38px' : '10px'};">⭐ Destacado</span>` : '';
             const cardId = 'card-img-' + p.id;
 
             return `
@@ -1035,7 +1035,8 @@
                     onmouseleave="stopImgCycle('${cardId}', '${defaultImg.replace(/'/g,"\\'")}')">
                     <div class="product-image-frame">
                         ${featuredBadge}
-                        <span class="stock-tag ${isOut ? 'out-of-stock' : ''}">${isOut ? 'AGOTADO' : 'Stock: ' + p.stock}</span>
+                        ${ppoBadge ? `<span style="position:absolute;top:10px;left:10px;background:#dc2626;color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:4px;z-index:10;">${ppoBadge.replace(/<[^>]+>/g,'').trim()}</span>` : ''}
+                        ${isOut ? `<span class="stock-tag out-of-stock">AGOTADO</span>` : ''}
                         <img id="${cardId}" src="${defaultImg}" alt="${p.title}">
                         <div class="product-price-overlay">
                             <span class="ppo-brand">${p.brand} • ${p.gender}</span>
