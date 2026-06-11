@@ -954,13 +954,79 @@
         }
 
         // PETICIONES API A GOOGLE SHEETS
+        // ── Migración única: sube localStorage → Sheets si Sheets no tiene el dato ──
+        async function migrateLocalStorageToSheets() {
+            const migrations = [
+                {
+                    key: 'brand_config',
+                    build: () => {
+                        const name = localStorage.getItem('brand_name');
+                        const logo = localStorage.getItem('brand_logo');
+                        if (!name && !logo) return null;
+                        return { name: name || 'StivZapat', logo: logo || '' };
+                    }
+                },
+                {
+                    key: 'store_categories',
+                    build: () => {
+                        try {
+                            const v = JSON.parse(localStorage.getItem('store_categories'));
+                            return (v && v.length) ? v : null;
+                        } catch(e) { return null; }
+                    }
+                },
+                {
+                    key: 'notice_bar',
+                    build: () => localStorage.getItem('notice_bar_text') || null
+                },
+                {
+                    key: 'gender_options',
+                    build: () => {
+                        try {
+                            const v = JSON.parse(localStorage.getItem('gender_options'));
+                            return (v && v.length) ? v : null;
+                        } catch(e) { return null; }
+                    }
+                },
+                {
+                    key: 'size_options',
+                    build: () => {
+                        try {
+                            const v = JSON.parse(localStorage.getItem('size_options'));
+                            return (v && v.length) ? v : null;
+                        } catch(e) { return null; }
+                    }
+                }
+            ];
+
+            let migrated = 0;
+            for (const m of migrations) {
+                // Solo migrar si Sheets no tiene ese valor aún
+                if (dbData.config[m.key] !== undefined && dbData.config[m.key] !== '') continue;
+                const value = m.build();
+                if (value === null) continue;
+                await saveCfg(m.key, value);
+                migrated++;
+                console.log(`[migración] ${m.key} → Sheets ✓`);
+            }
+
+            if (migrated > 0) {
+                // Limpiar localStorage ya migrado
+                ['brand_name','brand_logo','store_categories','notice_bar_text','gender_options','size_options']
+                    .forEach(k => localStorage.removeItem(k));
+                console.log(`[migración] ${migrated} claves migradas. localStorage limpiado.`);
+            }
+        }
+
         async function syncWithGoogleSheets() {
             showLoading(true);
             try {
                 const response = await fetch(`${API_URL}?action=readAll`);
                 dbData = await response.json();
                 if (!dbData.config) dbData.config = {};
-                // Aplicar config de Sheets al frontend
+                // Migrar localStorage → Sheets si es la primera vez
+                await migrateLocalStorageToSheets();
+                // Aplicar config al frontend
                 applyBrandConfig();
                 loadNoticeBar();
                 renderPillsFromCategories();
