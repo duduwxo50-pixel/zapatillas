@@ -1158,18 +1158,23 @@
                             }
                             <div style="margin-bottom:30px; font-size:15px; color:#475569; white-space: pre-wrap;">${p.desc}</div>
                             
-                            <div style="margin-bottom:20px;">
-                                ${p.sizes && p.sizes.length ? `
-                                <p style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Tallas disponibles:</p>
-                                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
-                                    ${p.sizes.map(s=>`<span style="padding:6px 13px;border:1.5px solid var(--border-color);border-radius:6px;font-size:13px;font-weight:700;">${s}</span>`).join('')}
-                                </div>` : ''}
-                            </div>
+                            ${p.sizes && p.sizes.length ? `
+                            <div style="margin-bottom:24px;">
+                                <p style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Selecciona tu talla:</p>
+                                <div style="display:flex;flex-wrap:wrap;gap:8px;" id="detail-sizes-grid">
+                                    ${p.sizes.map(s => `
+                                        <button class="detail-size-btn" data-size="${s}" onclick="selectDetailSize(this)"
+                                            style="padding:10px 18px;border:2px solid var(--border-color);background:#fff;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;min-width:54px;">
+                                            ${s}
+                                        </button>`).join('')}
+                                </div>
+                                <p id="detail-size-warning" style="display:none;color:#dc2626;font-size:12px;font-weight:700;margin-top:8px;">⚠️ Debes seleccionar una talla para continuar</p>
+                            </div>` : ''}
 
                             <div style="display:flex; gap:12px;">
-                                ${p.stock > 0 ? 
-                                    `<button class="btn-action" style="flex:1; padding:14px;" onclick="addToBag('${p.id}')">Añadir a la Bolsa</button>
-                                     <button class="btn-action" style="flex:1; padding:14px; background-color:var(--whatsapp-color);" onclick="buyDirectWhatsApp('${p.id}')">Pedir por WhatsApp</button>` : 
+                                ${p.stock > 0 ?
+                                    `<button class="btn-action" style="flex:1; padding:14px;" onclick="addToBagFromDetail('${p.id}')">Añadir a la Bolsa</button>
+                                     <button class="btn-action" style="flex:1; padding:14px; background-color:var(--whatsapp-color);" onclick="whatsAppFromDetail('${p.id}')">Pedir por WhatsApp</button>` :
                                     `<button class="btn-action danger" style="width:100%; padding:14px; cursor:not-allowed;" disabled>Modelo Agotado</button>`
                                 }
                             </div>
@@ -2817,6 +2822,60 @@
                 renderAdminSizesChips(selected);
                 overlay.remove();
             });
+        }
+
+        // ── TALLA EN VISTA DETALLE ──
+        function selectDetailSize(btn) {
+            document.querySelectorAll('#detail-sizes-grid .detail-size-btn').forEach(b => {
+                b.style.background   = '#fff';
+                b.style.borderColor  = 'var(--border-color)';
+                b.style.color        = 'var(--text-main)';
+            });
+            btn.style.background  = 'var(--accent-dark)';
+            btn.style.borderColor = 'var(--accent-dark)';
+            btn.style.color       = '#fff';
+            const warn = document.getElementById('detail-size-warning');
+            if (warn) warn.style.display = 'none';
+        }
+
+        function _getDetailSelectedSize() {
+            const active = document.querySelector('#detail-sizes-grid .detail-size-btn[style*="var(--accent-dark)"]');
+            return active ? active.getAttribute('data-size') : null;
+        }
+
+        function addToBagFromDetail(id) {
+            const p = dbData.products.find(pr => pr.id === id);
+            if (!p) return;
+            if (p.sizes && p.sizes.length > 0) {
+                const size = _getDetailSelectedSize();
+                if (!size) {
+                    const warn = document.getElementById('detail-size-warning');
+                    if (warn) { warn.style.display = 'block'; warn.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+                    return;
+                }
+                _commitAddToBag(p, size);
+                // Feedback: botón confirma
+                const btn = document.querySelector('.btn-action[onclick*="addToBagFromDetail"]');
+                if (btn) { const orig = btn.textContent; btn.textContent = '✓ Añadido — Talla ' + size; btn.style.background='#16a34a'; setTimeout(()=>{ btn.textContent=orig; btn.style.background=''; }, 2000); }
+            } else {
+                _commitAddToBag(p, null);
+            }
+        }
+
+        function whatsAppFromDetail(id) {
+            const p = dbData.products.find(pr => pr.id === id);
+            if (!p) return;
+            if (p.sizes && p.sizes.length > 0) {
+                const size = _getDetailSelectedSize();
+                if (!size) {
+                    const warn = document.getElementById('detail-size-warning');
+                    if (warn) { warn.style.display = 'block'; warn.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+                    return;
+                }
+                _sendWhatsApp(p, size);
+            } else {
+                _sendWhatsApp(p, null);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
