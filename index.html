@@ -275,14 +275,8 @@
 
     <main id="home-view" class="spa-view active-view">
         <div id="home-blocks-container"></div>
-        <!-- Productos destacados siempre al final -->
         <div id="home-pills-section">
-            <div class="visual-filters-container">
-                <button class="filter-pill-btn active-pill" id="pill-all" onclick="selectQuickFilter('all')">👟 Todo el Stock</button>
-                <button class="filter-pill-btn" id="pill-hombre" onclick="selectQuickFilter('hombre')">🔥 Línea Masculina</button>
-                <button class="filter-pill-btn" id="pill-mujer" onclick="selectQuickFilter('mujer')">✨ Línea Femenina</button>
-                <button class="filter-pill-btn" id="pill-promo" onclick="selectQuickFilter('recientes')">⚡ Lanzamientos Recientes</button>
-            </div>
+            <div class="visual-filters-container" id="pills-dynamic-container"></div>
             <h2 style="margin-bottom:20px; text-transform:uppercase; font-size:18px;" id="home-section-title">Modelos en Exhibición</h2>
             <div class="featured-products-grid" id="home-products-grid"></div>
         </div>
@@ -882,21 +876,15 @@
         // FILTROS DE TIENDA
         function selectQuickFilter(filterType) {
             activeHomeFilter = filterType;
-            document.querySelectorAll('.filter-pill-btn').forEach(btn => btn.classList.remove('active-pill'));
-            
-            if (filterType === 'all') {
-                document.getElementById('pill-all').classList.add('active-pill');
-                document.getElementById('home-section-title').innerText = "Todo el Almacén";
-            } else if (filterType === 'hombre') {
-                document.getElementById('pill-hombre').classList.add('active-pill');
-                document.getElementById('home-section-title').innerText = "Colección para Hombre";
-            } else if (filterType === 'mujer') {
-                document.getElementById('pill-mujer').classList.add('active-pill');
-                document.getElementById('home-section-title').innerText = "Colección para Mujer";
-            } else if (filterType === 'recientes') {
-                document.getElementById('pill-promo').classList.add('active-pill');
-                document.getElementById('home-section-title').innerText = "Últimos Lanzamientos Añadidos";
-            }
+            // Actualizar pill activa (sin depender de IDs hardcodeados)
+            document.querySelectorAll('#pills-dynamic-container .filter-pill-btn').forEach(btn => {
+                btn.classList.toggle('active-pill', btn.dataset.pillValue === filterType);
+            });
+            // Actualizar título con el label de la categoría guardada
+            const cats = getCategories();
+            const cat = cats.find(c => c.value === filterType);
+            const titleEl = document.getElementById('home-section-title');
+            if (titleEl) titleEl.innerText = cat ? cat.label : 'Productos';
             renderHome();
         }
 
@@ -1923,7 +1911,6 @@
         function getDefaultBlocks() {
             return [
                 { id: Date.now(), type:'hero', data:{ ...BLOCK_DEFS.hero.defaults } },
-                { id: Date.now()+1, type:'promo', data:{ ...BLOCK_DEFS.promo.defaults } }
             ];
         }
 
@@ -2129,22 +2116,34 @@
             }
             if (block.type === 'video') {
                 let src = '';
-                const url = d.url || '';
+                const url = (d.url || '').trim();
+                if (!url) {
+                    return `<div style="margin-bottom:24px;">
+                        ${d.titulo ? `<h2 style="text-transform:uppercase; font-size:18px; margin-bottom:14px;">${d.titulo}</h2>` : ''}
+                        <div style="border-radius:10px; background:#f1f5f9; border:2px dashed var(--border-color); aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;">
+                            <span style="font-size:32px;">▶️</span>
+                            <p style="color:var(--text-muted); font-size:13px;">Agrega la URL del video en el panel admin</p>
+                        </div>
+                    </div>`;
+                }
                 if (d.tipo === 'youtube') {
-                    const match = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
-                    src = match ? `https://www.youtube.com/embed/${match[1]}?autoplay=0&rel=0` : '';
+                    // Soporta: watch?v=, youtu.be/, embed/, shorts/
+                    const match = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+                    src = match ? `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1` : '';
                 } else if (d.tipo === 'vimeo') {
                     const match = url.match(/vimeo\.com\/(\d+)/);
                     src = match ? `https://player.vimeo.com/video/${match[1]}` : '';
                 } else {
                     src = url;
                 }
-                return `<div>
+                return `<div style="margin-bottom:24px;">
                     ${d.titulo ? `<h2 style="text-transform:uppercase; font-size:18px; margin-bottom:14px;">${d.titulo}</h2>` : ''}
                     <div class="store-video-block">
                         ${d.tipo === 'directo'
-                            ? `<video controls style="width:100%; height:100%; object-fit:cover;"><source src="${url}"></video>`
-                            : src ? `<iframe src="${src}" allowfullscreen></iframe>` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;font-size:14px;">Configura la URL del video en el admin.</div>'}
+                            ? `<video controls style="width:100%; height:100%; object-fit:cover; border-radius:10px;"><source src="${url}"></video>`
+                            : src
+                                ? `<iframe src="${src}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" style="width:100%; height:100%; border:none; border-radius:10px;"></iframe>`
+                                : `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:8px;border-radius:10px;background:#1a1a1a;"><span style="font-size:32px;">⚠️</span><p style="color:#aaa;font-size:13px;">URL de video no válida. Revisala en el admin.</p></div>`}
                     </div>
                 </div>`;
             }
@@ -2201,19 +2200,26 @@
             const rows = document.querySelectorAll('.cat-row');
             const cats = [];
             rows.forEach(row => {
-                const emoji = row.querySelector('[data-cat="emoji"]').value.trim();
-                const label = row.querySelector('[data-cat="label"]').value.trim();
-                const value = row.querySelector('[data-cat="value"]').value.trim();
-                if (label && value) cats.push({ emoji, label, value });
+                const iconType = row.querySelector('[data-cat="iconType"]')?.value || 'emoji';
+                const emoji    = row.querySelector('[data-cat="emoji"]')?.value.trim() || '';
+                const imgUrl   = row.querySelector('[data-cat="imgUrl"]')?.value.trim() || '';
+                const label    = row.querySelector('[data-cat="label"]')?.value.trim() || '';
+                const value    = row.querySelector('[data-cat="value"]')?.value || 'all';
+                if (!label) return;
+                cats.push({
+                    emoji:  iconType === 'emoji'  ? emoji  : '',
+                    imgUrl: iconType === 'imagen' ? imgUrl : '',
+                    label, value
+                });
             });
             localStorage.setItem('store_categories', JSON.stringify(cats));
             renderPillsFromCategories();
-            alert('✅ Categorías guardadas.');
+            alert('✅ Categorías guardadas y aplicadas.');
         }
 
         function addCategory() {
             const cats = getCategories();
-            cats.push({ emoji:'🆕', label:'Nueva Categoría', value:'all' });
+            cats.push({ emoji:'🆕', imgUrl:'', label:'Nueva Categoría', value:'all' });
             localStorage.setItem('store_categories', JSON.stringify(cats));
             renderCategoriesEditor();
         }
@@ -2222,24 +2228,70 @@
             const cont = document.getElementById('categories-editor');
             if (!cont) return;
             const cats = getCategories();
-            cont.innerHTML = cats.map((cat, idx) => `
-                <div class="cat-row">
-                    <input data-cat="emoji" value="${cat.emoji||''}" placeholder="😊" style="max-width:54px; text-align:center; font-size:18px;">
-                    <input data-cat="label" value="${cat.label||''}" placeholder="Nombre categoría" style="flex:2;">
-                    <input data-cat="value" value="${cat.value||''}" placeholder="Valor filtro: all, hombre, mujer, recientes" style="flex:2;">
-                    <button onclick="this.closest('.cat-row').remove()" style="background:none; border:none; color:var(--danger-color); font-size:18px; cursor:pointer; flex-shrink:0;">×</button>
-                </div>`).join('');
+            cont.innerHTML = cats.map((cat) => {
+                const iconType = cat.imgUrl ? 'imagen' : (cat.emoji ? 'emoji' : 'ninguno');
+                return `
+                <div class="cat-row" style="flex-wrap:wrap; gap:8px; align-items:flex-end;">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; white-space:nowrap;">Tipo ícono</label>
+                        <select data-cat="iconType" onchange="toggleCatIconFields(this)" style="padding:7px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; min-width:90px;">
+                            <option value="emoji"   ${iconType==='emoji'  ?'selected':''}>😊 Emoji</option>
+                            <option value="imagen"  ${iconType==='imagen' ?'selected':''}>🖼️ Imagen</option>
+                            <option value="ninguno" ${iconType==='ninguno'?'selected':''}>— Sin ícono</option>
+                        </select>
+                    </div>
+                    <div class="cat-icon-field-emoji" style="display:${iconType==='emoji'?'flex':'none'}; flex-direction:column; gap:4px;">
+                        <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Emoji</label>
+                        <input data-cat="emoji" value="${cat.emoji||''}" placeholder="😊" style="width:52px; text-align:center; font-size:18px; padding:5px 4px; border:1px solid var(--border-color); border-radius:6px;">
+                    </div>
+                    <div class="cat-icon-field-img" style="display:${iconType==='imagen'?'flex':'none'}; flex-direction:column; gap:4px; min-width:180px; flex:2;">
+                        <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">URL imagen ícono</label>
+                        <input data-cat="imgUrl" value="${cat.imgUrl||''}" placeholder="https://... jpg/png/gif" style="width:100%; padding:7px 9px; border:1px solid var(--border-color); border-radius:6px; font-size:12px;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; flex:2; min-width:130px;">
+                        <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Nombre</label>
+                        <input data-cat="label" value="${cat.label||''}" placeholder="Ej: Línea Masculina" style="width:100%; padding:7px 9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; min-width:110px;">
+                        <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Filtro</label>
+                        <select data-cat="value" style="padding:7px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px;">
+                            <option value="all"      ${cat.value==='all'      ?'selected':''}>Todo el stock</option>
+                            <option value="hombre"   ${cat.value==='hombre'   ?'selected':''}>Hombre</option>
+                            <option value="mujer"    ${cat.value==='mujer'    ?'selected':''}>Mujer</option>
+                            <option value="recientes"${cat.value==='recientes'?'selected':''}>Recientes</option>
+                        </select>
+                    </div>
+                    <button onclick="this.closest('.cat-row').remove()" title="Eliminar" style="align-self:flex-end; background:none; border:none; color:var(--danger-color); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:4px; line-height:1; flex-shrink:0; margin-bottom:2px;">×</button>
+                </div>`;
+            }).join('');
+        }
+
+        function toggleCatIconFields(sel) {
+            const row = sel.closest('.cat-row');
+            row.querySelector('.cat-icon-field-emoji').style.display = sel.value === 'emoji'  ? 'flex' : 'none';
+            row.querySelector('.cat-icon-field-img').style.display   = sel.value === 'imagen' ? 'flex' : 'none';
         }
 
         function renderPillsFromCategories() {
             const cats = getCategories();
-            const pills = document.getElementById('home-pills-section');
-            if (!pills) return;
-            const container = pills.querySelector('.visual-filters-container');
+            const container = document.getElementById('pills-dynamic-container');
             if (!container) return;
-            container.innerHTML = cats.map((cat, i) => `
-                <button class="filter-pill-btn ${i===0?'active-pill':''}" id="pill-${cat.value}" onclick="selectQuickFilter('${cat.value}')">${cat.emoji} ${cat.label}</button>
-            `).join('');
+            container.innerHTML = cats.map((cat, i) => {
+                // Ícono: puede ser emoji, imagen URL, o nada
+                let iconHtml = '';
+                if (cat.imgUrl && cat.imgUrl.trim()) {
+                    iconHtml = `<img src="${cat.imgUrl}" style="width:22px;height:22px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:4px;">`;
+                } else if (cat.emoji && cat.emoji.trim()) {
+                    iconHtml = `<span style="margin-right:4px;">${cat.emoji}</span>`;
+                }
+                return `<button class="filter-pill-btn ${i===0?'active-pill':''}" data-pill-value="${cat.value}" onclick="selectQuickFilterFromPill(this, '${cat.value}')">${iconHtml}${cat.label}</button>`;
+            }).join('');
+        }
+
+        function selectQuickFilterFromPill(btn, value) {
+            document.querySelectorAll('#pills-dynamic-container .filter-pill-btn').forEach(b => b.classList.remove('active-pill'));
+            btn.classList.add('active-pill');
+            selectQuickFilter(value);
         }
 
         // ── Barra de aviso ──
