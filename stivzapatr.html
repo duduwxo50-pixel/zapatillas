@@ -483,6 +483,61 @@
 
         /* Cursor zoom-in en la imagen principal del producto */
         .main-product-preview img { cursor: zoom-in; }
+
+        /* ══ FOOTER PERSONALIZABLE ══ */
+        #store-footer { background: #0f172a; color: #fff; padding: 56px 0 0 0; margin-top: 60px; }
+        .footer-trust-bar { background: #fff; border-bottom: 1px solid #e2e8f0; }
+        .footer-trust-bar-inner { max-width: 1400px; margin: 0 auto; padding: 28px clamp(14px,3vw,40px); display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+        .footer-trust-card { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 120px; text-align: center; padding: 12px; }
+        .footer-trust-card .ftc-icon { font-size: 28px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .footer-trust-card .ftc-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .footer-trust-card .ftc-title { font-size: 13px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.3px; }
+        .footer-trust-card .ftc-sub { font-size: 12px; color: #64748b; font-weight: 500; line-height: 1.3; }
+        .footer-main-inner { max-width: 1400px; margin: 0 auto; padding: 40px clamp(14px,3vw,40px) 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 32px 40px; }
+        .footer-col-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: #94a3b8; margin-bottom: 14px; }
+        .footer-col-links { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .footer-col-links li a, .footer-col-links li span { font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; transition: color .15s; }
+        .footer-col-links li a:hover, .footer-col-links li span:hover { color: #fff; }
+        .footer-contact-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; font-size: 13px; color: rgba(255,255,255,.75); }
+        .footer-contact-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+        .footer-schedule-item { font-size: 12px; color: rgba(255,255,255,.65); margin-bottom: 6px; line-height: 1.4; }
+        .footer-schedule-label { font-weight: 700; color: #fff; display: block; }
+        .footer-newsletter-form { display: flex; gap: 0; margin-top: 8px; }
+        .footer-newsletter-form input { flex: 1; padding: 11px 14px; border: none; border-radius: 6px 0 0 6px; font-size: 13px; outline: none; background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.15); border-right: none; }
+        .footer-newsletter-form input::placeholder { color: rgba(255,255,255,.4); }
+        .footer-newsletter-form button { padding: 11px 16px; background: #fff; color: #0f172a; border: none; border-radius: 0 6px 6px 0; font-size: 13px; font-weight: 800; cursor: pointer; transition: background .15s; white-space: nowrap; }
+        .footer-newsletter-form button:hover { background: #e2e8f0; }
+        .footer-newsletter-note { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 8px; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); }
+        .footer-bottom-inner { max-width: 1400px; margin: 0 auto; padding: 20px clamp(14px,3vw,40px); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .footer-social-row { display: flex; gap: 14px; }
+        .footer-social-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: background .15s; text-decoration: none; color: #fff; }
+        .footer-social-btn:hover { background: rgba(255,255,255,.25); }
+        .footer-copy { font-size: 12px; color: rgba(255,255,255,.4); }
+        @media (max-width: 768px) {
+            .footer-main-inner { grid-template-columns: repeat(2, 1fr); gap: 24px 20px; }
+            .footer-trust-bar-inner { gap: 8px; }
+            .footer-trust-card { min-width: 90px; padding: 8px 4px; }
+        }
+        @media (max-width: 480px) {
+            .footer-main-inner { grid-template-columns: 1fr; }
+            .footer-trust-bar-inner { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+        }
+
+        /* Admin footer editor */
+        .footer-admin-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; flex-wrap: wrap; }
+        .footer-admin-tab { padding: 10px 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; color: var(--text-muted); }
+        .footer-admin-tab.active { border-bottom-color: var(--accent-dark); color: var(--accent-dark); }
+        .footer-admin-panel { display: none; }
+        .footer-admin-panel.active { display: block; }
+        .footer-trust-editor-row { display: grid; grid-template-columns: 60px 1fr 1fr auto; gap: 8px; align-items: center; background: #f8fafc; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 8px; }
+        .footer-link-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 6px; }
+        .footer-color-swatch-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #e2e8f0; display: inline-block; vertical-align: middle; }
+        .footer-admin-field { margin-bottom: 12px; }
+        .footer-admin-field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+        .footer-admin-field input, .footer-admin-field select, .footer-admin-field textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
+        .footer-admin-field textarea { min-height: 56px; resize: vertical; }
+        .footer-preview-badge { display: inline-block; background: #f1f5f9; color: var(--text-muted); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; margin-left: 8px; text-transform: uppercase; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -923,7 +978,243 @@
                 </div>
             </aside>
         </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             EDITOR DE FOOTER — SECCIÓN PERSONALIZABLE
+        ═══════════════════════════════════════════════════════ -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-footer-section" data-rol="admin">
+            <h2>🦶 Editor de Footer — Pie de Página</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Personaliza completamente el pie de página de tu tienda: colores, columnas, enlaces, redes sociales, barra de confianza y más. Todos los cambios se guardan en Google Sheets.</p>
+
+            <!-- Tabs de secciones -->
+            <div class="footer-admin-tabs">
+                <div class="footer-admin-tab active" onclick="switchFooterTab('general')">🎨 General</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('trust')">✅ Barra de Confianza</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('columns')">📋 Columnas &amp; Links</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('contact')">📍 Contacto &amp; Horarios</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('newsletter')">✉️ Newsletter</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('social')">📲 Redes Sociales</div>
+            </div>
+
+            <!-- ── PANEL: GENERAL ── -->
+            <div class="footer-admin-panel active" id="footer-panel-general">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
+                    <div class="footer-admin-field">
+                        <label>Color de Fondo del Footer</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="color" id="footer-bg-color" value="#0f172a" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
+                            <input type="text" id="footer-bg-color-text" value="#0f172a" placeholder="#0f172a" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-bg-color','footer-bg-color-text')">
+                        </div>
+                    </div>
+                    <div class="footer-admin-field">
+                        <label>Color del Texto Principal</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="color" id="footer-text-color" value="#ffffff" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
+                            <input type="text" id="footer-text-color-text" value="#ffffff" placeholder="#ffffff" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-text-color','footer-text-color-text')">
+                        </div>
+                    </div>
+                    <div class="footer-admin-field">
+                        <label>Color de Acentos / Botones</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="color" id="footer-accent-color" value="#ffffff" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
+                            <input type="text" id="footer-accent-color-text" value="#ffffff" placeholder="#ffffff" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-accent-color','footer-accent-color-text')">
+                        </div>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                    <div class="footer-admin-field">
+                        <label>Texto de Copyright</label>
+                        <input type="text" id="footer-copyright" placeholder="© 2025 StivZapat. Todos los derechos reservados." value="">
+                    </div>
+                    <div class="footer-admin-field">
+                        <label>Mostrar Footer en la Tienda</label>
+                        <select id="footer-visible">
+                            <option value="1">Sí, mostrar el footer</option>
+                            <option value="0">No, ocultar footer</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
+                    <p style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase;">Vista previa de colores:</p>
+                    <div id="footer-color-preview" style="border-radius:8px; padding:18px 20px; transition: all .3s;">
+                        <p style="font-size:13px; margin-bottom:6px;" id="fcp-title">StivZapat — Tienda</p>
+                        <p style="font-size:11px; opacity:.6;" id="fcp-sub">© 2025 Todos los derechos reservados</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PANEL: BARRA DE CONFIANZA ── -->
+            <div class="footer-admin-panel" id="footer-panel-trust">
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Edita las tarjetas de confianza (ícono, título y subtítulo). Puedes reordenarlas y activar/desactivar cada una.</p>
+                <div id="footer-trust-editor"></div>
+                <button class="btn-action secondary" style="margin-top:10px; font-size:13px; padding:8px 16px;" onclick="addFooterTrustCard()">+ Agregar Tarjeta</button>
+            </div>
+
+            <!-- ── PANEL: COLUMNAS Y LINKS ── -->
+            <div class="footer-admin-panel" id="footer-panel-columns">
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Configura las columnas de navegación del footer. Cada columna tiene un título y una lista de enlaces personalizables.</p>
+                <div id="footer-columns-editor"></div>
+                <button class="btn-action secondary" style="margin-top:10px; font-size:13px; padding:8px 16px;" onclick="addFooterColumn()">+ Agregar Columna</button>
+            </div>
+
+            <!-- ── PANEL: CONTACTO Y HORARIOS ── -->
+            <div class="footer-admin-panel" id="footer-panel-contact">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                        <h3 style="font-size:14px; font-weight:800; text-transform:uppercase; margin-bottom:14px; color:var(--text-muted);">Información de Contacto</h3>
+                        <div class="footer-admin-field">
+                            <label>Dirección / Tienda Física</label>
+                            <input type="text" id="footer-address" placeholder="Calle 11 #9-20, CC Aristi, Local 121. Cali">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Teléfono Atención al Cliente</label>
+                            <input type="text" id="footer-phone-main" placeholder="+57 312 207 2057">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Teléfono Mayoristas</label>
+                            <input type="text" id="footer-phone-wholesale" placeholder="+57 314 695 8003">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="footer-email" placeholder="contacto@stivzapat.com">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>URL del Formulario PQRSF</label>
+                            <input type="text" id="footer-pqrsf-url" placeholder="https://forms.google.com/...">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>URL Cambios / Garantías / Devoluciones</label>
+                            <input type="text" id="footer-devolutions-url" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="font-size:14px; font-weight:800; text-transform:uppercase; margin-bottom:14px; color:var(--text-muted);">Horarios de Atención</h3>
+                        <div class="footer-admin-field">
+                            <label>Atención PQRS (días y horas)</label>
+                            <input type="text" id="footer-hours-pqrs" placeholder="Lunes a Viernes de 8:30 AM - 5:30 PM">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Horario Tienda Física</label>
+                            <input type="text" id="footer-hours-store" placeholder="Lunes a Sábado de 11AM - 4:30 PM">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Nota adicional (ej: festivos)</label>
+                            <input type="text" id="footer-hours-note" placeholder="Sin atención en días festivos">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Mostrar sección de contacto</label>
+                            <select id="footer-show-contact">
+                                <option value="1">Mostrar</option>
+                                <option value="0">Ocultar</option>
+                            </select>
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Mostrar sección de horarios</label>
+                            <select id="footer-show-hours">
+                                <option value="1">Mostrar</option>
+                                <option value="0">Ocultar</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PANEL: NEWSLETTER ── -->
+            <div class="footer-admin-panel" id="footer-panel-newsletter">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                        <div class="footer-admin-field">
+                            <label>Mostrar sección de Newsletter</label>
+                            <select id="footer-show-newsletter">
+                                <option value="1">Mostrar</option>
+                                <option value="0">Ocultar</option>
+                            </select>
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Título del Newsletter</label>
+                            <input type="text" id="footer-newsletter-title" placeholder="Suscríbete a nuestra newsletter">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Subtítulo / descripción</label>
+                            <input type="text" id="footer-newsletter-subtitle" placeholder="Y recibe consejos y ofertas exclusivas">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Texto del placeholder del campo email</label>
+                            <input type="text" id="footer-newsletter-placeholder" placeholder="Correo electrónico">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Nota de privacidad (debajo del campo)</label>
+                            <input type="text" id="footer-newsletter-note" placeholder="No spam. Solo lo mejor de nuestra tienda.">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="footer-admin-field">
+                            <label>URL del formulario de suscripción (Google Forms / Mailchimp etc.)</label>
+                            <input type="text" id="footer-newsletter-url" placeholder="https://forms.google.com/...">
+                        </div>
+                        <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:14px 16px; margin-top:8px;">
+                            <p style="font-size:12px; font-weight:700; color:#16a34a; margin-bottom:6px;">💡 Tip de integración</p>
+                            <p style="font-size:12px; color:#15803d; line-height:1.5;">Puedes usar un Google Form, Mailchimp, Brevo o cualquier herramienta de email marketing. Pega la URL del formulario de suscripción arriba y el botón enviará al cliente a registrarse.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PANEL: REDES SOCIALES ── -->
+            <div class="footer-admin-panel" id="footer-panel-social">
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Agrega los links de tus redes sociales. Solo las que tengan URL aparecerán en el footer.</p>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:12px;" id="footer-social-editor">
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>📘 Facebook</label>
+                        <input type="url" id="footer-social-facebook" placeholder="https://facebook.com/tupagina">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>📸 Instagram</label>
+                        <input type="url" id="footer-social-instagram" placeholder="https://instagram.com/tuperfil">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>🎵 TikTok</label>
+                        <input type="url" id="footer-social-tiktok" placeholder="https://tiktok.com/@tuperfil">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>▶️ YouTube</label>
+                        <input type="url" id="footer-social-youtube" placeholder="https://youtube.com/@tucanal">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>💬 WhatsApp</label>
+                        <input type="text" id="footer-social-whatsapp" placeholder="573108340344 (solo número)">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>🐦 X / Twitter</label>
+                        <input type="url" id="footer-social-twitter" placeholder="https://x.com/tuperfil">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:16px;">
+                <button class="btn-action secondary" onclick="previewFooter()">👁️ Vista Previa en Tienda</button>
+                <button class="btn-action" onclick="saveFooterConfig()">💾 Guardar Footer en Google Sheets</button>
+            </div>
+        </div>
     </section>
+
+    <!-- ══ FOOTER PERSONALIZABLE DE TIENDA ══ -->
+    <footer id="store-footer" style="display:none;">
+        <!-- Barra de confianza -->
+        <div class="footer-trust-bar" id="footer-trust-bar">
+            <div class="footer-trust-bar-inner" id="footer-trust-cards"></div>
+        </div>
+        <!-- Columnas principales -->
+        <div class="footer-main-inner" id="footer-main-cols"></div>
+        <!-- Barra inferior -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-inner">
+                <div class="footer-social-row" id="footer-social-row"></div>
+                <p class="footer-copy" id="footer-copy-text"></p>
+            </div>
+        </div>
+    </footer>
 
     <!-- MODAL CHECKOUT MEDIOS DE PAGO -->
     <div id="checkout-overlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
@@ -1091,6 +1382,535 @@
             const json = await res.json();
             if (json.success) return json.data.url;
             throw new Error(json.error?.message || "Error subiendo imagen a ImgBB");
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  FOOTER PERSONALIZABLE — LÓGICA COMPLETA
+        // ═══════════════════════════════════════════════════════
+
+        const FOOTER_DEFAULT = {
+            visible: "1",
+            bgColor: "#0f172a",
+            textColor: "#ffffff",
+            accentColor: "#ffffff",
+            copyright: "© 2025 StivZapat. Todos los derechos reservados.",
+            trustCards: [
+                { icon: "🚚", title: "Envíos gratis", sub: "por compras mayores a $150.000", active: true },
+                { icon: "⏱️", title: "Entregas en 1–5 días", sub: "en todo el país", active: true },
+                { icon: "🛡️", title: "Garantía {{BRAND}}", sub: "60 días en todos los productos", active: true },
+                { icon: "💪", title: "Diseñado para atletas", sub: "probado en gimnasio", active: true },
+                { icon: "💬", title: "Soporte humano", sub: "personalizado en cada compra", active: true }
+            ],
+            columns: [
+                { title: "Enlaces de interés", links: [
+                    { label: "Blog", url: "#" },
+                    { label: "Política de Atención al Cliente", url: "#" },
+                    { label: "Política de Envíos", url: "#" },
+                    { label: "Cambios, Garantías y Devoluciones", url: "#" },
+                    { label: "Políticas de Privacidad", url: "#" }
+                ]},
+                { title: "Categorías Top", links: [
+                    { label: "Rodilleras", url: "#" },
+                    { label: "Strap", url: "#" },
+                    { label: "Cinturones", url: "#" },
+                    { label: "Guantes", url: "#" },
+                    { label: "Muñequeras", url: "#" }
+                ]}
+            ],
+            showContact: "1",
+            address: "Calle 11 #9-20, CC Aristi, Local 121. Cali - Valle",
+            phoneMain: "+57 312 207 2057",
+            phoneWholesale: "+57 314 695 8003",
+            email: "",
+            pqrsfUrl: "#",
+            devolutionsUrl: "#",
+            showHours: "1",
+            hoursPqrs: "Lunes a Viernes de 8:30 AM - 5:30 PM",
+            hoursStore: "Lunes a Sábado de 11AM - 4:30 PM",
+            hoursNote: "Sin atención en días festivos",
+            showNewsletter: "1",
+            newsletterTitle: "Suscríbete a nuestra newsletter",
+            newsletterSubtitle: "Y recibe consejos y ofertas exclusivas",
+            newsletterPlaceholder: "Correo electrónico",
+            newsletterNote: "Sin spam. Solo lo mejor de nuestra tienda.",
+            newsletterUrl: "",
+            social: { facebook: "", instagram: "", tiktok: "", youtube: "", whatsapp: "", twitter: "" }
+        };
+
+        let footerCfg = JSON.parse(JSON.stringify(FOOTER_DEFAULT));
+
+        function getFooterCfg() {
+            const raw = getCfg('footer_config', null);
+            if (raw) {
+                try {
+                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    footerCfg = Object.assign({}, FOOTER_DEFAULT, parsed);
+                    if (!footerCfg.social) footerCfg.social = FOOTER_DEFAULT.social;
+                    if (!footerCfg.trustCards || !footerCfg.trustCards.length) footerCfg.trustCards = FOOTER_DEFAULT.trustCards;
+                    if (!footerCfg.columns || !footerCfg.columns.length) footerCfg.columns = FOOTER_DEFAULT.columns;
+                } catch(e) { footerCfg = JSON.parse(JSON.stringify(FOOTER_DEFAULT)); }
+            }
+            return footerCfg;
+        }
+
+        async function saveFooterConfig() {
+            // Collect general
+            footerCfg.bgColor = document.getElementById('footer-bg-color').value;
+            footerCfg.textColor = document.getElementById('footer-text-color').value;
+            footerCfg.accentColor = document.getElementById('footer-accent-color').value;
+            footerCfg.copyright = document.getElementById('footer-copyright').value;
+            footerCfg.visible = document.getElementById('footer-visible').value;
+            // Contact
+            footerCfg.showContact = document.getElementById('footer-show-contact').value;
+            footerCfg.address = document.getElementById('footer-address').value;
+            footerCfg.phoneMain = document.getElementById('footer-phone-main').value;
+            footerCfg.phoneWholesale = document.getElementById('footer-phone-wholesale').value;
+            footerCfg.email = document.getElementById('footer-email').value;
+            footerCfg.pqrsfUrl = document.getElementById('footer-pqrsf-url').value;
+            footerCfg.devolutionsUrl = document.getElementById('footer-devolutions-url').value;
+            footerCfg.showHours = document.getElementById('footer-show-hours').value;
+            footerCfg.hoursPqrs = document.getElementById('footer-hours-pqrs').value;
+            footerCfg.hoursStore = document.getElementById('footer-hours-store').value;
+            footerCfg.hoursNote = document.getElementById('footer-hours-note').value;
+            // Newsletter
+            footerCfg.showNewsletter = document.getElementById('footer-show-newsletter').value;
+            footerCfg.newsletterTitle = document.getElementById('footer-newsletter-title').value;
+            footerCfg.newsletterSubtitle = document.getElementById('footer-newsletter-subtitle').value;
+            footerCfg.newsletterPlaceholder = document.getElementById('footer-newsletter-placeholder').value;
+            footerCfg.newsletterNote = document.getElementById('footer-newsletter-note').value;
+            footerCfg.newsletterUrl = document.getElementById('footer-newsletter-url').value;
+            // Social
+            footerCfg.social = {
+                facebook: document.getElementById('footer-social-facebook').value,
+                instagram: document.getElementById('footer-social-instagram').value,
+                tiktok: document.getElementById('footer-social-tiktok').value,
+                youtube: document.getElementById('footer-social-youtube').value,
+                whatsapp: document.getElementById('footer-social-whatsapp').value,
+                twitter: document.getElementById('footer-social-twitter').value
+            };
+            // Trust cards
+            footerCfg.trustCards = [];
+            document.querySelectorAll('.footer-trust-row').forEach(row => {
+                footerCfg.trustCards.push({
+                    icon: row.querySelector('.ftc-icon-input').value,
+                    iconImg: (row.querySelector('.ftc-icon-img-url')||{}).value || '',
+                    title: row.querySelector('.ftc-title-input').value,
+                    sub: row.querySelector('.ftc-sub-input').value,
+                    active: row.querySelector('.ftc-active-chk').checked
+                });
+            });
+            // Columns
+            footerCfg.columns = [];
+            document.querySelectorAll('.footer-col-section').forEach(colEl => {
+                const links = [];
+                colEl.querySelectorAll('.footer-link-row').forEach(lr => {
+                    links.push({
+                        label: lr.querySelector('.flink-label').value,
+                        url: lr.querySelector('.flink-url').value
+                    });
+                });
+                footerCfg.columns.push({
+                    title: colEl.querySelector('.fcol-title-input').value,
+                    links
+                });
+            });
+
+            const btn = event.target;
+            const orig = btn.textContent;
+            btn.textContent = '⏳ Guardando...';
+            btn.disabled = true;
+            try {
+                await saveCfg('footer_config', JSON.stringify(footerCfg));
+                renderStoreFooter();
+                btn.textContent = '✅ Guardado';
+                setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+            } catch(e) {
+                btn.textContent = '✗ Error';
+                btn.disabled = false;
+                alert('Error al guardar. Revisa la conexión.');
+            }
+        }
+
+        function previewFooter() {
+            renderStoreFooter();
+            const footer = document.getElementById('store-footer');
+            if (footer) {
+                footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                footer.style.outline = '3px solid #3b82f6';
+                setTimeout(() => footer.style.outline = '', 2000);
+            }
+            alert('✓ Vista previa actualizada. Desplázate hacia abajo para verlo.');
+        }
+
+        function switchFooterTab(name) {
+            document.querySelectorAll('.footer-admin-tab').forEach((t, i) => {
+                const panels = ['general','trust','columns','contact','newsletter','social'];
+                t.classList.toggle('active', panels[i] === name);
+            });
+            document.querySelectorAll('.footer-admin-panel').forEach(p => {
+                p.classList.toggle('active', p.id === `footer-panel-${name}`);
+            });
+        }
+
+        function syncColorPicker(colorId, textId) {
+            const v = document.getElementById(textId).value;
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                document.getElementById(colorId).value = v;
+            }
+            updateFooterColorPreview();
+        }
+
+        function updateFooterColorPreview() {
+            const bg = document.getElementById('footer-bg-color').value || '#0f172a';
+            const txt = document.getElementById('footer-text-color').value || '#ffffff';
+            const prev = document.getElementById('footer-color-preview');
+            if (prev) {
+                prev.style.background = bg;
+                prev.style.color = txt;
+                document.getElementById('fcp-title').style.color = txt;
+                document.getElementById('fcp-sub').style.color = txt;
+            }
+        }
+
+        function populateFooterAdmin() {
+            const cfg = getFooterCfg();
+            // General
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+            setVal('footer-bg-color', cfg.bgColor);
+            setVal('footer-bg-color-text', cfg.bgColor);
+            setVal('footer-text-color', cfg.textColor);
+            setVal('footer-text-color-text', cfg.textColor);
+            setVal('footer-accent-color', cfg.accentColor);
+            setVal('footer-accent-color-text', cfg.accentColor);
+            setVal('footer-copyright', cfg.copyright);
+            setVal('footer-visible', cfg.visible);
+            // Contact
+            setVal('footer-show-contact', cfg.showContact);
+            setVal('footer-address', cfg.address);
+            setVal('footer-phone-main', cfg.phoneMain);
+            setVal('footer-phone-wholesale', cfg.phoneWholesale);
+            setVal('footer-email', cfg.email);
+            setVal('footer-pqrsf-url', cfg.pqrsfUrl);
+            setVal('footer-devolutions-url', cfg.devolutionsUrl);
+            setVal('footer-show-hours', cfg.showHours);
+            setVal('footer-hours-pqrs', cfg.hoursPqrs);
+            setVal('footer-hours-store', cfg.hoursStore);
+            setVal('footer-hours-note', cfg.hoursNote);
+            // Newsletter
+            setVal('footer-show-newsletter', cfg.showNewsletter);
+            setVal('footer-newsletter-title', cfg.newsletterTitle);
+            setVal('footer-newsletter-subtitle', cfg.newsletterSubtitle);
+            setVal('footer-newsletter-placeholder', cfg.newsletterPlaceholder);
+            setVal('footer-newsletter-note', cfg.newsletterNote);
+            setVal('footer-newsletter-url', cfg.newsletterUrl);
+            // Social
+            const s = cfg.social || {};
+            setVal('footer-social-facebook', s.facebook);
+            setVal('footer-social-instagram', s.instagram);
+            setVal('footer-social-tiktok', s.tiktok);
+            setVal('footer-social-youtube', s.youtube);
+            setVal('footer-social-whatsapp', s.whatsapp);
+            setVal('footer-social-twitter', s.twitter);
+            // Trust cards
+            renderFooterTrustEditor(cfg.trustCards);
+            // Columns
+            renderFooterColumnsEditor(cfg.columns);
+            updateFooterColorPreview();
+            // live sync color pickers
+            ['footer-bg-color','footer-text-color','footer-accent-color'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', function() {
+                    const textId = id + '-text';
+                    const textEl = document.getElementById(textId);
+                    if (textEl) textEl.value = this.value;
+                    updateFooterColorPreview();
+                });
+            });
+        }
+
+        function renderFooterTrustEditor(cards) {
+            const container = document.getElementById('footer-trust-editor');
+            if (!container) return;
+            const _brandName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'Nuestra Tienda');
+            let hint = container.parentNode.querySelector('.ftc-brand-hint');
+            if (!hint) {
+                hint = document.createElement('div');
+                hint.className = 'ftc-brand-hint';
+                hint.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:9px 14px; margin-bottom:10px; font-size:12px; color:#1e40af; line-height:1.5;';
+                container.parentNode.insertBefore(hint, container);
+            }
+            hint.innerHTML = '💡 Usa <strong>{{BRAND}}</strong> en el título o descripción para insertar automáticamente el nombre de tu empresa (<strong>' + _brandName + '</strong>). Ej: <em>"Garantía {{BRAND}}"</em>';
+            container.innerHTML = '';
+            (cards || []).forEach((c, i) => {
+                const row = document.createElement('div');
+                row.className = 'footer-trust-row';
+                row.style.cssText = 'background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:10px;';
+                const hasImg = c.iconImg && c.iconImg.trim();
+                row.innerHTML = `
+                    <div style="display:grid; grid-template-columns:1fr 1fr 80px 40px; gap:8px; align-items:center; margin-bottom:8px;">
+                        <input type="text" class="ftc-title-input" value="${c.title||''}" placeholder="Título (usa {{BRAND}})" style="padding:7px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:700; outline:none; width:100%;">
+                        <input type="text" class="ftc-sub-input" value="${c.sub||''}" placeholder="Descripción" style="padding:7px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; outline:none; width:100%;">
+                        <label style="display:flex; align-items:center; gap:5px; font-size:12px; font-weight:700; cursor:pointer; justify-content:center;">
+                            <input type="checkbox" class="ftc-active-chk" ${c.active!==false?'checked':''} style="width:16px;height:16px;cursor:pointer;"> Activo
+                        </label>
+                        <button onclick="this.closest('.footer-trust-row').remove()" style="background:#fee2e2; border:none; border-radius:6px; width:32px; height:32px; cursor:pointer; font-size:16px; color:#dc2626; display:flex; align-items:center; justify-content:center;">✕</button>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center; background:#fff; padding:8px 10px; border-radius:6px; border:1px solid var(--border-color);">
+                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; min-width:40px;">Ícono</div>
+                        <input type="text" class="ftc-icon-input" value="${c.icon||''}" placeholder="Emoji ej: 🚚" style="padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:18px; text-align:center; outline:none; width:70px; flex-shrink:0;">
+                        <div style="font-size:11px; color:var(--text-muted);">ó sube una imagen:</div>
+                        <div style="display:flex; align-items:center; gap:8px; flex:1;">
+                            <div class="ftc-img-preview" style="width:40px;height:40px;border-radius:6px;border:1px solid var(--border-color);overflow:hidden;display:${hasImg?'flex':'none'};align-items:center;justify-content:center;background:#f1f5f9;">
+                                ${hasImg?`<img src="${c.iconImg}" style="width:100%;height:100%;object-fit:contain;">`:''}
+                            </div>
+                            <input type="hidden" class="ftc-icon-img-url" value="${c.iconImg||''}">
+                            <label style="background:var(--accent-dark);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                                📤 Subir imagen
+                                <input type="file" accept="image/*" style="display:none;" onchange="uploadTrustCardIcon(this)">
+                            </label>
+                            ${hasImg?`<button onclick="clearTrustCardIcon(this)" style="background:#fee2e2;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#dc2626;cursor:pointer;">✕ Quitar</button>`:''}
+                            <span class="ftc-upload-status" style="font-size:11px;color:var(--text-muted);"></span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        async function uploadTrustCardIcon(inputEl) {
+            const row = inputEl.closest('.footer-trust-row');
+            const statusEl = row.querySelector('.ftc-upload-status');
+            const preview = row.querySelector('.ftc-img-preview');
+            const urlInput = row.querySelector('.ftc-icon-img-url');
+            statusEl.innerText = '⏳ Subiendo...';
+            statusEl.style.color = '#64748b';
+            try {
+                const file = inputEl.files[0];
+                if (!file) return;
+                const base64 = await new Promise((res,rej) => {
+                    const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.onerror = rej; fr.readAsDataURL(file);
+                });
+                const url = await uploadToImgHost(base64);
+                urlInput.value = url;
+                preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain;">`;
+                preview.style.display = 'flex';
+                // Show remove button if not present
+                if (!row.querySelector('[data-remove-btn]')) {
+                    const btn = document.createElement('button');
+                    btn.setAttribute('data-remove-btn','1');
+                    btn.style.cssText = 'background:#fee2e2;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#dc2626;cursor:pointer;';
+                    btn.innerText = '✕ Quitar';
+                    btn.onclick = function(){ clearTrustCardIcon(this); };
+                    statusEl.parentNode.insertBefore(btn, statusEl);
+                }
+                statusEl.innerText = '✓ Imagen lista';
+                statusEl.style.color = '#16a34a';
+            } catch(e) {
+                statusEl.innerText = '✗ Error al subir';
+                statusEl.style.color = '#dc2626';
+            }
+        }
+
+        function clearTrustCardIcon(btn) {
+            const row = btn.closest('.footer-trust-row');
+            row.querySelector('.ftc-icon-img-url').value = '';
+            row.querySelector('.ftc-img-preview').style.display = 'none';
+            row.querySelector('.ftc-img-preview').innerHTML = '';
+            btn.remove();
+            const st = row.querySelector('.ftc-upload-status');
+            if (st) st.innerText = '';
+        }
+                function addFooterTrustCard() {
+            const cards = [];
+            document.querySelectorAll('.footer-trust-row').forEach(row => {
+                cards.push({
+                    icon: row.querySelector('.ftc-icon-input').value,
+                    iconImg: (row.querySelector('.ftc-icon-img-url')||{}).value || '',
+                    title: row.querySelector('.ftc-title-input').value,
+                    sub: row.querySelector('.ftc-sub-input').value,
+                    active: row.querySelector('.ftc-active-chk').checked
+                });
+            });
+            cards.push({ icon: '⭐', iconImg: '', title: 'Nueva tarjeta', sub: 'Descripción', active: true });
+            renderFooterTrustEditor(cards);
+        }
+
+        function renderFooterColumnsEditor(columns) {
+            const container = document.getElementById('footer-columns-editor');
+            if (!container) return;
+            container.innerHTML = '';
+            (columns || []).forEach((col, ci) => {
+                const section = document.createElement('div');
+                section.className = 'footer-col-section';
+                section.style.cssText = 'background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; margin-bottom:12px;';
+                const linksHtml = (col.links || []).map((lk, li) => `
+                    <div class="footer-link-row" style="display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:center; background:#fff; padding:7px 10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:6px;">
+                        <input type="text" class="flink-label" value="${lk.label||''}" placeholder="Texto del link" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%;">
+                        <input type="text" class="flink-url" value="${lk.url||''}" placeholder="URL o #" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%; font-family:monospace;">
+                        <button onclick="this.closest('.footer-link-row').remove()" style="background:#fee2e2; border:none; border-radius:5px; width:28px; height:28px; cursor:pointer; font-size:13px; color:#dc2626; flex-shrink:0;">✕</button>
+                    </div>
+                `).join('');
+                section.innerHTML = `
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+                        <input type="text" class="fcol-title-input" value="${col.title||''}" placeholder="Título de columna" style="flex:1; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:800; outline:none; text-transform:uppercase;">
+                        <button onclick="this.closest('.footer-col-section').remove()" style="background:#fee2e2; border:none; border-radius:6px; padding:7px 10px; cursor:pointer; font-size:13px; color:#dc2626; font-weight:700; white-space:nowrap;">✕ Eliminar columna</button>
+                    </div>
+                    <div class="footer-links-list">${linksHtml}</div>
+                    <button onclick="addFooterLink(this)" style="background:#fff; border:1px dashed #cbd5e1; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; color:var(--text-muted); margin-top:4px;">+ Agregar link</button>
+                `;
+                container.appendChild(section);
+            });
+        }
+
+        function addFooterLink(btn) {
+            const list = btn.previousElementSibling;
+            const row = document.createElement('div');
+            row.className = 'footer-link-row';
+            row.style.cssText = 'display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:center; background:#fff; padding:7px 10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:6px;';
+            row.innerHTML = `
+                <input type="text" class="flink-label" value="" placeholder="Texto del link" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%;">
+                <input type="text" class="flink-url" value="#" placeholder="URL o #" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%; font-family:monospace;">
+                <button onclick="this.closest('.footer-link-row').remove()" style="background:#fee2e2; border:none; border-radius:5px; width:28px; height:28px; cursor:pointer; font-size:13px; color:#dc2626; flex-shrink:0;">✕</button>
+            `;
+            list.appendChild(row);
+        }
+
+        function addFooterColumn() {
+            const cols = [];
+            document.querySelectorAll('.footer-col-section').forEach(colEl => {
+                const links = [];
+                colEl.querySelectorAll('.footer-link-row').forEach(lr => {
+                    links.push({ label: lr.querySelector('.flink-label').value, url: lr.querySelector('.flink-url').value });
+                });
+                cols.push({ title: colEl.querySelector('.fcol-title-input').value, links });
+            });
+            cols.push({ title: 'Nueva Columna', links: [{ label: 'Nuevo Link', url: '#' }] });
+            renderFooterColumnsEditor(cols);
+        }
+
+        function renderStoreFooter() {
+            const cfg = getFooterCfg();
+            const footer = document.getElementById('store-footer');
+            if (!footer) return;
+
+            // Visibility
+            footer.style.display = cfg.visible === '0' ? 'none' : 'block';
+
+            // Colors
+            footer.style.background = cfg.bgColor || '#0f172a';
+            footer.style.color = cfg.textColor || '#fff';
+
+            // Trust bar
+            const trustBar = document.getElementById('footer-trust-bar');
+            const trustCards = document.getElementById('footer-trust-cards');
+            if (trustCards) {
+                const _brandName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'Nuestra Tienda');
+                const activeTrust = (cfg.trustCards || []).filter(c => c.active !== false);
+                if (activeTrust.length === 0) {
+                    trustBar.style.display = 'none';
+                } else {
+                    trustBar.style.display = 'block';
+                    trustCards.innerHTML = activeTrust.map(c => {
+                        const iconContent = (c.iconImg && c.iconImg.trim())
+                            ? `<img src="${c.iconImg}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:4px;">`
+                            : (c.icon||'').replace(/\{\{BRAND\}\}/g, _brandName);
+                        return `
+                        <div class="footer-trust-card">
+                            <div class="ftc-icon">${iconContent}</div>
+                            <div class="ftc-title">${(c.title||'').replace(/\{\{BRAND\}\}/g, _brandName)}</div>
+                            <div class="ftc-sub">${(c.sub||'').replace(/\{\{BRAND\}\}/g, _brandName)}</div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            // Main columns
+            const mainCols = document.getElementById('footer-main-cols');
+            if (mainCols) {
+                let html = '';
+                // Link columns
+                (cfg.columns || []).forEach(col => {
+                    html += `<div>
+                        <p class="footer-col-title">${col.title}</p>
+                        <ul class="footer-col-links">
+                            ${(col.links||[]).map(lk => `<li><a href="${lk.url||'#'}">${lk.label}</a></li>`).join('')}
+                        </ul>
+                    </div>`;
+                });
+
+                // Contact column
+                if (cfg.showContact !== '0') {
+                    html += `<div>
+                        <p class="footer-col-title">Contáctanos</p>
+                        ${cfg.address ? `<div class="footer-contact-item"><span class="footer-contact-icon">📍</span><span>${cfg.address}</span></div>` : ''}
+                        ${cfg.phoneMain ? `<div class="footer-contact-item"><span class="footer-contact-icon">📞</span><span>Atención al cliente: <strong><a href="tel:${cfg.phoneMain}" style="color:inherit;">${cfg.phoneMain}</a></strong></span></div>` : ''}
+                        ${cfg.phoneWholesale ? `<div class="footer-contact-item"><span class="footer-contact-icon">🏭</span><span>Mayoristas: <strong><a href="tel:${cfg.phoneWholesale}" style="color:inherit;">${cfg.phoneWholesale}</a></strong></span></div>` : ''}
+                        ${cfg.email ? `<div class="footer-contact-item"><span class="footer-contact-icon">✉️</span><span><a href="mailto:${cfg.email}" style="color:inherit;">${cfg.email}</a></span></div>` : ''}
+                        ${cfg.pqrsfUrl ? `<div class="footer-contact-item"><span class="footer-contact-icon">📝</span><span><a href="${cfg.pqrsfUrl}" style="color:rgba(255,255,255,.8); text-decoration:underline;">Formulario PQRSF</a></span></div>` : ''}
+                        ${cfg.devolutionsUrl ? `<div class="footer-contact-item"><span class="footer-contact-icon">🔄</span><span><a href="${cfg.devolutionsUrl}" style="color:rgba(255,255,255,.8); text-decoration:underline;">Cambios, Garantías o Devoluciones</a></span></div>` : ''}
+                    </div>`;
+                }
+
+                // Hours column
+                if (cfg.showHours !== '0') {
+                    html += `<div>
+                        <p class="footer-col-title">Horarios de Atención</p>
+                        ${cfg.hoursPqrs ? `<div class="footer-schedule-item"><span class="footer-schedule-label">Atención PQRS:</span>${cfg.hoursPqrs}</div>` : ''}
+                        ${cfg.hoursStore ? `<div class="footer-schedule-item"><span class="footer-schedule-label">Tienda Física:</span>${cfg.hoursStore}</div>` : ''}
+                        ${cfg.hoursNote ? `<div class="footer-schedule-item" style="color:rgba(255,255,255,.45); font-style:italic;">${cfg.hoursNote}</div>` : ''}
+                    </div>`;
+                }
+
+                // Newsletter column
+                if (cfg.showNewsletter !== '0') {
+                    html += `<div>
+                        <p class="footer-col-title">${cfg.newsletterTitle || 'Newsletter'}</p>
+                        ${cfg.newsletterSubtitle ? `<p style="font-size:12px; color:rgba(255,255,255,.55); margin-bottom:12px;">${cfg.newsletterSubtitle}</p>` : ''}
+                        <div class="footer-newsletter-form">
+                            <input type="email" placeholder="${cfg.newsletterPlaceholder || 'Correo electrónico'}" id="footer-nl-input">
+                            <button onclick="footerNewsletterSubmit()">${cfg.newsletterUrl ? '›' : '✓'}</button>
+                        </div>
+                        ${cfg.newsletterNote ? `<p class="footer-newsletter-note">${cfg.newsletterNote}</p>` : ''}
+                    </div>`;
+                }
+
+                mainCols.innerHTML = html;
+                mainCols.style.color = cfg.textColor || '#fff';
+            }
+
+            // Social row
+            const socialRow = document.getElementById('footer-social-row');
+            if (socialRow && cfg.social) {
+                const s = cfg.social;
+                const socials = [
+                    { key: 'facebook',  icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>', url: s.facebook },
+                    { key: 'instagram', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>', url: s.instagram },
+                    { key: 'tiktok',    icon: '🎵', url: s.tiktok },
+                    { key: 'youtube',   icon: '▶️', url: s.youtube },
+                    { key: 'twitter',   icon: '𝕏', url: s.twitter },
+                    { key: 'whatsapp',  icon: '💬', url: s.whatsapp ? `https://wa.me/${s.whatsapp.replace(/\D/g,'')}` : '' }
+                ];
+                socialRow.innerHTML = socials.filter(s => s.url).map(s =>
+                    `<a href="${s.url}" target="_blank" rel="noopener" class="footer-social-btn">${s.icon}</a>`
+                ).join('');
+            }
+
+            // Copyright
+            const copyEl = document.getElementById('footer-copy-text');
+            if (copyEl) copyEl.textContent = cfg.copyright || '';
+        }
+
+        function footerNewsletterSubmit() {
+            const cfg = getFooterCfg();
+            const input = document.getElementById('footer-nl-input');
+            const email = input ? input.value.trim() : '';
+            if (!email || !email.includes('@')) { alert('Por favor ingresa un correo válido.'); return; }
+            if (cfg.newsletterUrl) {
+                window.open(cfg.newsletterUrl, '_blank');
+            } else {
+                alert('✓ ¡Gracias por suscribirte!');
+                if (input) input.value = '';
+            }
         }
 
         // ─────────────────────────────────────────────
@@ -1388,6 +2208,7 @@
                     renderPendingOrders();
                     renderBlocksEditor();
                     renderCategoriesEditor();
+                    populateFooterAdmin();
                     navigateTo('admin-view');
                 } else {
                     navigateTo('auth-gate-view');
@@ -1523,6 +2344,7 @@
                 // Aplicar config al frontend
                 applyBrandConfig();
                 loadNoticeBar();
+                renderStoreFooter();
                 renderPillsFromCategories();
                 populateGenderSelect();
                 // Renderizar
@@ -1530,7 +2352,7 @@
                 renderCatalog();
                 buildBrandFilters();
                 updateCartBadge();
-                if(isAdminLoggedIn) renderAdminDashboard();
+                if(isAdminLoggedIn) { renderAdminDashboard(); populateFooterAdmin(); }
             } catch (err) {
                 console.error("Error cargando base de datos:", err);
             } finally {
