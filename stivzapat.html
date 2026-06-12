@@ -47,9 +47,14 @@
         .hero-text { max-width: 500px; }
         .hero-text h1 { font-size: 48px; font-weight: 900; line-height: 1.1; margin-bottom: 15px; letter-spacing: -1px; }
 
-        .visual-filters-container { display: flex; gap: 16px; margin-bottom: 40px; overflow-x: auto; padding-bottom: 10px; }
-        .filter-pill-btn { background: #ffffff; border: 1px solid var(--border-color); padding: 14px 28px; border-radius: 30px; font-size: 14px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 10px; white-space: nowrap; transition: all 0.2s ease; }
-        .filter-pill-btn.active-pill { background: var(--accent-dark); color: #ffffff; border-color: var(--accent-dark); }
+        .visual-filters-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 18px; margin-bottom: 40px; }
+        .filter-pill-btn { background: none; border: none; padding: 0; font-size: 12px; font-weight: 700; text-transform: uppercase; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; white-space: nowrap; transition: all 0.2s ease; color: var(--text-main); text-align: center; }
+        .filter-pill-btn .pill-icon-circle { width: 64px; height: 64px; border-radius: 50%; background: #fff; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 26px; overflow: hidden; transition: all 0.2s ease; }
+        .filter-pill-btn .pill-icon-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .filter-pill-btn:hover .pill-icon-circle { border-color: var(--accent-dark); }
+        .filter-pill-btn.active-pill .pill-icon-circle { background: var(--accent-dark); color: #ffffff; border-color: var(--accent-dark); }
+        .filter-pill-btn.active-pill { color: var(--accent-dark); }
+        .filter-pill-btn span.pill-label { white-space: normal; line-height: 1.2; max-width: 90px; }
 
         .btn-action { background-color: var(--accent-dark); color: #ffffff; padding: 12px 24px; font-weight: 700; border-radius: 6px; font-size: 14px; border: none; cursor: pointer; text-transform: uppercase; display: inline-block; text-align: center; }
         .btn-action:hover { background-color: var(--accent-hover); }
@@ -358,8 +363,9 @@
             .hero-text .btn-action { padding: 10px 18px; font-size: 13px; margin-top: 10px; }
 
             /* Pills de filtro */
-            .visual-filters-container { gap: 8px; margin-bottom: 24px; }
-            .filter-pill-btn { padding: 10px 16px; font-size: 12px; }
+            .visual-filters-container { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 12px; margin-bottom: 24px; }
+            .filter-pill-btn .pill-icon-circle { width: 52px; height: 52px; font-size: 20px; }
+            .filter-pill-btn { font-size: 10px; }
 
             /* Grid de productos: 2 columnas en móvil */
             .featured-products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -3733,12 +3739,14 @@
             container.innerHTML = cats.map((cat, i) => {
                 let iconHtml = '';
                 if (cat.imgUrl && cat.imgUrl.trim()) {
-                    iconHtml = `<img src="${cat.imgUrl}" style="width:22px;height:22px;object-fit:cover;border-radius:50%;vertical-align:middle;margin-right:4px;">`;
+                    iconHtml = `<img src="${cat.imgUrl}" alt="">`;
                 } else if (cat.emoji && cat.emoji.trim()) {
-                    iconHtml = `<span style="margin-right:4px;">${cat.emoji}</span>`;
+                    iconHtml = cat.emoji;
+                } else {
+                    iconHtml = '🛍️';
                 }
                 const isActive = cat.value === activeHomeFilter;
-                return `<button class="filter-pill-btn ${isActive ? 'active-pill' : ''}" data-pill-value="${cat.value}" onclick="selectQuickFilterFromPill(this, '${cat.value}')">${iconHtml}${cat.label}</button>`;
+                return `<button class="filter-pill-btn ${isActive ? 'active-pill' : ''}" data-pill-value="${cat.value}" onclick="selectQuickFilterFromPill(this, '${cat.value}')"><span class="pill-icon-circle">${iconHtml}</span><span class="pill-label">${cat.label}</span></button>`;
             }).join('');
         }
 
