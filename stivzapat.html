@@ -1257,7 +1257,9 @@
         }
 
         // ENRUTAMIENTO SPA
-        function navigateTo(viewId) {
+        let _suppressHistoryPush = false;
+        function navigateTo(viewId, extra) {
+            extra = extra || {};
             if (carouselInterval) {
                 clearInterval(carouselInterval);
                 carouselInterval = null;
@@ -1279,7 +1281,37 @@
             if (viewId === 'home-view') renderHome();
             if (viewId === 'catalog-view') renderCatalog();
             if (viewId === 'cart-view') renderCart();
+            if (viewId === 'product-detail-view' && extra.productId) viewProductDetails(extra.productId, true);
+
+            // Registrar en el historial del navegador para que Atrás/Adelante funcionen
+            if (!_suppressHistoryPush) {
+                const state = { viewId, productId: extra.productId || null };
+                history.pushState(state, '', viewId === 'product-detail-view' && extra.productId
+                    ? '#producto-' + extra.productId
+                    : (viewId === 'home-view' ? '#' : '#' + viewId.replace('-view','')));
+            }
         }
+
+        // Manejo de los botones Atrás / Adelante / Recargar del navegador
+        window.addEventListener('popstate', (ev) => {
+            _suppressHistoryPush = true;
+            try {
+                const state = ev.state;
+                if (state && state.viewId) {
+                    if (state.viewId === 'product-detail-view' && state.productId) {
+                        navigateTo('product-detail-view', { productId: state.productId });
+                    } else {
+                        navigateTo(state.viewId);
+                    }
+                } else {
+                    // Sin estado (entrada inicial) -> resolver según hash actual
+                    handleRouting();
+                }
+            } finally {
+                _suppressHistoryPush = false;
+            }
+        });
+
 
         function handleRouting() {
             const hash = window.location.hash;
@@ -1985,9 +2017,11 @@
         }
 
         // DETALLE DEL PRODUCTO Y CARRUSEL AUTOMÁTICO
-        async function viewProductDetails(id) {
+        async function viewProductDetails(id, _fromHistory) {
             const p = dbData.products.find(prod => prod.id === id);
             if (!p) return;
+
+            if (!_fromHistory) trackProductView(id);
 
             currentImageIndex = 0;
             const container = document.getElementById('detail-view-container');
@@ -2153,7 +2187,7 @@
             };
 
             buildDetailHTML(activeVariantIndex);
-            navigateTo('product-detail-view');
+            if (!_fromHistory) navigateTo('product-detail-view', { productId: id });
         }
 
         function startAutomatedCarousel(imagesArray) {
@@ -3592,12 +3626,52 @@
             { emoji:'👦', label:'Línea Niños',           value:'niño'      },
         ];
 
+        function getProductViews() {
+            try { return JSON.parse(localStorage.getItem('product_views')) || {}; }
+            catch(e) { return {}; }
+        }
+
+        function trackProductView(id) {
+            const views = getProductViews();
+            views[id] = (views[id] || 0) + 1;
+            localStorage.setItem('product_views', JSON.stringify(views));
+        }
+
+        // Devuelve el value de categoría (gender) del producto más visto
+        function getMostViewedCategoryValue() {
+            const views = getProductViews();
+            const ids = Object.keys(views);
+            if (ids.length === 0 || !dbData || !dbData.products) return null;
+            ids.sort((a,b) => views[b] - views[a]);
+            for (const id of ids) {
+                const p = dbData.products.find(prod => String(prod.id) === String(id));
+                if (p && p.gender) return String(p.gender).toLowerCase().trim();
+            }
+            return null;
+        }
+
         function getCategories() {
             const fromSheets = getCfg('store_categories', null);
-            if (fromSheets && Array.isArray(fromSheets) && fromSheets.length > 0) return fromSheets;
-            try { return JSON.parse(localStorage.getItem('store_categories')) || DEFAULT_CATEGORIES; }
-            catch(e) { return DEFAULT_CATEGORIES; }
+            let cats;
+            if (fromSheets && Array.isArray(fromSheets) && fromSheets.length > 0) cats = fromSheets;
+            else {
+                try { cats = JSON.parse(localStorage.getItem('store_categories')) || DEFAULT_CATEGORIES; }
+                catch(e) { cats = DEFAULT_CATEGORIES; }
+            }
+
+            // Reordenar: si la categoría del producto más visto no es ya la primera, ponerla de primero
+            const topValue = getMostViewedCategoryValue();
+            if (topValue) {
+                const idx = cats.findIndex(c => String(c.value).toLowerCase().trim() === topValue);
+                if (idx > 0) {
+                    cats = [...cats];
+                    const [topCat] = cats.splice(idx, 1);
+                    cats.unshift(topCat);
+                }
+            }
+            return cats;
         }
+
 
         async function saveCategories() {
             const rows = document.querySelectorAll('.cat-row');
@@ -3693,6 +3767,10 @@
                 ).join('');
                 return `
                 <div class="cat-row" style="flex-wrap:wrap; gap:8px; align-items:flex-end;">
+                    <div style="display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center; align-self:center;">
+                        <button onclick="moveCategoryRow(this, -1)" title="Mover arriba" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; width:28px; height:24px; cursor:pointer; font-size:12px; line-height:1;">▲</button>
+                        <button onclick="moveCategoryRow(this, 1)" title="Mover abajo" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; width:28px; height:24px; cursor:pointer; font-size:12px; line-height:1;">▼</button>
+                    </div>
                     <div style="display:flex; flex-direction:column; gap:4px;">
                         <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; white-space:nowrap;">Tipo ícono</label>
                         <select data-cat="iconType" onchange="toggleCatIconFields(this)" style="padding:7px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; min-width:90px;">
@@ -3724,6 +3802,16 @@
                     <button onclick="this.closest('.cat-row').remove()" title="Eliminar" style="align-self:flex-end; background:none; border:none; color:var(--danger-color); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:4px; line-height:1; flex-shrink:0; margin-bottom:2px;">×</button>
                 </div>`;
             }).join('');
+        }
+
+        function moveCategoryRow(btn, dir) {
+            const row = btn.closest('.cat-row');
+            const cont = row.parentElement;
+            if (dir === -1 && row.previousElementSibling) {
+                cont.insertBefore(row, row.previousElementSibling);
+            } else if (dir === 1 && row.nextElementSibling) {
+                cont.insertBefore(row.nextElementSibling, row);
+            }
         }
 
         function toggleCatIconFields(sel) {
@@ -4571,7 +4659,9 @@
             pageBlocks = getPageBlocks();
             renderHomeBlocks();
             window.addEventListener('hashchange', handleRouting);
+            _suppressHistoryPush = true;
             handleRouting();
+            _suppressHistoryPush = false;
             // Sync con Sheets (aplica config real y re-renderiza todo)
             syncWithGoogleSheets();
         });
