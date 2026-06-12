@@ -417,6 +417,72 @@
             .image-inputs-grid { grid-template-columns: repeat(3, 1fr); }
             .hero-text h1 { font-size: 22px; }
         }
+
+        /* ══ LIGHTBOX GALERÍA ══ */
+        #sz-lightbox-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+        #sz-lightbox-overlay.lb-open { opacity: 1; pointer-events: all; }
+        #sz-lightbox-overlay.lb-open #sz-lb-img { animation: lbZoomIn 0.28s ease; }
+        @keyframes lbZoomIn { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        #sz-lb-img {
+            max-width: min(90vw, 820px);
+            max-height: 72vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+            cursor: zoom-out;
+            user-select: none;
+            transition: opacity 0.18s ease;
+        }
+        #sz-lb-img.lb-fade { opacity: 0; }
+
+        .lb-btn-close {
+            position: fixed; top: 18px; right: 22px;
+            background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+            width: 44px; height: 44px; font-size: 22px; color: #fff;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .lb-btn-close:hover { background: rgba(255,255,255,0.25); }
+
+        .lb-btn-nav {
+            position: fixed; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+            width: 50px; height: 50px; font-size: 24px; color: #fff;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .lb-btn-nav:hover { background: rgba(255,255,255,0.28); }
+        #lb-prev { left: 16px; }
+        #lb-next { right: 16px; }
+        .lb-btn-nav.lb-hidden { display: none; }
+
+        #sz-lb-thumbs {
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+            max-width: 90vw; padding: 0 8px;
+        }
+        .lb-thumb {
+            width: 58px; height: 58px; border-radius: 6px; overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.25); cursor: pointer;
+            background: #1e293b; flex-shrink: 0; transition: border-color 0.15s;
+        }
+        .lb-thumb:hover { border-color: rgba(255,255,255,0.6); }
+        .lb-thumb.lb-thumb-active { border-color: #fff; }
+        .lb-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        #sz-lb-counter {
+            font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 700; letter-spacing: 1px;
+        }
+
+        /* Cursor zoom-in en la imagen principal del producto */
+        .main-product-preview img { cursor: zoom-in; }
     </style>
 </head>
 <body>
@@ -2127,9 +2193,15 @@
                             <div class="thumbnails-strip">${thumbsHTML}</div>
                         </div>
                         <div class="product-detail-img-col">
-                            <div class="main-product-preview">
+                            <div class="main-product-preview" title="Clic para ver galería">
                                 <img id="detail-master-img" src="${validImages[0]}" alt="${p.title}">
                             </div>
+                            ${validImages.length > 1 ? `
+                            <button onclick="lbOpen(${JSON.stringify(validImages)}, currentImageIndex)"
+                                style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.65);color:#fff;border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);transition:background .15s;"
+                                onmouseover="this.style.background='rgba(0,0,0,0.88)'" onmouseout="this.style.background='rgba(0,0,0,0.65)'">
+                                🖼️ Ver galería (${validImages.length})
+                            </button>` : ''}
                         </div>
                         <div style="padding:0 8px;">
                             <p style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:8px;">${p.brand}</p>
@@ -2187,7 +2259,7 @@
             };
 
             buildDetailHTML(activeVariantIndex);
-            navigateTo('product-detail-view', { productId: id });
+            if (!_fromHistory) navigateTo('product-detail-view', { productId: id });
         }
 
         function startAutomatedCarousel(imagesArray) {
@@ -4666,6 +4738,284 @@
             syncWithGoogleSheets();
         });
 
+    </script>
+
+    <!-- ══ LIGHTBOX GALERÍA ══ -->
+    <div id="sz-lightbox-overlay" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+        <button class="lb-btn-close" onclick="lbClose()" title="Cerrar (Esc)">✕</button>
+        <button id="lb-prev" class="lb-btn-nav lb-hidden" onclick="lbNav(-1)" title="Anterior">‹</button>
+        <button id="lb-next" class="lb-btn-nav lb-hidden" onclick="lbNav(1)" title="Siguiente">›</button>
+        <img id="sz-lb-img" src="" alt="Imagen del producto" onclick="lbClose()">
+        <div id="sz-lb-counter"></div>
+        <div id="sz-lb-thumbs"></div>
+    </div>
+
+    <script>
+    /* ── Lightbox global con zoom ── */
+    (function() {
+        let _images = [];
+        let _current = 0;
+
+        // Estado del zoom
+        let _scale = 1;
+        let _ox = 0, _oy = 0;       // offset de traslación
+        let _dragging = false;
+        let _dragStartX, _dragStartY, _dragOriginX, _dragOriginY;
+
+        const MIN_SCALE = 1;
+        const MAX_SCALE = 5;
+
+        function getImg()     { return document.getElementById('sz-lb-img'); }
+        function getWrapper() { return document.getElementById('sz-lb-img-wrap'); }
+
+        function _applyTransform(animate) {
+            const img = getImg();
+            if (!img) return;
+            img.style.transition = animate ? 'transform 0.2s ease' : 'none';
+            img.style.transform  = `translate(${_ox}px, ${_oy}px) scale(${_scale})`;
+            // cursor
+            img.style.cursor = _scale > 1 ? 'grab' : 'zoom-in';
+            // ocultar nav y miniaturas cuando hay zoom
+            const hideUI = _scale > 1;
+            document.getElementById('lb-prev').style.opacity    = hideUI ? '0.15' : '1';
+            document.getElementById('lb-next').style.opacity    = hideUI ? '0.15' : '1';
+            document.getElementById('sz-lb-thumbs').style.opacity = hideUI ? '0.15' : '1';
+            // mostrar indicador de zoom
+            const hint = document.getElementById('lb-zoom-hint');
+            if (hint) hint.style.display = _scale > 1 ? 'block' : 'none';
+        }
+
+        function _resetZoom(animate) {
+            _scale = 1; _ox = 0; _oy = 0;
+            _applyTransform(animate);
+        }
+
+        function _clampOffset() {
+            // Limitar el desplazamiento para no salir demasiado de la imagen
+            const img = getImg();
+            if (!img) return;
+            const maxX = (img.offsetWidth  * (_scale - 1)) / 2 + 80;
+            const maxY = (img.offsetHeight * (_scale - 1)) / 2 + 80;
+            _ox = Math.max(-maxX, Math.min(maxX, _ox));
+            _oy = Math.max(-maxY, Math.min(maxY, _oy));
+        }
+
+        window.lbOpen = function(images, startIndex) {
+            _images = (images || []).filter(Boolean);
+            if (_images.length === 0) return;
+            _current = startIndex || 0;
+            _resetZoom(false);
+            _render();
+            const ov = document.getElementById('sz-lightbox-overlay');
+            ov.classList.add('lb-open');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.lbClose = function() {
+            if (_scale > 1) { _resetZoom(true); return; } // primer Esc/click resetea zoom
+            document.getElementById('sz-lightbox-overlay').classList.remove('lb-open');
+            document.body.style.overflow = '';
+            _resetZoom(false);
+        };
+
+        window.lbNav = function(dir) {
+            if (_scale > 1) { _resetZoom(true); return; } // navegar solo con zoom normal
+            const img = getImg();
+            img.classList.add('lb-fade');
+            setTimeout(() => {
+                _current = (_current + dir + _images.length) % _images.length;
+                _resetZoom(false);
+                _render();
+                img.classList.remove('lb-fade');
+            }, 160);
+        };
+
+        function _render() {
+            const img     = getImg();
+            const counter = document.getElementById('sz-lb-counter');
+            const thumbs  = document.getElementById('sz-lb-thumbs');
+            const prev    = document.getElementById('lb-prev');
+            const next    = document.getElementById('lb-next');
+
+            img.src = _images[_current];
+            counter.textContent = _images.length > 1 ? `${_current + 1} / ${_images.length}` : '';
+
+            if (_images.length <= 1) {
+                prev.classList.add('lb-hidden');
+                next.classList.add('lb-hidden');
+            } else {
+                prev.classList.remove('lb-hidden');
+                next.classList.remove('lb-hidden');
+            }
+
+            if (_images.length > 1) {
+                thumbs.innerHTML = _images.map((src, i) =>
+                    `<div class="lb-thumb ${i === _current ? 'lb-thumb-active' : ''}" onclick="lbGoTo(${i})">
+                        <img src="${src}" loading="lazy">
+                    </div>`
+                ).join('');
+            } else {
+                thumbs.innerHTML = '';
+            }
+            _applyTransform(false);
+        }
+
+        window.lbGoTo = function(i) {
+            if (_scale > 1) _resetZoom(false);
+            const img = getImg();
+            img.classList.add('lb-fade');
+            setTimeout(() => {
+                _current = i;
+                _render();
+                img.classList.remove('lb-fade');
+            }, 160);
+        };
+
+        // ── ZOOM con rueda del ratón ──
+        document.getElementById('sz-lightbox-overlay').addEventListener('wheel', function(e) {
+            if (!this.classList.contains('lb-open')) return;
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 0.2 : -0.2;
+            _scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, _scale + delta));
+            if (_scale === MIN_SCALE) { _ox = 0; _oy = 0; }
+            _clampOffset();
+            _applyTransform(false);
+        }, { passive: false });
+
+        // ── DOBLE CLIC para zoom 2.5× / reset ──
+        document.getElementById('sz-lb-img').addEventListener('dblclick', function(e) {
+            e.stopPropagation();
+            if (_scale > 1) {
+                _resetZoom(true);
+            } else {
+                _scale = 2.5;
+                // centrar en el punto del clic
+                const rect = this.getBoundingClientRect();
+                const cx = e.clientX - rect.left - rect.width  / 2;
+                const cy = e.clientY - rect.top  - rect.height / 2;
+                _ox = -cx * (_scale - 1);
+                _oy = -cy * (_scale - 1);
+                _clampOffset();
+                _applyTransform(true);
+            }
+        });
+
+        // ── ARRASTRE con mouse cuando hay zoom ──
+        const img = getImg();
+        img.addEventListener('mousedown', function(e) {
+            if (_scale <= 1) return;
+            e.preventDefault();
+            _dragging = true;
+            _dragStartX = e.clientX; _dragStartY = e.clientY;
+            _dragOriginX = _ox;      _dragOriginY = _oy;
+            this.style.cursor = 'grabbing';
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!_dragging) return;
+            _ox = _dragOriginX + (e.clientX - _dragStartX);
+            _oy = _dragOriginY + (e.clientY - _dragStartY);
+            _clampOffset();
+            _applyTransform(false);
+        });
+        document.addEventListener('mouseup', function() {
+            if (!_dragging) return;
+            _dragging = false;
+            if (_scale > 1) getImg().style.cursor = 'grab';
+        });
+
+        // ── PINCH-TO-ZOOM táctil ──
+        let _pinchDist0 = null;
+        let _pinchScale0 = 1;
+        let _touchX = null, _touchY = null;
+
+        const ov = document.getElementById('sz-lightbox-overlay');
+
+        ov.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                _pinchDist0  = Math.hypot(
+                    e.touches[1].clientX - e.touches[0].clientX,
+                    e.touches[1].clientY - e.touches[0].clientY);
+                _pinchScale0 = _scale;
+                _touchX = null; // cancelar swipe si hay pinch
+            } else if (e.touches.length === 1) {
+                _touchX = e.touches[0].clientX;
+                _touchY = e.touches[0].clientY;
+                if (_scale > 1) {
+                    _dragging = true;
+                    _dragStartX = _touchX; _dragStartY = _touchY;
+                    _dragOriginX = _ox;    _dragOriginY = _oy;
+                }
+            }
+        }, { passive: true });
+
+        ov.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2 && _pinchDist0 !== null) {
+                e.preventDefault();
+                const dist = Math.hypot(
+                    e.touches[1].clientX - e.touches[0].clientX,
+                    e.touches[1].clientY - e.touches[0].clientY);
+                _scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, _pinchScale0 * (dist / _pinchDist0)));
+                if (_scale === MIN_SCALE) { _ox = 0; _oy = 0; }
+                _clampOffset();
+                _applyTransform(false);
+            } else if (e.touches.length === 1 && _dragging) {
+                e.preventDefault();
+                _ox = _dragOriginX + (e.touches[0].clientX - _dragStartX);
+                _oy = _dragOriginY + (e.touches[0].clientY - _dragStartY);
+                _clampOffset();
+                _applyTransform(false);
+            }
+        }, { passive: false });
+
+        ov.addEventListener('touchend', function(e) {
+            if (e.touches.length < 2) _pinchDist0 = null;
+            _dragging = false;
+            // Swipe para navegar solo si no hubo zoom ni arrastre
+            if (_scale <= 1 && _touchX !== null && e.changedTouches.length === 1) {
+                const dx = e.changedTouches[0].clientX - _touchX;
+                const dy = Math.abs(e.changedTouches[0].clientY - (_touchY || 0));
+                if (Math.abs(dx) > 50 && dy < 60) lbNav(dx < 0 ? 1 : -1);
+            }
+            _touchX = null; _touchY = null;
+        }, { passive: true });
+
+        // ── Teclado ──
+        document.addEventListener('keydown', e => {
+            const ov = document.getElementById('sz-lightbox-overlay');
+            if (!ov.classList.contains('lb-open')) return;
+            if (e.key === 'Escape') { lbClose(); return; }
+            if (_scale > 1) {
+                const step = 40;
+                if (e.key === 'ArrowRight') { _ox -= step; _clampOffset(); _applyTransform(true); }
+                if (e.key === 'ArrowLeft')  { _ox += step; _clampOffset(); _applyTransform(true); }
+                if (e.key === 'ArrowUp')    { _oy += step; _clampOffset(); _applyTransform(true); }
+                if (e.key === 'ArrowDown')  { _oy -= step; _clampOffset(); _applyTransform(true); }
+            } else {
+                if (e.key === 'ArrowRight') lbNav(1);
+                if (e.key === 'ArrowLeft')  lbNav(-1);
+            }
+            if (e.key === '+' || e.key === '=') { _scale = Math.min(MAX_SCALE, _scale + 0.4); _clampOffset(); _applyTransform(true); }
+            if (e.key === '-')                  { _scale = Math.max(MIN_SCALE, _scale - 0.4); if(_scale===MIN_SCALE){_ox=0;_oy=0;} _clampOffset(); _applyTransform(true); }
+        });
+
+        // Clic en overlay (fuera de imagen) cierra o resetea
+        document.getElementById('sz-lightbox-overlay').addEventListener('click', function(e) {
+            if (e.target === this) lbClose();
+        });
+
+    })();
+
+    /* ── Abrir lightbox desde imagen principal del detalle ── */
+    document.addEventListener('click', function(e) {
+        const masterImg = e.target.closest('#detail-view-container .main-product-preview img');
+        if (!masterImg) return;
+        const thumbs = document.querySelectorAll('#detail-view-container .thumbnail-card img');
+        const imgs = thumbs.length > 0
+            ? Array.from(thumbs).map(t => t.src)
+            : [masterImg.src];
+        const startIdx = imgs.findIndex(s => s === masterImg.src);
+        lbOpen(imgs, startIdx >= 0 ? startIdx : 0);
+    });
     </script>
 </body>
 </html>
