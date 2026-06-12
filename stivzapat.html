@@ -227,6 +227,94 @@
         .cat-row { display:flex; gap:8px; align-items:center; background:#f8fafc; padding:10px 12px; border-radius:6px; border:1px solid var(--border-color); }
         .cat-row input { padding:7px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; flex:1; outline:none; }
 
+        /* ══ SISTEMA DE FILTROS ALKOSTO STYLE ══ */
+        .catalog-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+        .btn-open-filters { display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid var(--accent-dark); color:var(--accent-dark); padding:10px 18px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; transition:all .18s; flex-shrink:0; }
+        .btn-open-filters:hover { background:var(--accent-dark); color:#fff; }
+        .btn-open-filters .filter-badge { background:var(--accent-dark); color:#fff; border-radius:99px; font-size:11px; font-weight:800; min-width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; padding:0 5px; transition:all .18s; }
+        .btn-open-filters:hover .filter-badge { background:#fff; color:var(--accent-dark); }
+        .sort-select { padding:10px 14px; border:1.5px solid var(--border-color); border-radius:8px; font-size:13px; font-weight:600; outline:none; background:#fff; cursor:pointer; transition:border-color .18s; flex-shrink:0; }
+        .sort-select:focus { border-color:var(--accent-dark); }
+        .results-count { font-size:13px; color:var(--text-muted); font-weight:600; margin-left:auto; white-space:nowrap; }
+
+        /* Chips activos */
+        .active-filters-bar { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px; }
+        .active-filter-chip { display:inline-flex; align-items:center; gap:6px; background:#0f172a; color:#fff; padding:6px 12px; border-radius:99px; font-size:12px; font-weight:700; white-space:nowrap; }
+        .active-filter-chip button { background:none; border:none; color:rgba(255,255,255,0.7); font-size:14px; cursor:pointer; padding:0; line-height:1; display:flex; align-items:center; transition:color .15s; }
+        .active-filter-chip button:hover { color:#fff; }
+        .btn-clear-all-filters { background:none; border:1px solid var(--border-color); color:var(--text-muted); padding:5px 12px; border-radius:99px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; transition:all .15s; }
+        .btn-clear-all-filters:hover { border-color:var(--danger-color); color:var(--danger-color); }
+
+        /* Drawer de filtros */
+        .filter-drawer-overlay { position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,0); pointer-events:none; transition:background .3s ease; }
+        .filter-drawer-overlay.open { background:rgba(0,0,0,0.45); pointer-events:all; backdrop-filter:blur(3px); }
+        .filter-drawer { position:fixed; top:0; right:-420px; width:100%; max-width:400px; height:100vh; background:#fff; z-index:2001; display:flex; flex-direction:column; box-shadow:-8px 0 40px rgba(0,0,0,0.15); transition:right .32s cubic-bezier(.4,0,.2,1); }
+        .filter-drawer.open { right:0; }
+        .filter-drawer-header { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--border-color); flex-shrink:0; }
+        .filter-drawer-header h3 { font-size:16px; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; }
+        .filter-drawer-close { background:#f1f5f9; border:none; border-radius:8px; width:34px; height:34px; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+        .filter-drawer-close:hover { background:#e2e8f0; }
+        .filter-drawer-body { flex:1; overflow-y:auto; padding:0; }
+        .filter-drawer-footer { padding:16px 20px; border-top:1px solid var(--border-color); display:flex; gap:10px; flex-shrink:0; }
+        .filter-drawer-footer button { flex:1; padding:13px; border-radius:8px; font-size:14px; font-weight:800; cursor:pointer; text-transform:uppercase; letter-spacing:0.3px; border:none; transition:all .18s; }
+        .btn-apply-filters { background:var(--accent-dark); color:#fff; }
+        .btn-apply-filters:hover { background:var(--accent-hover); }
+        .btn-reset-filters { background:#f1f5f9; color:var(--accent-dark); border:1.5px solid var(--border-color) !important; }
+        .btn-reset-filters:hover { background:#e2e8f0; }
+
+        /* Acordeón de filtros */
+        .filter-accordion-item { border-bottom:1px solid var(--border-color); }
+        .filter-accordion-header { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; cursor:pointer; user-select:none; transition:background .15s; }
+        .filter-accordion-header:hover { background:#f8fafc; }
+        .filter-accordion-title { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:0.4px; display:flex; align-items:center; gap:8px; }
+        .filter-accordion-count { background:#020617; color:#fff; border-radius:99px; font-size:10px; font-weight:800; min-width:18px; height:18px; display:inline-flex; align-items:center; justify-content:center; padding:0 5px; }
+        .filter-accordion-arrow { font-size:12px; color:var(--text-muted); transition:transform .22s; }
+        .filter-accordion-item.open .filter-accordion-arrow { transform:rotate(180deg); }
+        .filter-accordion-body { display:none; padding:6px 20px 16px; }
+        .filter-accordion-item.open .filter-accordion-body { display:block; }
+
+        /* Opciones dentro del acordeón */
+        .filter-option-list { display:flex; flex-direction:column; gap:2px; }
+        .filter-option { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:6px; cursor:pointer; transition:background .12s; font-size:14px; }
+        .filter-option:hover { background:#f1f5f9; }
+        .filter-option input[type="checkbox"] { width:16px; height:16px; accent-color:var(--accent-dark); cursor:pointer; flex-shrink:0; }
+        .filter-option-label { flex:1; font-weight:500; }
+        .filter-option-qty { font-size:11px; color:var(--text-muted); font-weight:700; }
+
+        /* Tallas como chips en el filtro */
+        .filter-size-chips { display:flex; flex-wrap:wrap; gap:6px; }
+        .filter-size-chip { padding:7px 13px; border:1.5px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; transition:all .15s; background:#fff; }
+        .filter-size-chip:hover { border-color:var(--accent-dark); }
+        .filter-size-chip.selected { background:var(--accent-dark); color:#fff; border-color:var(--accent-dark); }
+
+        /* Colores como swatches en el filtro */
+        .filter-color-chips { display:flex; flex-wrap:wrap; gap:8px; }
+        .filter-color-chip { display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+        .filter-color-swatch { width:34px; height:34px; border-radius:50%; border:2px solid var(--border-color); transition:all .15s; position:relative; overflow:hidden; }
+        .filter-color-swatch img { width:100%; height:100%; object-fit:cover; }
+        .filter-color-chip.selected .filter-color-swatch { border-color:var(--accent-dark); box-shadow:0 0 0 2px var(--accent-dark); }
+        .filter-color-chip span { font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; max-width:40px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        /* Rango de precio */
+        .price-range-wrap { display:flex; flex-direction:column; gap:12px; }
+        .price-range-inputs { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .price-range-inputs input { padding:9px 10px; border:1.5px solid var(--border-color); border-radius:7px; font-size:13px; font-weight:600; outline:none; width:100%; transition:border-color .15s; }
+        .price-range-inputs input:focus { border-color:var(--accent-dark); }
+        .price-range-slider { width:100%; accent-color:var(--accent-dark); height:4px; }
+
+        @media (max-width:768px) {
+            .filter-drawer { max-width:100%; right:-100%; }
+            .catalog-toolbar { gap:8px; }
+            .btn-open-filters { padding:9px 14px; font-size:12px; }
+            .sort-select { font-size:12px; padding:9px 10px; }
+            .price-range-inputs input { font-size:15px; padding:12px 10px; }
+            .filter-accordion-header { padding:16px 18px; }
+            .filter-accordion-body { padding:8px 18px 18px; }
+            .filter-option { padding:10px 8px; font-size:15px; }
+            .filter-option input[type="checkbox"] { width:20px; height:20px; }
+            .filter-size-chip { padding:10px 16px; font-size:14px; }
+        }
+
         @media(max-width:768px){
             .pb-grid-2 { grid-template-columns:1fr; }
             .store-hero-block { min-height:220px; padding:24px 20px; background: linear-gradient(180deg,#fff 50%,transparent), var(--hero-bg,url('https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=800&q=80')) center/cover; }
@@ -349,7 +437,7 @@
                 </ul>
             </nav>
             <div class="header-right-actions">
-                <input type="text" id="global-search" class="search-input-field" placeholder="Buscar calzado..." onkeyup="engineFilter()">
+                <input type="text" id="global-search" class="search-input-field" placeholder="Buscar calzado..." onkeyup="handleSearchInput(this.value)">
                 <div class="cart-icon-wrapper" onclick="navigateTo('cart-view')">
                     Bolsa <span class="cart-badge-count" id="global-cart-qty">0</span>
                 </div>
@@ -366,24 +454,43 @@
         </div>
     </main>
 
-    <section id="catalog-view" class="spa-view">
-        <div class="catalog-layout">
-            <aside>
-                <div class="filter-group">
-                    <h4>Género</h4>
-                    <label><input type="radio" name="cat-gender" value="all" checked onchange="engineFilter()"> Todos</label>
-                    <label><input type="radio" name="cat-gender" value="hombre" onchange="engineFilter()"> Hombre</label>
-                    <label><input type="radio" name="cat-gender" value="mujer" onchange="engineFilter()"> Mujer</label>
-                </div>
-                <div class="filter-group">
-                    <h4>Marcas</h4>
-                    <div id="brands-filter-box"></div>
-                </div>
-            </aside>
-            <div>
-                <div class="featured-products-grid" id="catalog-products-grid"></div>
-            </div>
+    <!-- ══ DRAWER DE FILTROS ══ -->
+    <div class="filter-drawer-overlay" id="filter-drawer-overlay" onclick="closeFilterDrawer()"></div>
+    <div class="filter-drawer" id="filter-drawer">
+        <div class="filter-drawer-header">
+            <h3>🎚️ Filtros</h3>
+            <button class="filter-drawer-close" onclick="closeFilterDrawer()">✕</button>
         </div>
+        <div class="filter-drawer-body" id="filter-drawer-body">
+            <!-- Se genera dinámicamente -->
+        </div>
+        <div class="filter-drawer-footer">
+            <button class="btn-reset-filters" onclick="resetAllFilters()">Limpiar todo</button>
+            <button class="btn-apply-filters" onclick="applyFiltersAndClose()">Ver resultados</button>
+        </div>
+    </div>
+
+    <section id="catalog-view" class="spa-view">
+        <!-- Toolbar: botón filtros + ordenamiento + contador -->
+        <div class="catalog-toolbar">
+            <button class="btn-open-filters" onclick="openFilterDrawer()">
+                ⚙️ Filtros <span class="filter-badge" id="filter-active-count" style="display:none;">0</span>
+            </button>
+            <select class="sort-select" id="catalog-sort" onchange="engineFilter()">
+                <option value="default">Ordenar por: Predeterminado</option>
+                <option value="price_asc">Precio: Menor a Mayor</option>
+                <option value="price_desc">Precio: Mayor a Menor</option>
+                <option value="name_az">Nombre: A → Z</option>
+                <option value="name_za">Nombre: Z → A</option>
+                <option value="recientes">Más Recientes</option>
+                <option value="discount">Mayor Descuento</option>
+            </select>
+            <span class="results-count" id="catalog-results-count"></span>
+        </div>
+        <!-- Chips de filtros activos -->
+        <div class="active-filters-bar" id="active-filters-bar" style="display:none;"></div>
+        <!-- Grid de productos -->
+        <div class="featured-products-grid" id="catalog-products-grid"></div>
     </section>
 
     <section id="product-detail-view" class="spa-view">
@@ -1406,18 +1513,7 @@
             container.innerHTML = itemsToDisplay.map(p => ArrayToCardHTML(p)).join('');
         }
 
-        function renderCatalog() { engineFilter(); }
-
-        function buildBrandFilters() {
-            const container = document.getElementById('brands-filter-box');
-            if (!container || !dbData.products) return;
-            const uniqueBrands = [...new Set(dbData.products.map(p => p.brand.toLowerCase()))];
-            let html = `<label><input type="radio" name="cat-brand" value="all" checked onchange="engineFilter()"> Todas</label>`;
-            uniqueBrands.forEach(b => {
-                html += `<label><input type="radio" name="cat-brand" value="${b}" onchange="engineFilter()"> ${b.toUpperCase()}</label>`;
-            });
-            container.innerHTML = html;
-        }
+        function renderCatalog() { engineFilter(); renderActiveFilterChips(); }
 
         function ArrayToCardHTML(p) {
             const isOut = p.stock <= 0;
@@ -1505,23 +1601,378 @@
             if (el) { el.style.opacity = '0'; setTimeout(() => { el.src = defaultImg; el.style.opacity = '1'; }, 150); }
         }
 
+        function handleSearchInput(val) {
+            // Si no estamos en el catálogo, navegar allí primero
+            const catalogView = document.getElementById('catalog-view');
+            if (!catalogView || !catalogView.classList.contains('active-view')) {
+                navigateTo('catalog-view');
+            }
+            engineFilter();
+        }
+
+        // ══════════════════════════════════════════════════════════════
+        //  SISTEMA DE FILTROS ALKOSTO — ESTADO GLOBAL
+        // ══════════════════════════════════════════════════════════════
+        const activeFilters = {
+            genders: [],      // ['hombre','mujer','niño']
+            brands: [],       // ['nike','adidas']
+            sizes: [],        // ['36','37','38']
+            colors: [],       // ['Rojo','Negro']
+            categories: [],   // ['all','recientes']
+            priceMin: null,
+            priceMax: null,
+            inStockOnly: false
+        };
+
+        // ── Drawer abre / cierra ──
+        function openFilterDrawer() {
+            buildFilterDrawer();
+            document.getElementById('filter-drawer').classList.add('open');
+            document.getElementById('filter-drawer-overlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeFilterDrawer() {
+            document.getElementById('filter-drawer').classList.remove('open');
+            document.getElementById('filter-drawer-overlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function applyFiltersAndClose() {
+            // Leer valores del drawer y commit a activeFilters
+            _readDrawerValues();
+            closeFilterDrawer();
+            engineFilter();
+            renderActiveFilterChips();
+        }
+        function resetAllFilters() {
+            activeFilters.genders = [];
+            activeFilters.brands = [];
+            activeFilters.sizes = [];
+            activeFilters.colors = [];
+            activeFilters.categories = [];
+            activeFilters.priceMin = null;
+            activeFilters.priceMax = null;
+            activeFilters.inStockOnly = false;
+            closeFilterDrawer();
+            engineFilter();
+            renderActiveFilterChips();
+        }
+
+        function _readDrawerValues() {
+            // Géneros
+            activeFilters.genders = Array.from(document.querySelectorAll('.flt-gender:checked')).map(el => el.value);
+            // Marcas
+            activeFilters.brands = Array.from(document.querySelectorAll('.flt-brand:checked')).map(el => el.value);
+            // Tallas (chips)
+            activeFilters.sizes = Array.from(document.querySelectorAll('.filter-size-chip.selected')).map(el => el.dataset.val);
+            // Colores (chips)
+            activeFilters.colors = Array.from(document.querySelectorAll('.filter-color-chip.selected')).map(el => el.dataset.val);
+            // Categorías
+            activeFilters.categories = Array.from(document.querySelectorAll('.flt-cat:checked')).map(el => el.value);
+            // Precio
+            const pMin = parseFloat(document.getElementById('flt-price-min')?.value) || null;
+            const pMax = parseFloat(document.getElementById('flt-price-max')?.value) || null;
+            activeFilters.priceMin = pMin;
+            activeFilters.priceMax = pMax;
+            // Disponibilidad
+            activeFilters.inStockOnly = document.getElementById('flt-instock')?.checked || false;
+        }
+
+        function countActiveFilters() {
+            let n = 0;
+            if (activeFilters.genders.length) n++;
+            if (activeFilters.brands.length) n++;
+            if (activeFilters.sizes.length) n++;
+            if (activeFilters.colors.length) n++;
+            if (activeFilters.categories.length) n++;
+            if (activeFilters.priceMin || activeFilters.priceMax) n++;
+            if (activeFilters.inStockOnly) n++;
+            return n;
+        }
+
+        // ── Construye el HTML del drawer con opciones reales de los productos ──
+        function buildFilterDrawer() {
+            const products = dbData.products || [];
+            const body = document.getElementById('filter-drawer-body');
+            if (!body) return;
+
+            // Extraer opciones únicas
+            const genderOpts = getGenderOptions();
+            const brandOpts = [...new Set(products.map(p => p.brand.toLowerCase()))].sort();
+            const sizeOpts = getSizeOptions();
+            const colorOpts = [...new Set(products.flatMap(p => (p.variants || []).map(v => v.colorName).filter(Boolean)))].sort();
+            const catOpts = getCategories();
+
+            // Precio min/max del catálogo
+            const prices = products.map(p => p.price).filter(Boolean);
+            const catalogMinPrice = prices.length ? Math.min(...prices) : 0;
+            const catalogMaxPrice = prices.length ? Math.max(...prices) : 1000000;
+
+            // Contar referencias por opción para UX tipo Alkosto
+            const countByGender  = g => products.filter(p => p.gender === g).length;
+            const countByBrand   = b => products.filter(p => p.brand.toLowerCase() === b).length;
+            const countBySize    = s => products.filter(p => (p.sizes || []).includes(s)).length;
+            const countByColor   = c => products.filter(p => (p.variants||[]).some(v => v.colorName === c)).length;
+            const countByCat     = v => {
+                if (v === 'all') return products.length;
+                if (v === 'recientes') return Math.min(products.length, 8);
+                return products.filter(p => {
+                    const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+                    return norm(p.gender) === norm(v);
+                }).length;
+            };
+
+            const makeAccordion = (id, label, count, contentHTML) => `
+                <div class="filter-accordion-item ${count > 0 ? 'open' : ''}" id="facc-${id}">
+                    <div class="filter-accordion-header" onclick="toggleAccordion('facc-${id}')">
+                        <span class="filter-accordion-title">
+                            ${label}
+                            ${count > 0 ? `<span class="filter-accordion-count">${count}</span>` : ''}
+                        </span>
+                        <span class="filter-accordion-arrow">▼</span>
+                    </div>
+                    <div class="filter-accordion-body">${contentHTML}</div>
+                </div>`;
+
+            // ── GÉNERO ──
+            const genderHTML = `<div class="filter-option-list">` +
+                genderOpts.map(g => `
+                    <label class="filter-option">
+                        <input type="checkbox" class="flt-gender" value="${g.value}" ${activeFilters.genders.includes(g.value) ? 'checked' : ''}>
+                        <span class="filter-option-label">${g.label}</span>
+                        <span class="filter-option-qty">(${countByGender(g.value)})</span>
+                    </label>`).join('') + `</div>`;
+
+            // ── MARCAS ──
+            const brandsHTML = `<div class="filter-option-list">` +
+                brandOpts.map(b => `
+                    <label class="filter-option">
+                        <input type="checkbox" class="flt-brand" value="${b}" ${activeFilters.brands.includes(b) ? 'checked' : ''}>
+                        <span class="filter-option-label">${b.toUpperCase()}</span>
+                        <span class="filter-option-qty">(${countByBrand(b)})</span>
+                    </label>`).join('') + `</div>`;
+
+            // ── TALLAS ──
+            const sizesHTML = `<div class="filter-size-chips">` +
+                sizeOpts.map(s => `
+                    <div class="filter-size-chip ${activeFilters.sizes.includes(s) ? 'selected' : ''}" data-val="${s}"
+                        onclick="this.classList.toggle('selected')" title="${countBySize(s)} ref.">${s}</div>`).join('') +
+                `</div>`;
+
+            // ── COLORES ──
+            const colorsHTML = colorOpts.length ? `<div class="filter-color-chips">` +
+                colorOpts.map(c => {
+                    // Intentar obtener imagen de la primera variante con ese color
+                    const matchProd = products.find(p => (p.variants||[]).some(v => v.colorName === c));
+                    const matchVar = matchProd && (matchProd.variants||[]).find(v => v.colorName === c);
+                    const img = matchVar && matchVar.images && matchVar.images[0] ? matchVar.images[0] : '';
+                    return `<div class="filter-color-chip ${activeFilters.colors.includes(c) ? 'selected' : ''}" data-val="${c}"
+                        onclick="this.classList.toggle('selected')" title="${countByColor(c)} ref.">
+                        <div class="filter-color-swatch" style="${!img ? 'background:#e2e8f0;' : ''}">
+                            ${img ? `<img src="${img}" loading="lazy">` : `<span style="font-size:10px;color:#94a3b8;display:flex;align-items:center;justify-content:center;height:100%;">?</span>`}
+                        </div>
+                        <span>${c.length > 7 ? c.slice(0,6)+'…' : c}</span>
+                    </div>`;
+                }).join('') + `</div>` : `<p style="font-size:13px;color:var(--text-muted);">Sin variantes de color registradas.</p>`;
+
+            // ── CATEGORÍAS ──
+            const catsHTML = `<div class="filter-option-list">` +
+                catOpts.map(cat => `
+                    <label class="filter-option">
+                        <input type="checkbox" class="flt-cat" value="${cat.value}" ${activeFilters.categories.includes(cat.value) ? 'checked' : ''}>
+                        <span class="filter-option-label">${cat.emoji} ${cat.label}</span>
+                        <span class="filter-option-qty">(${countByCat(cat.value)})</span>
+                    </label>`).join('') + `</div>`;
+
+            // ── PRECIO ──
+            const priceHTML = `
+                <div class="price-range-wrap">
+                    <div class="price-range-inputs">
+                        <div>
+                            <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px;text-transform:uppercase;">Precio mínimo</label>
+                            <input type="number" id="flt-price-min" inputmode="numeric" placeholder="Ej: 80000" value="${activeFilters.priceMin || ''}" min="0" step="1000" oninput="syncPriceLabel()">
+                        </div>
+                        <div>
+                            <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:6px;text-transform:uppercase;">Precio máximo</label>
+                            <input type="number" id="flt-price-max" inputmode="numeric" placeholder="Ej: 300000" value="${activeFilters.priceMax || ''}" min="0" step="1000" oninput="syncPriceLabel()">
+                        </div>
+                    </div>
+                    <p id="flt-price-label" style="font-size:13px;color:var(--accent-dark);font-weight:700;margin-top:8px;min-height:20px;">${
+                        activeFilters.priceMin && activeFilters.priceMax ? `Entre ${formatCOP(activeFilters.priceMin)} y ${formatCOP(activeFilters.priceMax)}`
+                        : activeFilters.priceMin ? `Desde ${formatCOP(activeFilters.priceMin)}`
+                        : activeFilters.priceMax ? `Hasta ${formatCOP(activeFilters.priceMax)}` : ''
+                    }</p>
+                    <p style="font-size:11px;color:var(--text-muted);margin-top:2px;">Rango en catálogo: ${formatCOP(catalogMinPrice)} – ${formatCOP(catalogMaxPrice)}</p>
+                </div>`;
+
+            // ── DISPONIBILIDAD ──
+            const stockHTML = `
+                <label class="filter-option">
+                    <input type="checkbox" id="flt-instock" ${activeFilters.inStockOnly ? 'checked' : ''}>
+                    <span class="filter-option-label">Solo productos en stock</span>
+                    <span class="filter-option-qty">(${products.filter(p => p.stock > 0).length})</span>
+                </label>`;
+
+            body.innerHTML =
+                makeAccordion('gender',   '👟 Género',        activeFilters.genders.length,    genderHTML) +
+                makeAccordion('brand',    '🏷️ Marca',          activeFilters.brands.length,     brandsHTML) +
+                makeAccordion('size',     '📏 Talla',          activeFilters.sizes.length,      sizesHTML) +
+                makeAccordion('color',    '🎨 Color',          activeFilters.colors.length,     colorsHTML) +
+                makeAccordion('cat',      '🗂️ Categoría',      activeFilters.categories.length, catsHTML) +
+                makeAccordion('price',    '💰 Precio',         1, priceHTML) +
+                makeAccordion('stock',    '✅ Disponibilidad', activeFilters.inStockOnly?1:0,   stockHTML);
+        }
+
+        function toggleAccordion(id) {
+            document.getElementById(id)?.classList.toggle('open');
+        }
+
+        function syncPriceLabel() {
+            const min = parseFloat(document.getElementById('flt-price-min')?.value) || null;
+            const max = parseFloat(document.getElementById('flt-price-max')?.value) || null;
+            const lbl = document.getElementById('flt-price-label');
+            if (!lbl) return;
+            if (min && max) lbl.textContent = `Entre ${formatCOP(min)} y ${formatCOP(max)}`;
+            else if (min) lbl.textContent = `Desde ${formatCOP(min)}`;
+            else if (max) lbl.textContent = `Hasta ${formatCOP(max)}`;
+            else lbl.textContent = '';
+        }
+
+        // ── Chips activos sobre el grid ──
+        window._chipClearFns = [];
+        function renderActiveFilterChips() {
+            const bar = document.getElementById('active-filters-bar');
+            if (!bar) return;
+            window._chipClearFns = [];
+            const chips = [];
+
+            const addChip = (label, clearFn) => {
+                const idx = window._chipClearFns.length;
+                window._chipClearFns.push(clearFn);
+                chips.push({ label, idx });
+            };
+
+            activeFilters.genders.forEach(g => {
+                const opt = getGenderOptions().find(o => o.value === g);
+                addChip(`Género: ${opt ? opt.label : g}`, () => { activeFilters.genders = activeFilters.genders.filter(x=>x!==g); engineFilter(); renderActiveFilterChips(); });
+            });
+            activeFilters.brands.forEach(b => {
+                addChip(`Marca: ${b.toUpperCase()}`, () => { activeFilters.brands = activeFilters.brands.filter(x=>x!==b); engineFilter(); renderActiveFilterChips(); });
+            });
+            activeFilters.sizes.forEach(s => {
+                addChip(`Talla: ${s}`, () => { activeFilters.sizes = activeFilters.sizes.filter(x=>x!==s); engineFilter(); renderActiveFilterChips(); });
+            });
+            activeFilters.colors.forEach(c => {
+                addChip(`Color: ${c}`, () => { activeFilters.colors = activeFilters.colors.filter(x=>x!==c); engineFilter(); renderActiveFilterChips(); });
+            });
+            activeFilters.categories.forEach(c => {
+                const cat = getCategories().find(o => o.value === c);
+                addChip(`${cat ? cat.emoji + ' ' + cat.label : c}`, () => { activeFilters.categories = activeFilters.categories.filter(x=>x!==c); engineFilter(); renderActiveFilterChips(); });
+            });
+            if (activeFilters.priceMin || activeFilters.priceMax) {
+                const label = activeFilters.priceMin && activeFilters.priceMax
+                    ? `${formatCOP(activeFilters.priceMin)} – ${formatCOP(activeFilters.priceMax)}`
+                    : activeFilters.priceMin ? `Desde ${formatCOP(activeFilters.priceMin)}` : `Hasta ${formatCOP(activeFilters.priceMax)}`;
+                addChip(`Precio: ${label}`, () => { activeFilters.priceMin = null; activeFilters.priceMax = null; engineFilter(); renderActiveFilterChips(); });
+            }
+            if (activeFilters.inStockOnly) {
+                addChip('En stock', () => { activeFilters.inStockOnly = false; engineFilter(); renderActiveFilterChips(); });
+            }
+
+            if (chips.length === 0) {
+                bar.style.display = 'none';
+                bar.innerHTML = '';
+            } else {
+                bar.style.display = 'flex';
+                bar.innerHTML = chips.map(ch => `
+                    <span class="active-filter-chip">
+                        ${ch.label}
+                        <button onclick="window._chipClearFns[${ch.idx}]()" title="Quitar filtro">✕</button>
+                    </span>`).join('') +
+                    `<button class="btn-clear-all-filters" onclick="resetAllFilters()">Limpiar todo</button>`;
+            }
+
+            // Actualizar badge del botón Filtros
+            const n = countActiveFilters();
+            const badge = document.getElementById('filter-active-count');
+            if (badge) {
+                badge.textContent = n;
+                badge.style.display = n > 0 ? 'inline-flex' : 'none';
+            }
+        }
+
+        function buildBrandFilters() {
+            // Ya no se usa sidebar — mantenemos compatibilidad llamando engineFilter
+            engineFilter();
+        }
+
         function engineFilter() {
-            const searchVal = document.getElementById('global-search').value.toLowerCase().trim();
-            const gender = document.querySelector('input[name="cat-gender"]:checked')?.value || 'all';
-            const brand = document.querySelector('input[name="cat-brand"]:checked')?.value || 'all';
-            
+            const searchVal = (document.getElementById('global-search')?.value || '').toLowerCase().trim();
+            const sortVal = document.getElementById('catalog-sort')?.value || 'default';
             const container = document.getElementById('catalog-products-grid');
             if (!container || !dbData.products) return;
 
-            const filtered = dbData.products.filter(p => {
-                const matchS = p.title.toLowerCase().includes(searchVal) || p.brand.toLowerCase().includes(searchVal);
-                const matchG = (gender === 'all' || p.gender === gender);
-                const matchB = (brand === 'all' || p.brand === brand);
-                return matchS && matchG && matchB;
+            const norm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+            let filtered = dbData.products.filter(p => {
+                // Búsqueda por texto
+                if (searchVal && !norm(p.title).includes(norm(searchVal)) && !norm(p.brand).includes(norm(searchVal))) return false;
+                // Género
+                if (activeFilters.genders.length && !activeFilters.genders.some(g => norm(p.gender) === norm(g))) return false;
+                // Marca
+                if (activeFilters.brands.length && !activeFilters.brands.includes(p.brand.toLowerCase())) return false;
+                // Talla
+                if (activeFilters.sizes.length && !activeFilters.sizes.some(s => (p.sizes||[]).includes(s))) return false;
+                // Color
+                if (activeFilters.colors.length && !activeFilters.colors.some(c => (p.variants||[]).some(v => v.colorName === c))) return false;
+                // Categoría
+                if (activeFilters.categories.length) {
+                    const matchCat = activeFilters.categories.some(cv => {
+                        if (cv === 'all') return true;
+                        if (cv === 'recientes') return true; // se aplica al slice después
+                        return norm(p.gender) === norm(cv);
+                    });
+                    if (!matchCat) return false;
+                }
+                // Precio
+                if (activeFilters.priceMin !== null && p.price < activeFilters.priceMin) return false;
+                if (activeFilters.priceMax !== null && p.price > activeFilters.priceMax) return false;
+                // Stock
+                if (activeFilters.inStockOnly && p.stock <= 0) return false;
+                return true;
             });
 
+            // Si hay filtro "recientes", limitar
+            if (activeFilters.categories.includes('recientes') && !activeFilters.categories.some(c => c !== 'recientes')) {
+                filtered = [...filtered].reverse().slice(0, 8);
+            }
+
+            // Ordenamiento
+            switch (sortVal) {
+                case 'price_asc':  filtered.sort((a,b) => a.price - b.price); break;
+                case 'price_desc': filtered.sort((a,b) => b.price - a.price); break;
+                case 'name_az':    filtered.sort((a,b) => norm(a.title).localeCompare(norm(b.title))); break;
+                case 'name_za':    filtered.sort((a,b) => norm(b.title).localeCompare(norm(a.title))); break;
+                case 'recientes':  filtered = [...filtered].reverse(); break;
+                case 'discount':
+                    filtered.sort((a,b) => {
+                        const discA = a.priceOld && a.priceOld > a.price ? (1 - a.price/a.priceOld) : 0;
+                        const discB = b.priceOld && b.priceOld > b.price ? (1 - b.price/b.priceOld) : 0;
+                        return discB - discA;
+                    }); break;
+            }
+
+            // Contador de resultados
+            const countEl = document.getElementById('catalog-results-count');
+            if (countEl) countEl.textContent = `${filtered.length} producto${filtered.length !== 1 ? 's' : ''}`;
+
             if (filtered.length === 0) {
-                container.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No se encontraron resultados.</p>`;
+                container.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding:60px 20px;">
+                        <div style="font-size:48px; margin-bottom:12px;">🔍</div>
+                        <h3 style="font-size:18px; margin-bottom:8px;">Sin resultados</h3>
+                        <p style="color:var(--text-muted); font-size:14px; margin-bottom:18px;">Intenta con otros filtros o limpia la búsqueda.</p>
+                        <button class="btn-action secondary" onclick="resetAllFilters()" style="padding:10px 24px;">Limpiar filtros</button>
+                    </div>`;
                 return;
             }
             container.innerHTML = filtered.map(p => ArrayToCardHTML(p)).join('');
