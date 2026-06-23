@@ -417,6 +417,127 @@
             .image-inputs-grid { grid-template-columns: repeat(3, 1fr); }
             .hero-text h1 { font-size: 22px; }
         }
+
+        /* ══ LIGHTBOX GALERÍA ══ */
+        #sz-lightbox-overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.28s ease;
+        }
+        #sz-lightbox-overlay.lb-open { opacity: 1; pointer-events: all; }
+        #sz-lightbox-overlay.lb-open #sz-lb-img { animation: lbZoomIn 0.28s ease; }
+        @keyframes lbZoomIn { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        #sz-lb-img {
+            max-width: min(90vw, 820px);
+            max-height: 72vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+            cursor: zoom-out;
+            user-select: none;
+            transition: opacity 0.18s ease;
+        }
+        #sz-lb-img.lb-fade { opacity: 0; }
+
+        .lb-btn-close {
+            position: fixed; top: 18px; right: 22px;
+            background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+            width: 44px; height: 44px; font-size: 22px; color: #fff;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .lb-btn-close:hover { background: rgba(255,255,255,0.25); }
+
+        .lb-btn-nav {
+            position: fixed; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+            width: 50px; height: 50px; font-size: 24px; color: #fff;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s;
+        }
+        .lb-btn-nav:hover { background: rgba(255,255,255,0.28); }
+        #lb-prev { left: 16px; }
+        #lb-next { right: 16px; }
+        .lb-btn-nav.lb-hidden { display: none; }
+
+        #sz-lb-thumbs {
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+            max-width: 90vw; padding: 0 8px;
+        }
+        .lb-thumb {
+            width: 58px; height: 58px; border-radius: 6px; overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.25); cursor: pointer;
+            background: #1e293b; flex-shrink: 0; transition: border-color 0.15s;
+        }
+        .lb-thumb:hover { border-color: rgba(255,255,255,0.6); }
+        .lb-thumb.lb-thumb-active { border-color: #fff; }
+        .lb-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        #sz-lb-counter {
+            font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 700; letter-spacing: 1px;
+        }
+
+        /* Cursor zoom-in en la imagen principal del producto */
+        .main-product-preview img { cursor: zoom-in; }
+
+        /* ══ FOOTER PERSONALIZABLE ══ */
+        #store-footer { background: #0f172a; color: #fff; padding: 56px 0 0 0; margin-top: 60px; }
+        .footer-trust-bar { background: #fff; border-bottom: 1px solid #e2e8f0; }
+        .footer-trust-bar-inner { max-width: 1400px; margin: 0 auto; padding: 28px clamp(14px,3vw,40px); display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+        .footer-trust-card { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-width: 120px; text-align: center; padding: 12px; }
+        .footer-trust-card .ftc-icon { font-size: 28px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .footer-trust-card .ftc-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .footer-trust-card .ftc-title { font-size: 13px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.3px; }
+        .footer-trust-card .ftc-sub { font-size: 12px; color: #64748b; font-weight: 500; line-height: 1.3; }
+        .footer-main-inner { max-width: 1400px; margin: 0 auto; padding: 40px clamp(14px,3vw,40px) 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 32px 40px; }
+        .footer-col-title { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: #94a3b8; margin-bottom: 14px; }
+        .footer-col-links { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .footer-col-links li a, .footer-col-links li span { font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; transition: color .15s; }
+        .footer-col-links li a:hover, .footer-col-links li span:hover { color: #fff; }
+        .footer-contact-item { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; font-size: 13px; color: rgba(255,255,255,.75); }
+        .footer-contact-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+        .footer-schedule-item { font-size: 12px; color: rgba(255,255,255,.65); margin-bottom: 6px; line-height: 1.4; }
+        .footer-schedule-label { font-weight: 700; color: #fff; display: block; }
+        .footer-newsletter-form { display: flex; gap: 0; margin-top: 8px; }
+        .footer-newsletter-form input { flex: 1; padding: 11px 14px; border: none; border-radius: 6px 0 0 6px; font-size: 13px; outline: none; background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.15); border-right: none; }
+        .footer-newsletter-form input::placeholder { color: rgba(255,255,255,.4); }
+        .footer-newsletter-form button { padding: 11px 16px; background: #fff; color: #0f172a; border: none; border-radius: 0 6px 6px 0; font-size: 13px; font-weight: 800; cursor: pointer; transition: background .15s; white-space: nowrap; }
+        .footer-newsletter-form button:hover { background: #e2e8f0; }
+        .footer-newsletter-note { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 8px; }
+        .footer-bottom { border-top: 1px solid rgba(255,255,255,.1); }
+        .footer-bottom-inner { max-width: 1400px; margin: 0 auto; padding: 20px clamp(14px,3vw,40px); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .footer-social-row { display: flex; gap: 14px; }
+        .footer-social-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.1); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: background .15s; text-decoration: none; color: #fff; }
+        .footer-social-btn:hover { background: rgba(255,255,255,.25); }
+        .footer-copy { font-size: 12px; color: rgba(255,255,255,.4); }
+        @media (max-width: 768px) {
+            .footer-main-inner { grid-template-columns: repeat(2, 1fr); gap: 24px 20px; }
+            .footer-trust-bar-inner { gap: 8px; }
+            .footer-trust-card { min-width: 90px; padding: 8px 4px; }
+        }
+        @media (max-width: 480px) {
+            .footer-main-inner { grid-template-columns: 1fr; }
+            .footer-trust-bar-inner { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+        }
+
+        /* Admin footer editor */
+        .footer-admin-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; flex-wrap: wrap; }
+        .footer-admin-tab { padding: 10px 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; color: var(--text-muted); }
+        .footer-admin-tab.active { border-bottom-color: var(--accent-dark); color: var(--accent-dark); }
+        .footer-admin-panel { display: none; }
+        .footer-admin-panel.active { display: block; }
+        .footer-trust-editor-row { display: grid; grid-template-columns: 60px 1fr 1fr auto; gap: 8px; align-items: center; background: #f8fafc; padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 8px; }
+        .footer-link-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 6px; }
+        .footer-color-swatch-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #e2e8f0; display: inline-block; vertical-align: middle; }
+        .footer-admin-field { margin-bottom: 12px; }
+        .footer-admin-field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+        .footer-admin-field input, .footer-admin-field select, .footer-admin-field textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
+        .footer-admin-field textarea { min-height: 56px; resize: vertical; }
+        .footer-preview-badge { display: inline-block; background: #f1f5f9; color: var(--text-muted); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; margin-left: 8px; text-transform: uppercase; vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -528,12 +649,16 @@
     </section>
 
     <section id="admin-view" class="spa-view">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
             <div>
                 <h1 style="text-transform:uppercase; margin:0;">Consola de Control Integral</h1>
                 <p id="admin-user-label" style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;"></p>
             </div>
-            <button class="btn-action secondary" onclick="logoutAdmin()">Cerrar Sesión</button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <button class="btn-action secondary" style="font-size:12px; padding:8px 14px;" onclick="document.getElementById('admin-sales-history-section').scrollIntoView({behavior:'smooth'})">📊 Ver Historial</button>
+                <button class="btn-action secondary" style="font-size:12px; padding:8px 14px;" onclick="document.getElementById('admin-inventario-pro').scrollIntoView({behavior:'smooth'})">📦 Ver Inventario</button>
+                <button class="btn-action secondary" onclick="logoutAdmin()">Cerrar Sesión</button>
+            </div>
         </div>
 
         <!-- IDENTIDAD DE MARCA -->
@@ -569,12 +694,43 @@
             </div>
         </div>
 
+        <!-- HISTORIAL DE VENTAS CONFIRMADAS -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-sales-history-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                <h2 style="border-bottom:none; margin-bottom:0; padding-bottom:0;">✅ Historial de Ventas</h2>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <select id="hist-filter-estado" onchange="renderSalesHistory()" style="padding:7px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; outline:none;">
+                        <option value="confirmado">✅ Confirmados</option>
+                        <option value="rechazado">❌ Rechazados</option>
+                        <option value="">Todos</option>
+                    </select>
+                    <button onclick="exportSalesExcel()" style="padding:8px 14px; background:#16a34a; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer;">⬇️ Excel</button>
+                </div>
+            </div>
+            <div id="admin-sales-history-list">
+                <p style="color:var(--text-muted); font-size:13px; padding:10px 0;">Sin ventas registradas.</p>
+            </div>
+        </div>
+
         <!-- MEDIOS DE PAGO -->
         <div class="admin-section" style="margin-bottom:30px;" id="admin-pagos-section" data-rol="admin">
             <h2>Medios de Pago</h2>
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Configura los datos de cada método. Solo los que actives aparecerán al cliente en el checkout.</p>
             <div id="admin-pagos-list"></div>
-            <button class="btn-action" style="margin-top:10px; padding:10px 20px; font-size:13px;" onclick="savePagosConfig()">Guardar Medios de Pago</button>
+
+            <!-- Número admin para notificaciones -->
+            <div style="margin-top:20px; padding:16px; background:#f0fdf4; border:1px solid #86efac; border-radius:10px;">
+                <h4 style="margin:0 0 8px 0; font-size:13px; font-weight:800; text-transform:uppercase; color:#15803d;">📲 Notificaciones al Administrador</h4>
+                <p style="font-size:12px; color:#166534; margin-bottom:12px;">Número WhatsApp que recibe la alerta de cada nuevo pedido. Debe incluir código de país sin + (ej: 573108340344).</p>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <input type="tel" id="admin-notif-phone" placeholder="573108340344"
+                        style="flex:1; min-width:200px; padding:9px 12px; border:1px solid #86efac; border-radius:6px; font-size:13px; outline:none; font-family:monospace; font-weight:700;">
+                    <button onclick="saveAdminPhone()" style="padding:9px 18px; background:#16a34a; color:#fff; border:none; border-radius:6px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">💾 Guardar número</button>
+                </div>
+                <p id="admin-notif-status" style="font-size:11px; color:#16a34a; margin-top:6px; display:none; font-weight:700;">✅ Número guardado</p>
+            </div>
+
+            <button class="btn-action" style="margin-top:14px; padding:10px 20px; font-size:13px;" onclick="savePagosConfig()">Guardar Medios de Pago</button>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════
@@ -857,7 +1013,318 @@
                 </div>
             </aside>
         </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             EDITOR DE FOOTER — SECCIÓN PERSONALIZABLE
+        ═══════════════════════════════════════════════════════ -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-footer-section" data-rol="admin">
+            <h2>🦶 Editor de Footer — Pie de Página</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Personaliza completamente el pie de página de tu tienda: colores, columnas, enlaces, redes sociales, barra de confianza y más. Todos los cambios se guardan en Google Sheets.</p>
+
+            <!-- Tabs de secciones -->
+            <div class="footer-admin-tabs">
+                <div class="footer-admin-tab active" onclick="switchFooterTab('general')">🎨 General</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('trust')">✅ Barra de Confianza</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('columns')">📋 Columnas &amp; Links</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('contact')">📍 Contacto &amp; Horarios</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('newsletter')">✉️ Newsletter</div>
+                <div class="footer-admin-tab" onclick="switchFooterTab('social')">📲 Redes Sociales</div>
+            </div>
+
+            <!-- ── PANEL: GENERAL ── -->
+            <div class="footer-admin-panel active" id="footer-panel-general">
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
+                    <div class="footer-admin-field">
+                        <label>Color de Fondo del Footer</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="color" id="footer-bg-color" value="#0f172a" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
+                            <input type="text" id="footer-bg-color-text" value="#0f172a" placeholder="#0f172a" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-bg-color','footer-bg-color-text')">
+                        </div>
+                    </div>
+                    <div class="footer-admin-field">
+                        <label>Color del Texto Principal</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="color" id="footer-text-color" value="#ffffff" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
+                            <input type="text" id="footer-text-color-text" value="#ffffff" placeholder="#ffffff" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-text-color','footer-text-color-text')">
+                        </div>
+                    </div>
+                    <div class="footer-admin-field">
+                        <label>Color de Acentos / Botones</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="color" id="footer-accent-color" value="#ffffff" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
+                            <input type="text" id="footer-accent-color-text" value="#ffffff" placeholder="#ffffff" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-accent-color','footer-accent-color-text')">
+                        </div>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                    <div class="footer-admin-field">
+                        <label>Texto de Copyright</label>
+                        <input type="text" id="footer-copyright" placeholder="© 2025 StivZapat. Todos los derechos reservados." value="">
+                    </div>
+                    <div class="footer-admin-field">
+                        <label>Mostrar Footer en la Tienda</label>
+                        <select id="footer-visible">
+                            <option value="1">Sí, mostrar el footer</option>
+                            <option value="0">No, ocultar footer</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
+                    <p style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase;">Vista previa de colores:</p>
+                    <div id="footer-color-preview" style="border-radius:8px; padding:18px 20px; transition: all .3s;">
+                        <p style="font-size:13px; margin-bottom:6px;" id="fcp-title">StivZapat — Tienda</p>
+                        <p style="font-size:11px; opacity:.6;" id="fcp-sub">© 2025 Todos los derechos reservados</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PANEL: BARRA DE CONFIANZA ── -->
+            <div class="footer-admin-panel" id="footer-panel-trust">
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Edita las tarjetas de confianza (ícono, título y subtítulo). Puedes reordenarlas y activar/desactivar cada una.</p>
+                <div id="footer-trust-editor"></div>
+                <button class="btn-action secondary" style="margin-top:10px; font-size:13px; padding:8px 16px;" onclick="addFooterTrustCard()">+ Agregar Tarjeta</button>
+            </div>
+
+            <!-- ── PANEL: COLUMNAS Y LINKS ── -->
+            <div class="footer-admin-panel" id="footer-panel-columns">
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Configura las columnas de navegación del footer. Cada columna tiene un título y una lista de enlaces personalizables.</p>
+                <div id="footer-columns-editor"></div>
+                <button class="btn-action secondary" style="margin-top:10px; font-size:13px; padding:8px 16px;" onclick="addFooterColumn()">+ Agregar Columna</button>
+            </div>
+
+            <!-- ── PANEL: CONTACTO Y HORARIOS ── -->
+            <div class="footer-admin-panel" id="footer-panel-contact">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                        <h3 style="font-size:14px; font-weight:800; text-transform:uppercase; margin-bottom:14px; color:var(--text-muted);">Información de Contacto</h3>
+                        <div class="footer-admin-field">
+                            <label>Dirección / Tienda Física</label>
+                            <input type="text" id="footer-address" placeholder="Calle 11 #9-20, CC Aristi, Local 121. Cali">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Teléfono Atención al Cliente</label>
+                            <input type="text" id="footer-phone-main" placeholder="+57 312 207 2057">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Teléfono Mayoristas</label>
+                            <input type="text" id="footer-phone-wholesale" placeholder="+57 314 695 8003">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Correo Electrónico</label>
+                            <input type="email" id="footer-email" placeholder="contacto@stivzapat.com">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>URL del Formulario PQRSF</label>
+                            <input type="text" id="footer-pqrsf-url" placeholder="https://forms.google.com/...">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>URL Cambios / Garantías / Devoluciones</label>
+                            <input type="text" id="footer-devolutions-url" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="font-size:14px; font-weight:800; text-transform:uppercase; margin-bottom:14px; color:var(--text-muted);">Horarios de Atención</h3>
+                        <div class="footer-admin-field">
+                            <label>Atención PQRS (días y horas)</label>
+                            <input type="text" id="footer-hours-pqrs" placeholder="Lunes a Viernes de 8:30 AM - 5:30 PM">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Horario Tienda Física</label>
+                            <input type="text" id="footer-hours-store" placeholder="Lunes a Sábado de 11AM - 4:30 PM">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Nota adicional (ej: festivos)</label>
+                            <input type="text" id="footer-hours-note" placeholder="Sin atención en días festivos">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Mostrar sección de contacto</label>
+                            <select id="footer-show-contact">
+                                <option value="1">Mostrar</option>
+                                <option value="0">Ocultar</option>
+                            </select>
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Mostrar sección de horarios</label>
+                            <select id="footer-show-hours">
+                                <option value="1">Mostrar</option>
+                                <option value="0">Ocultar</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PANEL: NEWSLETTER ── -->
+            <div class="footer-admin-panel" id="footer-panel-newsletter">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                    <div>
+                        <div class="footer-admin-field">
+                            <label>Mostrar sección de Newsletter</label>
+                            <select id="footer-show-newsletter">
+                                <option value="1">Mostrar</option>
+                                <option value="0">Ocultar</option>
+                            </select>
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Título del Newsletter</label>
+                            <input type="text" id="footer-newsletter-title" placeholder="Suscríbete a nuestra newsletter">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Subtítulo / descripción</label>
+                            <input type="text" id="footer-newsletter-subtitle" placeholder="Y recibe consejos y ofertas exclusivas">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Texto del placeholder del campo email</label>
+                            <input type="text" id="footer-newsletter-placeholder" placeholder="Correo electrónico">
+                        </div>
+                        <div class="footer-admin-field">
+                            <label>Nota de privacidad (debajo del campo)</label>
+                            <input type="text" id="footer-newsletter-note" placeholder="No spam. Solo lo mejor de nuestra tienda.">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="footer-admin-field">
+                            <label>URL del formulario de suscripción (Google Forms / Mailchimp etc.)</label>
+                            <input type="text" id="footer-newsletter-url" placeholder="https://forms.google.com/...">
+                        </div>
+                        <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:14px 16px; margin-top:8px;">
+                            <p style="font-size:12px; font-weight:700; color:#16a34a; margin-bottom:6px;">💡 Tip de integración</p>
+                            <p style="font-size:12px; color:#15803d; line-height:1.5;">Puedes usar un Google Form, Mailchimp, Brevo o cualquier herramienta de email marketing. Pega la URL del formulario de suscripción arriba y el botón enviará al cliente a registrarse.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PANEL: REDES SOCIALES ── -->
+            <div class="footer-admin-panel" id="footer-panel-social">
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Agrega los links de tus redes sociales. Solo las que tengan URL aparecerán en el footer.</p>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:12px;" id="footer-social-editor">
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>📘 Facebook</label>
+                        <input type="url" id="footer-social-facebook" placeholder="https://facebook.com/tupagina">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>📸 Instagram</label>
+                        <input type="url" id="footer-social-instagram" placeholder="https://instagram.com/tuperfil">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>🎵 TikTok</label>
+                        <input type="url" id="footer-social-tiktok" placeholder="https://tiktok.com/@tuperfil">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>▶️ YouTube</label>
+                        <input type="url" id="footer-social-youtube" placeholder="https://youtube.com/@tucanal">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>💬 WhatsApp</label>
+                        <input type="text" id="footer-social-whatsapp" placeholder="573108340344 (solo número)">
+                    </div>
+                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
+                        <label>🐦 X / Twitter</label>
+                        <input type="url" id="footer-social-twitter" placeholder="https://x.com/tuperfil">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:16px;">
+                <button class="btn-action secondary" onclick="previewFooter()">👁️ Vista Previa en Tienda</button>
+                <button class="btn-action" onclick="saveFooterConfig()">💾 Guardar Footer en Google Sheets</button>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             INVENTARIO PRO — VISTA COMPLETA
+        ═══════════════════════════════════════════════════════ -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-inventario-pro">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                <h2 style="border-bottom:none; margin-bottom:0; padding-bottom:0;">📦 Inventario Completo</h2>
+                <button class="btn-action" style="background:#16a34a; font-size:13px; padding:9px 18px;" onclick="exportInventarioExcel()">⬇️ Exportar Excel</button>
+            </div>
+
+            <!-- KPIs rápidos -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin-bottom:20px;" id="inv-kpis">
+                <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:12px 14px; text-align:center;">
+                    <div style="font-size:22px; font-weight:900; color:#16a34a;" id="inv-kpi-total">—</div>
+                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#15803d;">Uds totales</div>
+                </div>
+                <div style="background:#fef9c3; border:1px solid #fde047; border-radius:8px; padding:12px 14px; text-align:center;">
+                    <div style="font-size:22px; font-weight:900; color:#ca8a04;" id="inv-kpi-low">—</div>
+                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#a16207;">Stock bajo</div>
+                </div>
+                <div style="background:#fee2e2; border:1px solid #fca5a5; border-radius:8px; padding:12px 14px; text-align:center;">
+                    <div style="font-size:22px; font-weight:900; color:#dc2626;" id="inv-kpi-out">—</div>
+                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#b91c1c;">Agotados</div>
+                </div>
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:12px 14px; text-align:center;">
+                    <div style="font-size:22px; font-weight:900; color:var(--accent-dark);" id="inv-kpi-refs">—</div>
+                    <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Referencias</div>
+                </div>
+            </div>
+
+            <!-- Barra de búsqueda + filtros -->
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:center;">
+                <input type="text" id="inv-search" placeholder="🔍 Buscar por nombre o SKU..." oninput="renderInventarioPro()"
+                    style="flex:1; min-width:180px; padding:9px 14px; border:1px solid var(--border-color); border-radius:8px; font-size:13px; outline:none;">
+                <select id="inv-filter-marca" onchange="renderInventarioPro()"
+                    style="padding:9px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:13px; outline:none; background:#fff;">
+                    <option value="">Todas las marcas</option>
+                </select>
+                <select id="inv-filter-color" onchange="renderInventarioPro()"
+                    style="padding:9px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:13px; outline:none; background:#fff;">
+                    <option value="">Todos los colores</option>
+                </select>
+                <select id="inv-filter-estado" onchange="renderInventarioPro()"
+                    style="padding:9px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:13px; outline:none; background:#fff;">
+                    <option value="">Todos los estados</option>
+                    <option value="ok">✅ En stock</option>
+                    <option value="low">⚠️ Stock bajo (≤3)</option>
+                    <option value="out">❌ Agotado</option>
+                </select>
+                <button onclick="document.getElementById('inv-search').value=''; document.getElementById('inv-filter-marca').value=''; document.getElementById('inv-filter-color').value=''; document.getElementById('inv-filter-estado').value=''; renderInventarioPro();"
+                    style="padding:9px 14px; border:1px solid var(--border-color); border-radius:8px; font-size:12px; font-weight:700; background:#f1f5f9; cursor:pointer; color:var(--text-muted);">✕ Limpiar</button>
+            </div>
+
+            <!-- Tabla principal -->
+            <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border-color);">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;" id="inv-pro-table">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569; white-space:nowrap; width:28px;"></th>
+                            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Producto</th>
+                            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Marca</th>
+                            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Color</th>
+                            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; color:#475569;">Stock Color</th>
+                            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Tallas</th>
+                            <th style="padding:10px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Precio</th>
+                            <th style="padding:10px 12px; text-align:center; font-size:11px; text-transform:uppercase; color:#475569;">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inv-pro-tbody">
+                        <tr><td colspan="8" style="padding:20px; text-align:center; color:var(--text-muted);">Cargando inventario...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="inv-pro-count" style="font-size:12px; color:var(--text-muted); margin-top:8px; text-align:right;"></div>
+        </div>
     </section>
+
+    <!-- ══ FOOTER PERSONALIZABLE DE TIENDA ══ -->
+    <footer id="store-footer" style="display:none;">
+        <!-- Barra de confianza -->
+        <div class="footer-trust-bar" id="footer-trust-bar">
+            <div class="footer-trust-bar-inner" id="footer-trust-cards"></div>
+        </div>
+        <!-- Columnas principales -->
+        <div class="footer-main-inner" id="footer-main-cols"></div>
+        <!-- Barra inferior -->
+        <div class="footer-bottom">
+            <div class="footer-bottom-inner">
+                <div class="footer-social-row" id="footer-social-row"></div>
+                <p class="footer-copy" id="footer-copy-text"></p>
+            </div>
+        </div>
+    </footer>
 
     <!-- MODAL CHECKOUT MEDIOS DE PAGO -->
     <div id="checkout-overlay" style="display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
@@ -1025,6 +1492,535 @@
             const json = await res.json();
             if (json.success) return json.data.url;
             throw new Error(json.error?.message || "Error subiendo imagen a ImgBB");
+        }
+
+        // ═══════════════════════════════════════════════════════
+        //  FOOTER PERSONALIZABLE — LÓGICA COMPLETA
+        // ═══════════════════════════════════════════════════════
+
+        const FOOTER_DEFAULT = {
+            visible: "1",
+            bgColor: "#0f172a",
+            textColor: "#ffffff",
+            accentColor: "#ffffff",
+            copyright: "© 2025 StivZapat. Todos los derechos reservados.",
+            trustCards: [
+                { icon: "🚚", title: "Envíos gratis", sub: "por compras mayores a $150.000", active: true },
+                { icon: "⏱️", title: "Entregas en 1–5 días", sub: "en todo el país", active: true },
+                { icon: "🛡️", title: "Garantía {{BRAND}}", sub: "60 días en todos los productos", active: true },
+                { icon: "💪", title: "Diseñado para atletas", sub: "probado en gimnasio", active: true },
+                { icon: "💬", title: "Soporte humano", sub: "personalizado en cada compra", active: true }
+            ],
+            columns: [
+                { title: "Enlaces de interés", links: [
+                    { label: "Blog", url: "#" },
+                    { label: "Política de Atención al Cliente", url: "#" },
+                    { label: "Política de Envíos", url: "#" },
+                    { label: "Cambios, Garantías y Devoluciones", url: "#" },
+                    { label: "Políticas de Privacidad", url: "#" }
+                ]},
+                { title: "Categorías Top", links: [
+                    { label: "Rodilleras", url: "#" },
+                    { label: "Strap", url: "#" },
+                    { label: "Cinturones", url: "#" },
+                    { label: "Guantes", url: "#" },
+                    { label: "Muñequeras", url: "#" }
+                ]}
+            ],
+            showContact: "1",
+            address: "Calle 11 #9-20, CC Aristi, Local 121. Cali - Valle",
+            phoneMain: "+57 312 207 2057",
+            phoneWholesale: "+57 314 695 8003",
+            email: "",
+            pqrsfUrl: "#",
+            devolutionsUrl: "#",
+            showHours: "1",
+            hoursPqrs: "Lunes a Viernes de 8:30 AM - 5:30 PM",
+            hoursStore: "Lunes a Sábado de 11AM - 4:30 PM",
+            hoursNote: "Sin atención en días festivos",
+            showNewsletter: "1",
+            newsletterTitle: "Suscríbete a nuestra newsletter",
+            newsletterSubtitle: "Y recibe consejos y ofertas exclusivas",
+            newsletterPlaceholder: "Correo electrónico",
+            newsletterNote: "Sin spam. Solo lo mejor de nuestra tienda.",
+            newsletterUrl: "",
+            social: { facebook: "", instagram: "", tiktok: "", youtube: "", whatsapp: "", twitter: "" }
+        };
+
+        let footerCfg = JSON.parse(JSON.stringify(FOOTER_DEFAULT));
+
+        function getFooterCfg() {
+            const raw = getCfg('footer_config', null);
+            if (raw) {
+                try {
+                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    footerCfg = Object.assign({}, FOOTER_DEFAULT, parsed);
+                    if (!footerCfg.social) footerCfg.social = FOOTER_DEFAULT.social;
+                    if (!footerCfg.trustCards || !footerCfg.trustCards.length) footerCfg.trustCards = FOOTER_DEFAULT.trustCards;
+                    if (!footerCfg.columns || !footerCfg.columns.length) footerCfg.columns = FOOTER_DEFAULT.columns;
+                } catch(e) { footerCfg = JSON.parse(JSON.stringify(FOOTER_DEFAULT)); }
+            }
+            return footerCfg;
+        }
+
+        async function saveFooterConfig() {
+            // Collect general
+            footerCfg.bgColor = document.getElementById('footer-bg-color').value;
+            footerCfg.textColor = document.getElementById('footer-text-color').value;
+            footerCfg.accentColor = document.getElementById('footer-accent-color').value;
+            footerCfg.copyright = document.getElementById('footer-copyright').value;
+            footerCfg.visible = document.getElementById('footer-visible').value;
+            // Contact
+            footerCfg.showContact = document.getElementById('footer-show-contact').value;
+            footerCfg.address = document.getElementById('footer-address').value;
+            footerCfg.phoneMain = document.getElementById('footer-phone-main').value;
+            footerCfg.phoneWholesale = document.getElementById('footer-phone-wholesale').value;
+            footerCfg.email = document.getElementById('footer-email').value;
+            footerCfg.pqrsfUrl = document.getElementById('footer-pqrsf-url').value;
+            footerCfg.devolutionsUrl = document.getElementById('footer-devolutions-url').value;
+            footerCfg.showHours = document.getElementById('footer-show-hours').value;
+            footerCfg.hoursPqrs = document.getElementById('footer-hours-pqrs').value;
+            footerCfg.hoursStore = document.getElementById('footer-hours-store').value;
+            footerCfg.hoursNote = document.getElementById('footer-hours-note').value;
+            // Newsletter
+            footerCfg.showNewsletter = document.getElementById('footer-show-newsletter').value;
+            footerCfg.newsletterTitle = document.getElementById('footer-newsletter-title').value;
+            footerCfg.newsletterSubtitle = document.getElementById('footer-newsletter-subtitle').value;
+            footerCfg.newsletterPlaceholder = document.getElementById('footer-newsletter-placeholder').value;
+            footerCfg.newsletterNote = document.getElementById('footer-newsletter-note').value;
+            footerCfg.newsletterUrl = document.getElementById('footer-newsletter-url').value;
+            // Social
+            footerCfg.social = {
+                facebook: document.getElementById('footer-social-facebook').value,
+                instagram: document.getElementById('footer-social-instagram').value,
+                tiktok: document.getElementById('footer-social-tiktok').value,
+                youtube: document.getElementById('footer-social-youtube').value,
+                whatsapp: document.getElementById('footer-social-whatsapp').value,
+                twitter: document.getElementById('footer-social-twitter').value
+            };
+            // Trust cards
+            footerCfg.trustCards = [];
+            document.querySelectorAll('.footer-trust-row').forEach(row => {
+                footerCfg.trustCards.push({
+                    icon: row.querySelector('.ftc-icon-input').value,
+                    iconImg: (row.querySelector('.ftc-icon-img-url')||{}).value || '',
+                    title: row.querySelector('.ftc-title-input').value,
+                    sub: row.querySelector('.ftc-sub-input').value,
+                    active: row.querySelector('.ftc-active-chk').checked
+                });
+            });
+            // Columns
+            footerCfg.columns = [];
+            document.querySelectorAll('.footer-col-section').forEach(colEl => {
+                const links = [];
+                colEl.querySelectorAll('.footer-link-row').forEach(lr => {
+                    links.push({
+                        label: lr.querySelector('.flink-label').value,
+                        url: lr.querySelector('.flink-url').value
+                    });
+                });
+                footerCfg.columns.push({
+                    title: colEl.querySelector('.fcol-title-input').value,
+                    links
+                });
+            });
+
+            const btn = event.target;
+            const orig = btn.textContent;
+            btn.textContent = '⏳ Guardando...';
+            btn.disabled = true;
+            try {
+                await saveCfg('footer_config', JSON.stringify(footerCfg));
+                renderStoreFooter();
+                btn.textContent = '✅ Guardado';
+                setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+            } catch(e) {
+                btn.textContent = '✗ Error';
+                btn.disabled = false;
+                alert('Error al guardar. Revisa la conexión.');
+            }
+        }
+
+        function previewFooter() {
+            renderStoreFooter();
+            const footer = document.getElementById('store-footer');
+            if (footer) {
+                footer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                footer.style.outline = '3px solid #3b82f6';
+                setTimeout(() => footer.style.outline = '', 2000);
+            }
+            alert('✓ Vista previa actualizada. Desplázate hacia abajo para verlo.');
+        }
+
+        function switchFooterTab(name) {
+            document.querySelectorAll('.footer-admin-tab').forEach((t, i) => {
+                const panels = ['general','trust','columns','contact','newsletter','social'];
+                t.classList.toggle('active', panels[i] === name);
+            });
+            document.querySelectorAll('.footer-admin-panel').forEach(p => {
+                p.classList.toggle('active', p.id === `footer-panel-${name}`);
+            });
+        }
+
+        function syncColorPicker(colorId, textId) {
+            const v = document.getElementById(textId).value;
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                document.getElementById(colorId).value = v;
+            }
+            updateFooterColorPreview();
+        }
+
+        function updateFooterColorPreview() {
+            const bg = document.getElementById('footer-bg-color').value || '#0f172a';
+            const txt = document.getElementById('footer-text-color').value || '#ffffff';
+            const prev = document.getElementById('footer-color-preview');
+            if (prev) {
+                prev.style.background = bg;
+                prev.style.color = txt;
+                document.getElementById('fcp-title').style.color = txt;
+                document.getElementById('fcp-sub').style.color = txt;
+            }
+        }
+
+        function populateFooterAdmin() {
+            const cfg = getFooterCfg();
+            // General
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+            setVal('footer-bg-color', cfg.bgColor);
+            setVal('footer-bg-color-text', cfg.bgColor);
+            setVal('footer-text-color', cfg.textColor);
+            setVal('footer-text-color-text', cfg.textColor);
+            setVal('footer-accent-color', cfg.accentColor);
+            setVal('footer-accent-color-text', cfg.accentColor);
+            setVal('footer-copyright', cfg.copyright);
+            setVal('footer-visible', cfg.visible);
+            // Contact
+            setVal('footer-show-contact', cfg.showContact);
+            setVal('footer-address', cfg.address);
+            setVal('footer-phone-main', cfg.phoneMain);
+            setVal('footer-phone-wholesale', cfg.phoneWholesale);
+            setVal('footer-email', cfg.email);
+            setVal('footer-pqrsf-url', cfg.pqrsfUrl);
+            setVal('footer-devolutions-url', cfg.devolutionsUrl);
+            setVal('footer-show-hours', cfg.showHours);
+            setVal('footer-hours-pqrs', cfg.hoursPqrs);
+            setVal('footer-hours-store', cfg.hoursStore);
+            setVal('footer-hours-note', cfg.hoursNote);
+            // Newsletter
+            setVal('footer-show-newsletter', cfg.showNewsletter);
+            setVal('footer-newsletter-title', cfg.newsletterTitle);
+            setVal('footer-newsletter-subtitle', cfg.newsletterSubtitle);
+            setVal('footer-newsletter-placeholder', cfg.newsletterPlaceholder);
+            setVal('footer-newsletter-note', cfg.newsletterNote);
+            setVal('footer-newsletter-url', cfg.newsletterUrl);
+            // Social
+            const s = cfg.social || {};
+            setVal('footer-social-facebook', s.facebook);
+            setVal('footer-social-instagram', s.instagram);
+            setVal('footer-social-tiktok', s.tiktok);
+            setVal('footer-social-youtube', s.youtube);
+            setVal('footer-social-whatsapp', s.whatsapp);
+            setVal('footer-social-twitter', s.twitter);
+            // Trust cards
+            renderFooterTrustEditor(cfg.trustCards);
+            // Columns
+            renderFooterColumnsEditor(cfg.columns);
+            updateFooterColorPreview();
+            // live sync color pickers
+            ['footer-bg-color','footer-text-color','footer-accent-color'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', function() {
+                    const textId = id + '-text';
+                    const textEl = document.getElementById(textId);
+                    if (textEl) textEl.value = this.value;
+                    updateFooterColorPreview();
+                });
+            });
+        }
+
+        function renderFooterTrustEditor(cards) {
+            const container = document.getElementById('footer-trust-editor');
+            if (!container) return;
+            const _brandName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'Nuestra Tienda');
+            let hint = container.parentNode.querySelector('.ftc-brand-hint');
+            if (!hint) {
+                hint = document.createElement('div');
+                hint.className = 'ftc-brand-hint';
+                hint.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:9px 14px; margin-bottom:10px; font-size:12px; color:#1e40af; line-height:1.5;';
+                container.parentNode.insertBefore(hint, container);
+            }
+            hint.innerHTML = '💡 Usa <strong>{{BRAND}}</strong> en el título o descripción para insertar automáticamente el nombre de tu empresa (<strong>' + _brandName + '</strong>). Ej: <em>"Garantía {{BRAND}}"</em>';
+            container.innerHTML = '';
+            (cards || []).forEach((c, i) => {
+                const row = document.createElement('div');
+                row.className = 'footer-trust-row';
+                row.style.cssText = 'background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:10px;';
+                const hasImg = c.iconImg && c.iconImg.trim();
+                row.innerHTML = `
+                    <div style="display:grid; grid-template-columns:1fr 1fr 80px 40px; gap:8px; align-items:center; margin-bottom:8px;">
+                        <input type="text" class="ftc-title-input" value="${c.title||''}" placeholder="Título (usa {{BRAND}})" style="padding:7px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:700; outline:none; width:100%;">
+                        <input type="text" class="ftc-sub-input" value="${c.sub||''}" placeholder="Descripción" style="padding:7px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; outline:none; width:100%;">
+                        <label style="display:flex; align-items:center; gap:5px; font-size:12px; font-weight:700; cursor:pointer; justify-content:center;">
+                            <input type="checkbox" class="ftc-active-chk" ${c.active!==false?'checked':''} style="width:16px;height:16px;cursor:pointer;"> Activo
+                        </label>
+                        <button onclick="this.closest('.footer-trust-row').remove()" style="background:#fee2e2; border:none; border-radius:6px; width:32px; height:32px; cursor:pointer; font-size:16px; color:#dc2626; display:flex; align-items:center; justify-content:center;">✕</button>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center; background:#fff; padding:8px 10px; border-radius:6px; border:1px solid var(--border-color);">
+                        <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; min-width:40px;">Ícono</div>
+                        <input type="text" class="ftc-icon-input" value="${c.icon||''}" placeholder="Emoji ej: 🚚" style="padding:6px 8px; border:1px solid var(--border-color); border-radius:6px; font-size:18px; text-align:center; outline:none; width:70px; flex-shrink:0;">
+                        <div style="font-size:11px; color:var(--text-muted);">ó sube una imagen:</div>
+                        <div style="display:flex; align-items:center; gap:8px; flex:1;">
+                            <div class="ftc-img-preview" style="width:40px;height:40px;border-radius:6px;border:1px solid var(--border-color);overflow:hidden;display:${hasImg?'flex':'none'};align-items:center;justify-content:center;background:#f1f5f9;">
+                                ${hasImg?`<img src="${c.iconImg}" style="width:100%;height:100%;object-fit:contain;">`:''}
+                            </div>
+                            <input type="hidden" class="ftc-icon-img-url" value="${c.iconImg||''}">
+                            <label style="background:var(--accent-dark);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                                📤 Subir imagen
+                                <input type="file" accept="image/*" style="display:none;" onchange="uploadTrustCardIcon(this)">
+                            </label>
+                            ${hasImg?`<button onclick="clearTrustCardIcon(this)" style="background:#fee2e2;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#dc2626;cursor:pointer;">✕ Quitar</button>`:''}
+                            <span class="ftc-upload-status" style="font-size:11px;color:var(--text-muted);"></span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        async function uploadTrustCardIcon(inputEl) {
+            const row = inputEl.closest('.footer-trust-row');
+            const statusEl = row.querySelector('.ftc-upload-status');
+            const preview = row.querySelector('.ftc-img-preview');
+            const urlInput = row.querySelector('.ftc-icon-img-url');
+            statusEl.innerText = '⏳ Subiendo...';
+            statusEl.style.color = '#64748b';
+            try {
+                const file = inputEl.files[0];
+                if (!file) return;
+                const base64 = await new Promise((res,rej) => {
+                    const fr = new FileReader(); fr.onload = e => res(e.target.result); fr.onerror = rej; fr.readAsDataURL(file);
+                });
+                const url = await uploadToImgHost(base64);
+                urlInput.value = url;
+                preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:contain;">`;
+                preview.style.display = 'flex';
+                // Show remove button if not present
+                if (!row.querySelector('[data-remove-btn]')) {
+                    const btn = document.createElement('button');
+                    btn.setAttribute('data-remove-btn','1');
+                    btn.style.cssText = 'background:#fee2e2;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#dc2626;cursor:pointer;';
+                    btn.innerText = '✕ Quitar';
+                    btn.onclick = function(){ clearTrustCardIcon(this); };
+                    statusEl.parentNode.insertBefore(btn, statusEl);
+                }
+                statusEl.innerText = '✓ Imagen lista';
+                statusEl.style.color = '#16a34a';
+            } catch(e) {
+                statusEl.innerText = '✗ Error al subir';
+                statusEl.style.color = '#dc2626';
+            }
+        }
+
+        function clearTrustCardIcon(btn) {
+            const row = btn.closest('.footer-trust-row');
+            row.querySelector('.ftc-icon-img-url').value = '';
+            row.querySelector('.ftc-img-preview').style.display = 'none';
+            row.querySelector('.ftc-img-preview').innerHTML = '';
+            btn.remove();
+            const st = row.querySelector('.ftc-upload-status');
+            if (st) st.innerText = '';
+        }
+                function addFooterTrustCard() {
+            const cards = [];
+            document.querySelectorAll('.footer-trust-row').forEach(row => {
+                cards.push({
+                    icon: row.querySelector('.ftc-icon-input').value,
+                    iconImg: (row.querySelector('.ftc-icon-img-url')||{}).value || '',
+                    title: row.querySelector('.ftc-title-input').value,
+                    sub: row.querySelector('.ftc-sub-input').value,
+                    active: row.querySelector('.ftc-active-chk').checked
+                });
+            });
+            cards.push({ icon: '⭐', iconImg: '', title: 'Nueva tarjeta', sub: 'Descripción', active: true });
+            renderFooterTrustEditor(cards);
+        }
+
+        function renderFooterColumnsEditor(columns) {
+            const container = document.getElementById('footer-columns-editor');
+            if (!container) return;
+            container.innerHTML = '';
+            (columns || []).forEach((col, ci) => {
+                const section = document.createElement('div');
+                section.className = 'footer-col-section';
+                section.style.cssText = 'background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; margin-bottom:12px;';
+                const linksHtml = (col.links || []).map((lk, li) => `
+                    <div class="footer-link-row" style="display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:center; background:#fff; padding:7px 10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:6px;">
+                        <input type="text" class="flink-label" value="${lk.label||''}" placeholder="Texto del link" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%;">
+                        <input type="text" class="flink-url" value="${lk.url||''}" placeholder="URL o #" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%; font-family:monospace;">
+                        <button onclick="this.closest('.footer-link-row').remove()" style="background:#fee2e2; border:none; border-radius:5px; width:28px; height:28px; cursor:pointer; font-size:13px; color:#dc2626; flex-shrink:0;">✕</button>
+                    </div>
+                `).join('');
+                section.innerHTML = `
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+                        <input type="text" class="fcol-title-input" value="${col.title||''}" placeholder="Título de columna" style="flex:1; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:800; outline:none; text-transform:uppercase;">
+                        <button onclick="this.closest('.footer-col-section').remove()" style="background:#fee2e2; border:none; border-radius:6px; padding:7px 10px; cursor:pointer; font-size:13px; color:#dc2626; font-weight:700; white-space:nowrap;">✕ Eliminar columna</button>
+                    </div>
+                    <div class="footer-links-list">${linksHtml}</div>
+                    <button onclick="addFooterLink(this)" style="background:#fff; border:1px dashed #cbd5e1; border-radius:6px; padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; color:var(--text-muted); margin-top:4px;">+ Agregar link</button>
+                `;
+                container.appendChild(section);
+            });
+        }
+
+        function addFooterLink(btn) {
+            const list = btn.previousElementSibling;
+            const row = document.createElement('div');
+            row.className = 'footer-link-row';
+            row.style.cssText = 'display:grid; grid-template-columns:1fr 1fr auto; gap:8px; align-items:center; background:#fff; padding:7px 10px; border-radius:6px; border:1px solid var(--border-color); margin-bottom:6px;';
+            row.innerHTML = `
+                <input type="text" class="flink-label" value="" placeholder="Texto del link" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%;">
+                <input type="text" class="flink-url" value="#" placeholder="URL o #" style="padding:7px 9px; border:1px solid var(--border-color); border-radius:5px; font-size:12px; outline:none; width:100%; font-family:monospace;">
+                <button onclick="this.closest('.footer-link-row').remove()" style="background:#fee2e2; border:none; border-radius:5px; width:28px; height:28px; cursor:pointer; font-size:13px; color:#dc2626; flex-shrink:0;">✕</button>
+            `;
+            list.appendChild(row);
+        }
+
+        function addFooterColumn() {
+            const cols = [];
+            document.querySelectorAll('.footer-col-section').forEach(colEl => {
+                const links = [];
+                colEl.querySelectorAll('.footer-link-row').forEach(lr => {
+                    links.push({ label: lr.querySelector('.flink-label').value, url: lr.querySelector('.flink-url').value });
+                });
+                cols.push({ title: colEl.querySelector('.fcol-title-input').value, links });
+            });
+            cols.push({ title: 'Nueva Columna', links: [{ label: 'Nuevo Link', url: '#' }] });
+            renderFooterColumnsEditor(cols);
+        }
+
+        function renderStoreFooter() {
+            const cfg = getFooterCfg();
+            const footer = document.getElementById('store-footer');
+            if (!footer) return;
+
+            // Visibility
+            footer.style.display = cfg.visible === '0' ? 'none' : 'block';
+
+            // Colors
+            footer.style.background = cfg.bgColor || '#0f172a';
+            footer.style.color = cfg.textColor || '#fff';
+
+            // Trust bar
+            const trustBar = document.getElementById('footer-trust-bar');
+            const trustCards = document.getElementById('footer-trust-cards');
+            if (trustCards) {
+                const _brandName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'Nuestra Tienda');
+                const activeTrust = (cfg.trustCards || []).filter(c => c.active !== false);
+                if (activeTrust.length === 0) {
+                    trustBar.style.display = 'none';
+                } else {
+                    trustBar.style.display = 'block';
+                    trustCards.innerHTML = activeTrust.map(c => {
+                        const iconContent = (c.iconImg && c.iconImg.trim())
+                            ? `<img src="${c.iconImg}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:4px;">`
+                            : (c.icon||'').replace(/\{\{BRAND\}\}/g, _brandName);
+                        return `
+                        <div class="footer-trust-card">
+                            <div class="ftc-icon">${iconContent}</div>
+                            <div class="ftc-title">${(c.title||'').replace(/\{\{BRAND\}\}/g, _brandName)}</div>
+                            <div class="ftc-sub">${(c.sub||'').replace(/\{\{BRAND\}\}/g, _brandName)}</div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+
+            // Main columns
+            const mainCols = document.getElementById('footer-main-cols');
+            if (mainCols) {
+                let html = '';
+                // Link columns
+                (cfg.columns || []).forEach(col => {
+                    html += `<div>
+                        <p class="footer-col-title">${col.title}</p>
+                        <ul class="footer-col-links">
+                            ${(col.links||[]).map(lk => `<li><a href="${lk.url||'#'}">${lk.label}</a></li>`).join('')}
+                        </ul>
+                    </div>`;
+                });
+
+                // Contact column
+                if (cfg.showContact !== '0') {
+                    html += `<div>
+                        <p class="footer-col-title">Contáctanos</p>
+                        ${cfg.address ? `<div class="footer-contact-item"><span class="footer-contact-icon">📍</span><span>${cfg.address}</span></div>` : ''}
+                        ${cfg.phoneMain ? `<div class="footer-contact-item"><span class="footer-contact-icon">📞</span><span>Atención al cliente: <strong><a href="tel:${cfg.phoneMain}" style="color:inherit;">${cfg.phoneMain}</a></strong></span></div>` : ''}
+                        ${cfg.phoneWholesale ? `<div class="footer-contact-item"><span class="footer-contact-icon">🏭</span><span>Mayoristas: <strong><a href="tel:${cfg.phoneWholesale}" style="color:inherit;">${cfg.phoneWholesale}</a></strong></span></div>` : ''}
+                        ${cfg.email ? `<div class="footer-contact-item"><span class="footer-contact-icon">✉️</span><span><a href="mailto:${cfg.email}" style="color:inherit;">${cfg.email}</a></span></div>` : ''}
+                        ${cfg.pqrsfUrl ? `<div class="footer-contact-item"><span class="footer-contact-icon">📝</span><span><a href="${cfg.pqrsfUrl}" style="color:rgba(255,255,255,.8); text-decoration:underline;">Formulario PQRSF</a></span></div>` : ''}
+                        ${cfg.devolutionsUrl ? `<div class="footer-contact-item"><span class="footer-contact-icon">🔄</span><span><a href="${cfg.devolutionsUrl}" style="color:rgba(255,255,255,.8); text-decoration:underline;">Cambios, Garantías o Devoluciones</a></span></div>` : ''}
+                    </div>`;
+                }
+
+                // Hours column
+                if (cfg.showHours !== '0') {
+                    html += `<div>
+                        <p class="footer-col-title">Horarios de Atención</p>
+                        ${cfg.hoursPqrs ? `<div class="footer-schedule-item"><span class="footer-schedule-label">Atención PQRS:</span>${cfg.hoursPqrs}</div>` : ''}
+                        ${cfg.hoursStore ? `<div class="footer-schedule-item"><span class="footer-schedule-label">Tienda Física:</span>${cfg.hoursStore}</div>` : ''}
+                        ${cfg.hoursNote ? `<div class="footer-schedule-item" style="color:rgba(255,255,255,.45); font-style:italic;">${cfg.hoursNote}</div>` : ''}
+                    </div>`;
+                }
+
+                // Newsletter column
+                if (cfg.showNewsletter !== '0') {
+                    html += `<div>
+                        <p class="footer-col-title">${cfg.newsletterTitle || 'Newsletter'}</p>
+                        ${cfg.newsletterSubtitle ? `<p style="font-size:12px; color:rgba(255,255,255,.55); margin-bottom:12px;">${cfg.newsletterSubtitle}</p>` : ''}
+                        <div class="footer-newsletter-form">
+                            <input type="email" placeholder="${cfg.newsletterPlaceholder || 'Correo electrónico'}" id="footer-nl-input">
+                            <button onclick="footerNewsletterSubmit()">${cfg.newsletterUrl ? '›' : '✓'}</button>
+                        </div>
+                        ${cfg.newsletterNote ? `<p class="footer-newsletter-note">${cfg.newsletterNote}</p>` : ''}
+                    </div>`;
+                }
+
+                mainCols.innerHTML = html;
+                mainCols.style.color = cfg.textColor || '#fff';
+            }
+
+            // Social row
+            const socialRow = document.getElementById('footer-social-row');
+            if (socialRow && cfg.social) {
+                const s = cfg.social;
+                const socials = [
+                    { key: 'facebook',  icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>', url: s.facebook },
+                    { key: 'instagram', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>', url: s.instagram },
+                    { key: 'tiktok',    icon: '🎵', url: s.tiktok },
+                    { key: 'youtube',   icon: '▶️', url: s.youtube },
+                    { key: 'twitter',   icon: '𝕏', url: s.twitter },
+                    { key: 'whatsapp',  icon: '💬', url: s.whatsapp ? `https://wa.me/${s.whatsapp.replace(/\D/g,'')}` : '' }
+                ];
+                socialRow.innerHTML = socials.filter(s => s.url).map(s =>
+                    `<a href="${s.url}" target="_blank" rel="noopener" class="footer-social-btn">${s.icon}</a>`
+                ).join('');
+            }
+
+            // Copyright
+            const copyEl = document.getElementById('footer-copy-text');
+            if (copyEl) copyEl.textContent = cfg.copyright || '';
+        }
+
+        function footerNewsletterSubmit() {
+            const cfg = getFooterCfg();
+            const input = document.getElementById('footer-nl-input');
+            const email = input ? input.value.trim() : '';
+            if (!email || !email.includes('@')) { alert('Por favor ingresa un correo válido.'); return; }
+            if (cfg.newsletterUrl) {
+                window.open(cfg.newsletterUrl, '_blank');
+            } else {
+                alert('✓ ¡Gracias por suscribirte!');
+                if (input) input.value = '';
+            }
         }
 
         // ─────────────────────────────────────────────
@@ -1322,6 +2318,7 @@
                     renderPendingOrders();
                     renderBlocksEditor();
                     renderCategoriesEditor();
+                    populateFooterAdmin();
                     navigateTo('admin-view');
                 } else {
                     navigateTo('auth-gate-view');
@@ -1457,6 +2454,7 @@
                 // Aplicar config al frontend
                 applyBrandConfig();
                 loadNoticeBar();
+                renderStoreFooter();
                 renderPillsFromCategories();
                 populateGenderSelect();
                 // Renderizar
@@ -1464,7 +2462,7 @@
                 renderCatalog();
                 buildBrandFilters();
                 updateCartBadge();
-                if(isAdminLoggedIn) renderAdminDashboard();
+                if(isAdminLoggedIn) { renderAdminDashboard(); populateFooterAdmin(); }
             } catch (err) {
                 console.error("Error cargando base de datos:", err);
             } finally {
@@ -2127,9 +3125,15 @@
                             <div class="thumbnails-strip">${thumbsHTML}</div>
                         </div>
                         <div class="product-detail-img-col">
-                            <div class="main-product-preview">
+                            <div class="main-product-preview" title="Clic para ver galería">
                                 <img id="detail-master-img" src="${validImages[0]}" alt="${p.title}">
                             </div>
+                            ${validImages.length > 1 ? `
+                            <button onclick="lbOpen(${JSON.stringify(validImages)}, currentImageIndex)"
+                                style="position:absolute;bottom:12px;right:12px;background:rgba(0,0,0,0.65);color:#fff;border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);transition:background .15s;"
+                                onmouseover="this.style.background='rgba(0,0,0,0.88)'" onmouseout="this.style.background='rgba(0,0,0,0.65)'">
+                                🖼️ Ver galería (${validImages.length})
+                            </button>` : ''}
                         </div>
                         <div style="padding:0 8px;">
                             <p style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:8px;">${p.brand}</p>
@@ -2347,20 +3351,42 @@
             const usePrice = (overridePrice !== null && overridePrice !== undefined) ? overridePrice : p.price;
 
             // Stock disponible para este color+talla específico
-            let availableStock = p.stock;
+            let availableStock = Number(p.stock) || 0;
             if (size && activeVariant && activeVariant.sizesStock) {
-                const row = activeVariant.sizesStock.find(r => r.size === size);
+                const row = activeVariant.sizesStock.find(r => String(r.size) === String(size));
                 if (row) availableStock = Number(row.stock) || 0;
+            } else if (!size && activeVariant && activeVariant.sizesStock) {
+                // Sin talla específica: sumar todo el stock de la variante
+                availableStock = activeVariant.sizesStock.reduce((a,r) => a + (Number(r.stock)||0), 0);
+            }
+
+            // ── Validación de stock ──
+            if (availableStock <= 0) {
+                _showToast('❌ Este producto está agotado.', '#dc2626');
+                return;
             }
 
             const existing = cart.find(item => item.cartKey === cartKey);
             if (existing) {
-                if (existing.quantity < availableStock) existing.quantity++;
+                if (existing.quantity >= availableStock) {
+                    _showToast(`⚠️ Solo hay ${availableStock} ud${availableStock!==1?'s':''} disponibles.`, '#f59e0b');
+                    return;
+                }
+                existing.quantity++;
             } else {
-                cart.push({ cartKey, id: p.id, title: p.title, brand: p.brand, price: usePrice,
-                    quantity: 1, image: img, size: size, colorName: colorName || (activeVariant ? activeVariant.colorName : null) });
+                cart.push({ cartKey, id: p.id, productId: p.id, title: p.title, brand: p.brand, price: usePrice,
+                    quantity: 1, image: img, size: size, colorName: colorName || (activeVariant ? activeVariant.colorName : null),
+                    maxStock: availableStock });
             }
             updateCartBadge();
+        }
+
+        function _showToast(msg, bg = '#020617') {
+            const el = document.createElement('div');
+            el.style.cssText = `position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:${bg}; color:#fff; padding:10px 20px; border-radius:8px; font-size:13px; font-weight:700; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,.2); pointer-events:none;`;
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2500);
         }
 
         function buyDirectWhatsApp(id, size) {
@@ -2413,24 +3439,58 @@
                 return;
             }
 
-            let total = 0, qty = 0;
+            let total = 0, qty = 0, hayProblema = false;
             wrapper.innerHTML = cart.map(item => {
                 total += (item.price * item.quantity);
                 qty += item.quantity;
+
+                // Verificar stock actual
+                let stockDisp = 9999;
+                const prod = (dbData.products||[]).find(p => p.id === item.id);
+                if (prod) {
+                    stockDisp = Number(prod.stock) || 0;
+                    if (item.colorName && item.size && prod.variants) {
+                        const variant = prod.variants.find(v => v.colorName === item.colorName);
+                        if (variant && variant.sizesStock) {
+                            const row = variant.sizesStock.find(r => String(r.size) === String(item.size));
+                            if (row !== undefined) stockDisp = Number(row.stock) || 0;
+                        }
+                    }
+                }
+                const agotado   = stockDisp <= 0;
+                const excedido  = item.quantity > stockDisp && stockDisp > 0;
+                if (agotado || excedido) hayProblema = true;
+
+                const alertaHTML = agotado
+                    ? `<div style="margin-top:6px; font-size:11px; font-weight:700; color:#dc2626; background:#fee2e2; padding:4px 8px; border-radius:5px; display:inline-block;">❌ Agotado — elimínalo para continuar</div>`
+                    : excedido
+                        ? `<div style="margin-top:6px; font-size:11px; font-weight:700; color:#ca8a04; background:#fef9c3; padding:4px 8px; border-radius:5px; display:inline-block;">⚠️ Solo quedan ${stockDisp} ud${stockDisp!==1?'s':''}</div>`
+                        : '';
+
                 return `
-                    <div class="cart-item">
+                    <div class="cart-item" style="${agotado ? 'opacity:.65;' : ''}">
                         <img src="${item.image}">
                         <div style="flex-grow:1;">
                             <h4 style="font-size:16px;">${item.title}</h4>
                             <p style="font-size:12px; color:var(--text-muted); text-transform:uppercase;">${item.brand}</p>
+                            ${item.colorName ? `<p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Color: ${item.colorName}</p>` : ''}
                             ${item.size ? `<p style="font-size:13px; font-weight:700; color:var(--accent-dark); margin-top:3px;">Talla: ${item.size}</p>` : ''}
                             <p style="font-size:13px; font-weight:700; margin-top:2px;">Cantidad: ${item.quantity} par(es)</p>
+                            ${alertaHTML}
                             <button onclick="removeFromBag('${item.cartKey || item.id}')" style="background:none; border:none; color:var(--danger-color); font-size:12px; cursor:pointer; text-decoration:underline; margin-top:6px;">Eliminar</button>
                         </div>
                         <div style="font-weight:700;">${formatCOP(item.price * item.quantity)}</div>
                     </div>
                 `;
             }).join('');
+
+            // Mostrar banner si hay problemas de stock
+            if (hayProblema) {
+                wrapper.insertAdjacentHTML('afterbegin', `
+                    <div style="background:#fee2e2; border:1px solid #fca5a5; border-radius:8px; padding:12px 16px; margin-bottom:16px; font-size:13px; font-weight:600; color:#dc2626;">
+                        ⚠️ Algunos productos de tu bolsa tienen problemas de stock. Elimínalos para poder continuar con el pedido.
+                    </div>`);
+            }
 
             document.getElementById('summary-qty').innerText = qty;
             document.getElementById('summary-total').innerText = formatCOP(total);
@@ -2524,6 +3584,161 @@
             `).join('');
             // Aplicar permisos de rol después de renderizar
             applyRolePermissions();
+            // Poblar filtros e inventario pro
+            populateInvFilters(dbData.products);
+            renderInventarioPro();
+            // Cargar número admin en el input
+            loadAdminPhoneInput();
+        }
+
+        // ── INVENTARIO PRO ────────────────────────────────────
+        function populateInvFilters(products) {
+            const marcas  = [...new Set((products||[]).map(p => p.brand).filter(Boolean))].sort();
+            const colores = [...new Set((products||[]).flatMap(p => (p.variants||[]).map(v => v.colorName).filter(Boolean)))].sort();
+            const selMarca = document.getElementById('inv-filter-marca');
+            const selColor = document.getElementById('inv-filter-color');
+            const curMarca = selMarca.value;
+            const curColor = selColor.value;
+            selMarca.innerHTML = `<option value="">Todas las marcas</option>` + marcas.map(m => `<option value="${m}" ${m===curMarca?'selected':''}>${m}</option>`).join('');
+            selColor.innerHTML = `<option value="">Todos los colores</option>` + colores.map(c => `<option value="${c}" ${c===curColor?'selected':''}>${c}</option>`).join('');
+        }
+
+        function renderInventarioPro() {
+            const products = (dbData && dbData.products) ? dbData.products : [];
+            const search   = (document.getElementById('inv-search')?.value || '').toLowerCase().trim();
+            const fMarca   = document.getElementById('inv-filter-marca')?.value || '';
+            const fColor   = document.getElementById('inv-filter-color')?.value || '';
+            const fEstado  = document.getElementById('inv-filter-estado')?.value || '';
+
+            // Construir filas (una por variante de color)
+            let rows = [];
+            products.forEach(p => {
+                if (fMarca && p.brand !== fMarca) return;
+                const variants = p.variants || [];
+                variants.forEach(v => {
+                    if (fColor && v.colorName !== fColor) return;
+                    const sizesStock = v.sizesStock || [];
+                    const colorTotal = sizesStock.reduce((a, r) => a + (Number(r.stock)||0), 0);
+                    const estado     = colorTotal <= 0 ? 'out' : colorTotal <= 3 ? 'low' : 'ok';
+                    if (fEstado && estado !== fEstado) return;
+
+                    // Búsqueda por nombre o SKU
+                    if (search) {
+                        const skus = sizesStock.map(r => (r.sku||'').toLowerCase()).join(' ');
+                        if (!p.title.toLowerCase().includes(search) && !skus.includes(search)) return;
+                    }
+
+                    rows.push({ p, v, sizesStock, colorTotal, estado });
+                });
+                // Producto sin variantes (solo stock general)
+                if (variants.length === 0) {
+                    const stockVal = Number(p.stock)||0;
+                    const estado   = stockVal <= 0 ? 'out' : stockVal <= 3 ? 'low' : 'ok';
+                    if (fColor || fEstado && estado !== fEstado) return;
+                    if (search && !p.title.toLowerCase().includes(search)) return;
+                    rows.push({ p, v: null, sizesStock: [], colorTotal: stockVal, estado });
+                }
+            });
+
+            // KPIs
+            const totalUds  = rows.reduce((a,r) => a + r.colorTotal, 0);
+            const totalLow  = rows.filter(r => r.estado === 'low').length;
+            const totalOut  = rows.filter(r => r.estado === 'out').length;
+            const totalRefs = products.length;
+            document.getElementById('inv-kpi-total').textContent = totalUds;
+            document.getElementById('inv-kpi-low').textContent   = totalLow;
+            document.getElementById('inv-kpi-out').textContent   = totalOut;
+            document.getElementById('inv-kpi-refs').textContent  = totalRefs;
+
+            const badgeMap = { ok:'#dcfce7|#16a34a|✅ Ok', low:'#fef9c3|#ca8a04|⚠️ Bajo', out:'#fee2e2|#dc2626|❌ Agotado' };
+
+            const tbody = document.getElementById('inv-pro-tbody');
+            if (rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">Sin resultados para los filtros aplicados.</td></tr>`;
+                document.getElementById('inv-pro-count').textContent = '';
+                return;
+            }
+
+            tbody.innerHTML = rows.map((row, idx) => {
+                const { p, v, sizesStock, colorTotal, estado } = row;
+                const [bg, fg, label] = badgeMap[estado].split('|');
+                const colorSwatch = v && v.colorHex ? `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${v.colorHex};border:1px solid #ccc;margin-right:5px;vertical-align:middle;"></span>` : '';
+                const colorName = v ? (v.colorName || 'Único') : '—';
+                const precioBase = v && v.sizesStock && v.sizesStock.some(r => r.price) ? '' : formatCOP(p.price);
+
+                // Tallas pill chips
+                const tallasHTML = sizesStock.length > 0
+                    ? `<div style="display:flex; flex-wrap:wrap; gap:3px;">`
+                      + sizesStock.map(r => {
+                          const s = Number(r.stock)||0;
+                          const chipBg = s <= 0 ? '#fee2e2' : s <= 2 ? '#fef9c3' : '#dcfce7';
+                          const chipFg = s <= 0 ? '#dc2626' : s <= 2 ? '#ca8a04' : '#16a34a';
+                          const lineT  = s <= 0 ? 'line-through; opacity:.5' : '';
+                          const priceTag = r.price ? ` · ${formatCOP(r.price)}` : '';
+                          return `<span title="SKU: ${r.sku||'—'}" style="font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:${chipBg}; color:${chipFg}; text-decoration:${lineT}; white-space:nowrap;">T${r.size} · ${s}ud${priceTag}</span>`;
+                      }).join('')
+                      + `</div>`
+                    : `<span style="font-size:11px; color:var(--text-muted);">Sin tallas</span>`;
+
+                // Alternar fila por producto
+                const rowBg = idx % 2 === 0 ? '#fff' : '#f8fafc';
+
+                return `<tr style="background:${rowBg}; border-bottom:1px solid #f1f5f9;" data-inv-row="${idx}">
+                    <td style="padding:8px 6px 8px 12px; vertical-align:middle;">
+                        <button onclick="editProductLoader('${p.id}')" title="Editar producto"
+                            style="background:none; border:none; cursor:pointer; font-size:16px; padding:2px 4px;" >✏️</button>
+                    </td>
+                    <td style="padding:8px 10px; font-weight:700; vertical-align:middle;">${p.title}</td>
+                    <td style="padding:8px 10px; vertical-align:middle; color:var(--text-muted); font-size:12px; text-transform:uppercase;">${p.brand||'—'}</td>
+                    <td style="padding:8px 10px; vertical-align:middle;">${colorSwatch}${colorName}</td>
+                    <td style="padding:8px 10px; text-align:center; vertical-align:middle;">
+                        <span style="font-weight:900; font-size:16px;">${colorTotal}</span>
+                        <span style="font-size:10px; color:var(--text-muted);"> uds</span>
+                    </td>
+                    <td style="padding:8px 10px; vertical-align:middle;">${tallasHTML}</td>
+                    <td style="padding:8px 10px; vertical-align:middle; font-size:12px; font-weight:700; color:#16a34a;">${precioBase}</td>
+                    <td style="padding:8px 10px; text-align:center; vertical-align:middle;">
+                        <span style="font-size:11px; font-weight:700; padding:3px 9px; border-radius:99px; background:${bg}; color:${fg};">${label}</span>
+                    </td>
+                </tr>`;
+            }).join('');
+
+            document.getElementById('inv-pro-count').textContent = `${rows.length} fila${rows.length!==1?'s':''} mostrada${rows.length!==1?'s':''}`;
+        }
+
+        function exportInventarioExcel() {
+            const products = (dbData && dbData.products) ? dbData.products : [];
+            let csvRows = [['Producto','Marca','Color','Talla','SKU','Stock','Precio Talla','Precio Base','Estado']];
+            products.forEach(p => {
+                const variants = p.variants || [];
+                if (variants.length === 0) {
+                    const stock = Number(p.stock)||0;
+                    const est   = stock <= 0 ? 'Agotado' : stock <= 3 ? 'Stock bajo' : 'Ok';
+                    csvRows.push([p.title, p.brand||'', '', '', '', stock, '', p.price||'', est]);
+                } else {
+                    variants.forEach(v => {
+                        const ss = v.sizesStock || [];
+                        if (ss.length === 0) {
+                            csvRows.push([p.title, p.brand||'', v.colorName||'', '', '', 0, '', p.price||'', 'Agotado']);
+                        } else {
+                            ss.forEach(r => {
+                                const stock = Number(r.stock)||0;
+                                const est   = stock <= 0 ? 'Agotado' : stock <= 3 ? 'Stock bajo' : 'Ok';
+                                csvRows.push([p.title, p.brand||'', v.colorName||'', r.size||'', r.sku||'', stock, r.price||'', p.price||'', est]);
+                            });
+                        }
+                    });
+                }
+            });
+            const csv = csvRows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+            const bom = '\uFEFF'; // UTF-8 BOM para Excel
+            const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `inventario_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         // ── DESCUENTO INTERACTIVO ─────────────────────────────
@@ -2947,6 +4162,33 @@
             if (!nombre || !celular || !ciudad || !dir) { alert('Por favor completa todos tus datos.'); return; }
             if (!selectedPago) { alert('Selecciona un método de pago.'); return; }
 
+            // ── Validación de stock al momento de confirmar ──
+            const problemas = [];
+            for (const item of cart) {
+                const prod = (dbData.products || []).find(p => p.id === item.id);
+                if (!prod) continue;
+                let stockDisp = Number(prod.stock) || 0;
+                if (item.colorName && item.size && prod.variants) {
+                    const variant = prod.variants.find(v => v.colorName === item.colorName);
+                    if (variant && variant.sizesStock) {
+                        const row = variant.sizesStock.find(r => String(r.size) === String(item.size));
+                        if (row) stockDisp = Number(row.stock) || 0;
+                    }
+                }
+                if (stockDisp <= 0) {
+                    problemas.push(`❌ "${item.title}"${item.colorName ? ' – ' + item.colorName : ''}${item.size ? ' T' + item.size : ''} está agotado.`);
+                } else if (item.quantity > stockDisp) {
+                    problemas.push(`⚠️ "${item.title}"${item.size ? ' T' + item.size : ''}: solo hay ${stockDisp} ud${stockDisp!==1?'s':''}, tienes ${item.quantity} en la bolsa.`);
+                }
+            }
+            if (problemas.length > 0) {
+                alert(`No se puede confirmar el pedido:\n\n${problemas.join('\n')}\n\nPor favor ajusta la bolsa antes de continuar.`);
+                closeCheckoutModal();
+                navigateTo('cart-view');
+                renderCart();
+                return;
+            }
+
             const cfg = getPagosConfig();
             const metodoPago = cfg[selectedPago]?.label || selectedPago;
             const storeName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
@@ -2980,16 +4222,20 @@
             };
             savePendingOrder(pedido);
 
-            // Notificar por WhatsApp
-            let msg = `*${storeName.toUpperCase()} - NUEVA SOLICITUD DE PEDIDO*\n`;
-            msg += `*N° Pedido:* ${orderId}\n\n`;
-            msg += `*Cliente:* ${nombre}\n*Celular:* ${celular}\n*Ciudad:* ${ciudad}\n*Dirección:* ${dir}\n\n`;
-            cart.forEach((item, i) => {
-                msg += `[${i+1}] ${item.title} (${item.brand.toUpperCase()})\n    Pares: ${item.quantity} | Total: ${formatCOP(item.price * item.quantity)}\n\n`;
-            });
-            msg += `*VALOR TOTAL:* ${formatCOP(total)}\n*Método de pago:* ${metodoPago}\n\nDeseo confirmar este pedido. (ID: ${orderId})`;
+            const storeName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
+            const msgAdmin  = _buildOrderWhatsAppMsg(pedido, storeName);
+            const adminPhone = getAdminPhone();
 
-            window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
+            // 1. Abrir WhatsApp AL ADMIN con el resumen completo
+            window.open(`https://api.whatsapp.com/send?phone=${adminPhone}&text=${encodeURIComponent(msgAdmin)}`, '_blank');
+
+            // 2. Después de 1.5s, mensaje de confirmación al cliente con su N° de pedido
+            setTimeout(() => {
+                const msgCliente = `Hola ${nombre} 👋, tu pedido *${orderId}* en ${storeName} ha sido registrado con éxito.\n\n`
+                    + `*Total:* ${formatCOP(total)}\n*Método de pago:* ${metodoPago}\n\n`
+                    + `En cuanto confirmemos tu pago, procesamos el envío. ¡Gracias por tu compra! 🎉`;
+                window.open(`https://api.whatsapp.com/send?phone=${celular.replace(/\D/g,'')}&text=${encodeURIComponent(msgCliente)}`, '_blank');
+            }, 1500);
 
             cart = [];
             updateCartBadge();
@@ -3048,6 +4294,53 @@
         // ─────────────────────────────────────────────
         // PEDIDOS PENDIENTES — Google Sheets (Ordenes)
         // ─────────────────────────────────────────────
+        // ── NOTIFICACIONES ADMIN ─────────────────────────────
+        function saveAdminPhone() {
+            const val = (document.getElementById('admin-notif-phone')?.value || '').replace(/\D/g,'');
+            if (!val || val.length < 10) { alert('Ingresa un número válido con código de país (ej: 573108340344)'); return; }
+            localStorage.setItem('admin_notif_phone', val);
+            const st = document.getElementById('admin-notif-status');
+            if (st) { st.style.display = 'block'; setTimeout(() => st.style.display = 'none', 3000); }
+        }
+
+        function getAdminPhone() {
+            return localStorage.getItem('admin_notif_phone') || WHATSAPP_NUMBER;
+        }
+
+        function loadAdminPhoneInput() {
+            const inp = document.getElementById('admin-notif-phone');
+            if (inp) inp.value = localStorage.getItem('admin_notif_phone') || '';
+        }
+
+        function _buildOrderWhatsAppMsg(pedido, storeName) {
+            const sep = '─'.repeat(28);
+            let msg = `🛍️ *NUEVO PEDIDO — ${storeName.toUpperCase()}*\n`;
+            msg += `📋 *N° Pedido:* \`${pedido.id}\`\n`;
+            msg += `📅 *Fecha:* ${new Date(pedido.fecha).toLocaleString('es-CO')}\n`;
+            msg += `${sep}\n`;
+            msg += `👤 *Cliente:* ${pedido.cliente}\n`;
+            msg += `📞 *Celular:* ${pedido.celular}\n`;
+            msg += `📍 *Ciudad:* ${pedido.ciudad}\n`;
+            msg += `🏠 *Dirección:* ${pedido.dir}\n`;
+            msg += `💳 *Pago:* ${pedido.metodoPago}\n`;
+            msg += `${sep}\n`;
+            msg += `*PRODUCTOS:*\n`;
+            pedido.items.forEach((item, i) => {
+                msg += `\n[${i+1}] *${item.title}*`;
+                if (item.brand) msg += ` (${item.brand})`;
+                msg += `\n`;
+                if (item.colorName) msg += `   🎨 Color: ${item.colorName}\n`;
+                if (item.size)      msg += `   👟 Talla: ${item.size}\n`;
+                msg += `   Cantidad: ${item.quantity} par(es)\n`;
+                msg += `   Subtotal: ${formatCOP(item.price * item.quantity)}\n`;
+            });
+            msg += `${sep}\n`;
+            msg += `💰 *TOTAL: ${formatCOP(pedido.total)}*\n`;
+            msg += `${sep}\n`;
+            msg += `_Confirma el pago en el panel admin para descontar el stock._`;
+            return msg;
+        }
+
         async function savePendingOrder(pedido) {
             // Guardar en Sheets
             try {
@@ -3086,12 +4379,11 @@
         function renderPendingOrders() {
             const cont = document.getElementById('admin-pending-orders-list');
             if (!cont) return;
-            const orders = getPendingOrders().filter(o => o.estado === 'pendiente');
+            const orders = (dbData.orders || []).filter(o => o.estado === 'pendiente');
             if (orders.length === 0) {
                 cont.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:10px 0;">Sin pedidos pendientes. ✓</p>`;
-                return;
-            }
-            cont.innerHTML = orders.map(o => `
+            } else {
+                cont.innerHTML = orders.map(o => `
                 <div style="border:1px solid var(--border-color);border-radius:8px;padding:16px;margin-bottom:12px;background:#fffbeb;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
                         <div>
@@ -3110,7 +4402,7 @@
                         </div>
                     </div>
                     <div style="margin-top:10px;border-top:1px solid var(--border-color);padding-top:10px;font-size:12px;color:var(--text-muted);">
-                        ${o.items.map(i=>`${i.title} × ${i.quantity} = ${formatCOP(i.price*i.quantity)}`).join(' | ')}
+                        ${(o.items||[]).map(i=>`${i.title} × ${i.quantity} = ${formatCOP(i.price*i.quantity)}`).join(' | ')}
                     </div>
                     <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;">
                         <button onclick="confirmOrderPayment('${o.id}')" style="background:#16a34a;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;">
@@ -3124,41 +4416,154 @@
                         </button>
                     </div>
                 </div>`).join('');
+            }
+            // Siempre refrescar historial también
+            renderSalesHistory();
+        }
+
+        function renderSalesHistory() {
+            const cont = document.getElementById('admin-sales-history-list');
+            if (!cont) return;
+            const filtroEstado = document.getElementById('hist-filter-estado')?.value ?? 'confirmado';
+            let orders = (dbData.orders || []).filter(o => o.estado !== 'pendiente');
+            if (filtroEstado) orders = orders.filter(o => o.estado === filtroEstado);
+            orders = orders.slice().sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+            if (orders.length === 0) {
+                cont.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:10px 0;">Sin registros para el filtro seleccionado.</p>`;
+                return;
+            }
+
+            cont.innerHTML = `<div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border-color);">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="padding:9px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">N° Pedido</th>
+                            <th style="padding:9px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Fecha</th>
+                            <th style="padding:9px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Cliente</th>
+                            <th style="padding:9px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Ciudad</th>
+                            <th style="padding:9px 12px; text-align:left; font-size:11px; text-transform:uppercase; color:#475569;">Pago</th>
+                            <th style="padding:9px 12px; text-align:right; font-size:11px; text-transform:uppercase; color:#475569;">Total</th>
+                            <th style="padding:9px 12px; text-align:center; font-size:11px; text-transform:uppercase; color:#475569;">Estado</th>
+                            <th style="padding:9px 12px; text-align:center; font-size:11px; text-transform:uppercase; color:#475569;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map((o, idx) => {
+                            const badgeBg = o.estado === 'confirmado' ? '#dcfce7' : '#fee2e2';
+                            const badgeFg = o.estado === 'confirmado' ? '#16a34a' : '#dc2626';
+                            const badgeTxt = o.estado === 'confirmado' ? '✅ Confirmado' : '❌ Rechazado';
+                            const rowBg = idx % 2 === 0 ? '#fff' : '#f8fafc';
+                            return `<tr style="background:${rowBg}; border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:8px 12px; font-family:monospace; font-weight:700; font-size:12px;">${o.id}</td>
+                                <td style="padding:8px 12px; font-size:12px; color:var(--text-muted); white-space:nowrap;">${new Date(o.fecha).toLocaleDateString('es-CO')}</td>
+                                <td style="padding:8px 12px; font-weight:600;">${o.cliente}</td>
+                                <td style="padding:8px 12px; font-size:12px; color:var(--text-muted);">${o.ciudad||'—'}</td>
+                                <td style="padding:8px 12px; font-size:12px; color:var(--text-muted);">${o.metodoPago||'—'}</td>
+                                <td style="padding:8px 12px; text-align:right; font-weight:800;">${formatCOP(o.total)}</td>
+                                <td style="padding:8px 12px; text-align:center;">
+                                    <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:99px; background:${badgeBg}; color:${badgeFg};">${badgeTxt}</span>
+                                </td>
+                                <td style="padding:8px 12px; text-align:center;">
+                                    <button onclick="generateInvoicePDF('${o.id}')" title="Generar factura PDF"
+                                        style="background:#020617; color:#fff; border:none; padding:5px 10px; border-radius:5px; font-size:11px; font-weight:700; cursor:pointer;">🧾 Factura</button>
+                                </td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:8px; text-align:right;">${orders.length} registro${orders.length!==1?'s':''}</div>`;
+        }
+
+        function exportSalesExcel() {
+            const orders = (dbData.orders || []).filter(o => o.estado !== 'pendiente');
+            let csvRows = [['N° Pedido','Fecha','Cliente','Celular','Ciudad','Dirección','Método Pago','Items','Total','Estado','Fecha Confirmación']];
+            orders.forEach(o => {
+                const items = (o.items||[]).map(i => `${i.title} x${i.quantity}`).join(' | ');
+                csvRows.push([o.id, new Date(o.fecha).toLocaleDateString('es-CO'), o.cliente, o.celular||'', o.ciudad||'', o.dir||'', o.metodoPago||'', items, o.total||0, o.estado, o.fechaConfirmacion ? new Date(o.fechaConfirmacion).toLocaleDateString('es-CO') : '']);
+            });
+            const csv  = csvRows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url; a.download = `ventas_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
         }
 
         async function confirmOrderPayment(orderId) {
             if (!confirm(`¿Confirmar el pago del pedido ${orderId}?\n\nEsto descontará el stock del inventario.`)) return;
 
-            let orders = getPendingOrders();
-            const idx = orders.findIndex(o => o.id === orderId);
-            if (idx === -1) return;
+            // 1. Buscar en dbData.orders (fuente de verdad = Sheets)
+            const allOrders = dbData.orders || [];
+            const idx = allOrders.findIndex(o => o.id === orderId);
+            if (idx === -1) { alert('Pedido no encontrado.'); return; }
 
-            orders[idx].estado = 'confirmado';
-            orders[idx].fechaConfirmacion = new Date().toISOString();
-            localStorage.setItem('pending_orders', JSON.stringify(orders));
+            const pedido = allOrders[idx];
+            const ahora  = new Date().toISOString();
 
-            // Descontar stock en Google Sheets
-            const pedido = orders[idx];
+            // 2. Actualizar estado en Sheets
+            await sendPostRequest({
+                action: 'updateOrderStatus',
+                orderId,
+                estado: 'confirmado',
+                fechaConfirmacion: ahora
+            });
+
+            // 3. Descontar stock en Sheets y actualizar dbData.products local
             await sendPostRequest({ action: 'registerSale', cart: pedido.items });
+            _descontarStockLocal(pedido.items);
+
+            // 4. Actualizar dbData.orders local para que la UI sea consistente sin recargar
+            dbData.orders[idx].estado           = 'confirmado';
+            dbData.orders[idx].fechaConfirmacion = ahora;
 
             renderPendingOrders();
+            renderInventarioPro();           // Refrescar inventario pro
             generateInvoicePDF(orderId);
             alert(`✅ Pago confirmado. Stock descontado. Generando factura...`);
         }
 
-        function rejectOrder(orderId) {
+        async function rejectOrder(orderId) {
             if (!confirm(`¿Rechazar y cancelar el pedido ${orderId}?`)) return;
-            let orders = getPendingOrders();
-            const idx = orders.findIndex(o => o.id === orderId);
-            if (idx !== -1) { orders[idx].estado = 'rechazado'; localStorage.setItem('pending_orders', JSON.stringify(orders)); }
+
+            const allOrders = dbData.orders || [];
+            const idx = allOrders.findIndex(o => o.id === orderId);
+            if (idx === -1) return;
+
+            // Actualizar en Sheets
+            await sendPostRequest({ action: 'updateOrderStatus', orderId, estado: 'rechazado' });
+
+            // Actualizar local
+            dbData.orders[idx].estado = 'rechazado';
             renderPendingOrders();
+        }
+
+        // Descuenta stock en dbData.products sin recargar todo desde Sheets
+        function _descontarStockLocal(items) {
+            if (!items || !dbData.products) return;
+            items.forEach(item => {
+                const prod = dbData.products.find(p => p.id === item.productId || p.title === item.title);
+                if (!prod) return;
+                // Variante con color y talla
+                if (item.colorName && item.size && prod.variants) {
+                    const variant = prod.variants.find(v => v.colorName === item.colorName);
+                    if (variant && variant.sizesStock) {
+                        const sizeRow = variant.sizesStock.find(r => String(r.size) === String(item.size));
+                        if (sizeRow) sizeRow.stock = Math.max(0, (Number(sizeRow.stock)||0) - (Number(item.quantity)||1));
+                    }
+                } else {
+                    // Stock plano
+                    prod.stock = Math.max(0, (Number(prod.stock)||0) - (Number(item.quantity)||1));
+                }
+            });
         }
 
         // ─────────────────────────────────────────────
         // FACTURA PDF — PROFESIONAL SIN COLORES
         // ─────────────────────────────────────────────
         function generateInvoicePDF(orderId) {
-            const orders = getPendingOrders();
+            const orders = dbData.orders || [];
             const o = orders.find(ord => ord.id === orderId);
             if (!o) { alert('Pedido no encontrado.'); return; }
 
@@ -4666,6 +6071,302 @@
             syncWithGoogleSheets();
         });
 
+    </script>
+
+    <!-- ══ LIGHTBOX GALERÍA ══ -->
+    <div id="sz-lightbox-overlay" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+        <button class="lb-btn-close" onclick="lbClose()" title="Cerrar (Esc)">✕</button>
+        <button id="lb-prev" class="lb-btn-nav lb-hidden" onclick="lbNav(-1)" title="Anterior">‹</button>
+        <button id="lb-next" class="lb-btn-nav lb-hidden" onclick="lbNav(1)" title="Siguiente">›</button>
+        <img id="sz-lb-img" src="" alt="Imagen del producto" onclick="lbClose()">
+        <div id="sz-lb-counter"></div>
+        <div id="sz-lb-thumbs"></div>
+    </div>
+
+    <script>
+    /* ── Lightbox global con zoom ── */
+    (function() {
+        let _images = [];
+        let _current = 0;
+
+        // Estado del zoom
+        let _scale = 1;
+        let _ox = 0, _oy = 0;       // offset de traslación
+        let _dragging = false;
+        let _dragStartX, _dragStartY, _dragOriginX, _dragOriginY;
+
+        const MIN_SCALE = 1;
+        const MAX_SCALE = 5;
+
+        function getImg()     { return document.getElementById('sz-lb-img'); }
+        function getWrapper() { return document.getElementById('sz-lb-img-wrap'); }
+
+        function _applyTransform(animate) {
+            const img = getImg();
+            if (!img) return;
+            img.style.transition = animate ? 'transform 0.2s ease' : 'none';
+            img.style.transform  = `translate(${_ox}px, ${_oy}px) scale(${_scale})`;
+            // cursor
+            img.style.cursor = _scale > 1 ? 'grab' : 'zoom-in';
+            // ocultar nav y miniaturas cuando hay zoom
+            const hideUI = _scale > 1;
+            document.getElementById('lb-prev').style.opacity    = hideUI ? '0.15' : '1';
+            document.getElementById('lb-next').style.opacity    = hideUI ? '0.15' : '1';
+            document.getElementById('sz-lb-thumbs').style.opacity = hideUI ? '0.15' : '1';
+            // mostrar indicador de zoom
+            const hint = document.getElementById('lb-zoom-hint');
+            if (hint) hint.style.display = _scale > 1 ? 'block' : 'none';
+        }
+
+        function _resetZoom(animate) {
+            _scale = 1; _ox = 0; _oy = 0;
+            _applyTransform(animate);
+        }
+
+        function _clampOffset() {
+            // Limitar el desplazamiento para no salir demasiado de la imagen
+            const img = getImg();
+            if (!img) return;
+            const maxX = (img.offsetWidth  * (_scale - 1)) / 2 + 80;
+            const maxY = (img.offsetHeight * (_scale - 1)) / 2 + 80;
+            _ox = Math.max(-maxX, Math.min(maxX, _ox));
+            _oy = Math.max(-maxY, Math.min(maxY, _oy));
+        }
+
+        window.lbOpen = function(images, startIndex) {
+            _images = (images || []).filter(Boolean);
+            if (_images.length === 0) return;
+            _current = startIndex || 0;
+            _resetZoom(false);
+            _render();
+            const ov = document.getElementById('sz-lightbox-overlay');
+            ov.classList.add('lb-open');
+            document.body.style.overflow = 'hidden';
+        };
+
+        window.lbClose = function() {
+            if (_scale > 1) { _resetZoom(true); return; } // primer Esc/click resetea zoom
+            document.getElementById('sz-lightbox-overlay').classList.remove('lb-open');
+            document.body.style.overflow = '';
+            _resetZoom(false);
+        };
+
+        window.lbNav = function(dir) {
+            if (_scale > 1) { _resetZoom(true); return; } // navegar solo con zoom normal
+            const img = getImg();
+            img.classList.add('lb-fade');
+            setTimeout(() => {
+                _current = (_current + dir + _images.length) % _images.length;
+                _resetZoom(false);
+                _render();
+                img.classList.remove('lb-fade');
+            }, 160);
+        };
+
+        function _render() {
+            const img     = getImg();
+            const counter = document.getElementById('sz-lb-counter');
+            const thumbs  = document.getElementById('sz-lb-thumbs');
+            const prev    = document.getElementById('lb-prev');
+            const next    = document.getElementById('lb-next');
+
+            img.src = _images[_current];
+            counter.textContent = _images.length > 1 ? `${_current + 1} / ${_images.length}` : '';
+
+            if (_images.length <= 1) {
+                prev.classList.add('lb-hidden');
+                next.classList.add('lb-hidden');
+            } else {
+                prev.classList.remove('lb-hidden');
+                next.classList.remove('lb-hidden');
+            }
+
+            if (_images.length > 1) {
+                thumbs.innerHTML = _images.map((src, i) =>
+                    `<div class="lb-thumb ${i === _current ? 'lb-thumb-active' : ''}" onclick="lbGoTo(${i})">
+                        <img src="${src}" loading="lazy">
+                    </div>`
+                ).join('');
+            } else {
+                thumbs.innerHTML = '';
+            }
+            _applyTransform(false);
+        }
+
+        window.lbGoTo = function(i) {
+            if (_scale > 1) _resetZoom(false);
+            const img = getImg();
+            img.classList.add('lb-fade');
+            setTimeout(() => {
+                _current = i;
+                _render();
+                img.classList.remove('lb-fade');
+            }, 160);
+        };
+
+        /* ═══════════════════════════════════════════════════════════
+           CÓDIGO GAS REQUERIDO — agregar a tu Apps Script:
+
+           case 'updateOrderStatus': {
+             const { orderId, estado, fechaConfirmacion } = payload;
+             const sh = ss.getSheetByName('Ordenes');
+             if (!sh) break;
+             const data = sh.getDataRange().getValues();
+             for (let i = 1; i < data.length; i++) {
+               if (String(data[i][0]) === String(orderId)) {
+                 sh.getRange(i+1, /* col estado *\/ 9).setValue(estado);
+                 if (fechaConfirmacion) sh.getRange(i+1, 10).setValue(fechaConfirmacion);
+                 break;
+               }
+             }
+             return ContentService.createTextOutput(JSON.stringify({ok:true}))
+               .setMimeType(ContentService.MimeType.JSON);
+           }
+           ═══════════════════════════════════════════════════════════ */
+        document.getElementById('sz-lightbox-overlay').addEventListener('wheel', function(e) {
+            if (!this.classList.contains('lb-open')) return;
+            e.preventDefault();
+            const delta = e.deltaY < 0 ? 0.2 : -0.2;
+            _scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, _scale + delta));
+            if (_scale === MIN_SCALE) { _ox = 0; _oy = 0; }
+            _clampOffset();
+            _applyTransform(false);
+        }, { passive: false });
+
+        // ── DOBLE CLIC para zoom 2.5× / reset ──
+        document.getElementById('sz-lb-img').addEventListener('dblclick', function(e) {
+            e.stopPropagation();
+            if (_scale > 1) {
+                _resetZoom(true);
+            } else {
+                _scale = 2.5;
+                // centrar en el punto del clic
+                const rect = this.getBoundingClientRect();
+                const cx = e.clientX - rect.left - rect.width  / 2;
+                const cy = e.clientY - rect.top  - rect.height / 2;
+                _ox = -cx * (_scale - 1);
+                _oy = -cy * (_scale - 1);
+                _clampOffset();
+                _applyTransform(true);
+            }
+        });
+
+        // ── ARRASTRE con mouse cuando hay zoom ──
+        const img = getImg();
+        img.addEventListener('mousedown', function(e) {
+            if (_scale <= 1) return;
+            e.preventDefault();
+            _dragging = true;
+            _dragStartX = e.clientX; _dragStartY = e.clientY;
+            _dragOriginX = _ox;      _dragOriginY = _oy;
+            this.style.cursor = 'grabbing';
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!_dragging) return;
+            _ox = _dragOriginX + (e.clientX - _dragStartX);
+            _oy = _dragOriginY + (e.clientY - _dragStartY);
+            _clampOffset();
+            _applyTransform(false);
+        });
+        document.addEventListener('mouseup', function() {
+            if (!_dragging) return;
+            _dragging = false;
+            if (_scale > 1) getImg().style.cursor = 'grab';
+        });
+
+        // ── PINCH-TO-ZOOM táctil ──
+        let _pinchDist0 = null;
+        let _pinchScale0 = 1;
+        let _touchX = null, _touchY = null;
+
+        const ov = document.getElementById('sz-lightbox-overlay');
+
+        ov.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                _pinchDist0  = Math.hypot(
+                    e.touches[1].clientX - e.touches[0].clientX,
+                    e.touches[1].clientY - e.touches[0].clientY);
+                _pinchScale0 = _scale;
+                _touchX = null; // cancelar swipe si hay pinch
+            } else if (e.touches.length === 1) {
+                _touchX = e.touches[0].clientX;
+                _touchY = e.touches[0].clientY;
+                if (_scale > 1) {
+                    _dragging = true;
+                    _dragStartX = _touchX; _dragStartY = _touchY;
+                    _dragOriginX = _ox;    _dragOriginY = _oy;
+                }
+            }
+        }, { passive: true });
+
+        ov.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2 && _pinchDist0 !== null) {
+                e.preventDefault();
+                const dist = Math.hypot(
+                    e.touches[1].clientX - e.touches[0].clientX,
+                    e.touches[1].clientY - e.touches[0].clientY);
+                _scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, _pinchScale0 * (dist / _pinchDist0)));
+                if (_scale === MIN_SCALE) { _ox = 0; _oy = 0; }
+                _clampOffset();
+                _applyTransform(false);
+            } else if (e.touches.length === 1 && _dragging) {
+                e.preventDefault();
+                _ox = _dragOriginX + (e.touches[0].clientX - _dragStartX);
+                _oy = _dragOriginY + (e.touches[0].clientY - _dragStartY);
+                _clampOffset();
+                _applyTransform(false);
+            }
+        }, { passive: false });
+
+        ov.addEventListener('touchend', function(e) {
+            if (e.touches.length < 2) _pinchDist0 = null;
+            _dragging = false;
+            // Swipe para navegar solo si no hubo zoom ni arrastre
+            if (_scale <= 1 && _touchX !== null && e.changedTouches.length === 1) {
+                const dx = e.changedTouches[0].clientX - _touchX;
+                const dy = Math.abs(e.changedTouches[0].clientY - (_touchY || 0));
+                if (Math.abs(dx) > 50 && dy < 60) lbNav(dx < 0 ? 1 : -1);
+            }
+            _touchX = null; _touchY = null;
+        }, { passive: true });
+
+        // ── Teclado ──
+        document.addEventListener('keydown', e => {
+            const ov = document.getElementById('sz-lightbox-overlay');
+            if (!ov.classList.contains('lb-open')) return;
+            if (e.key === 'Escape') { lbClose(); return; }
+            if (_scale > 1) {
+                const step = 40;
+                if (e.key === 'ArrowRight') { _ox -= step; _clampOffset(); _applyTransform(true); }
+                if (e.key === 'ArrowLeft')  { _ox += step; _clampOffset(); _applyTransform(true); }
+                if (e.key === 'ArrowUp')    { _oy += step; _clampOffset(); _applyTransform(true); }
+                if (e.key === 'ArrowDown')  { _oy -= step; _clampOffset(); _applyTransform(true); }
+            } else {
+                if (e.key === 'ArrowRight') lbNav(1);
+                if (e.key === 'ArrowLeft')  lbNav(-1);
+            }
+            if (e.key === '+' || e.key === '=') { _scale = Math.min(MAX_SCALE, _scale + 0.4); _clampOffset(); _applyTransform(true); }
+            if (e.key === '-')                  { _scale = Math.max(MIN_SCALE, _scale - 0.4); if(_scale===MIN_SCALE){_ox=0;_oy=0;} _clampOffset(); _applyTransform(true); }
+        });
+
+        // Clic en overlay (fuera de imagen) cierra o resetea
+        document.getElementById('sz-lightbox-overlay').addEventListener('click', function(e) {
+            if (e.target === this) lbClose();
+        });
+
+    })();
+
+    /* ── Abrir lightbox desde imagen principal del detalle ── */
+    document.addEventListener('click', function(e) {
+        const masterImg = e.target.closest('#detail-view-container .main-product-preview img');
+        if (!masterImg) return;
+        const thumbs = document.querySelectorAll('#detail-view-container .thumbnail-card img');
+        const imgs = thumbs.length > 0
+            ? Array.from(thumbs).map(t => t.src)
+            : [masterImg.src];
+        const startIdx = imgs.findIndex(s => s === masterImg.src);
+        lbOpen(imgs, startIdx >= 0 ? startIdx : 0);
+    });
     </script>
 </body>
 </html>
