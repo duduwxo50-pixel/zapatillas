@@ -763,8 +763,11 @@
             <div id="review-form-wrap" style="background:#f8fafc; border:1px solid var(--border-color); border-radius:10px; padding:18px; margin-bottom:20px;">
                 <h4 style="font-size:13px; font-weight:800; text-transform:uppercase; margin:0 0 12px 0;">✍️ Deja tu reseña</h4>
                 <div style="display:flex; gap:6px; margin-bottom:12px;" id="review-star-picker">
-                    ${[1,2,3,4,5].map(n => `<span onclick="setReviewStar(${n})" data-star="${n}"
-                        style="font-size:28px; cursor:pointer; opacity:.3; transition:opacity .15s;">★</span>`).join('')}
+                    <span onclick="setReviewStar(1)" data-star="1" style="font-size:28px; cursor:pointer; opacity:.3; transition:opacity .15s;">★</span>
+                    <span onclick="setReviewStar(2)" data-star="2" style="font-size:28px; cursor:pointer; opacity:.3; transition:opacity .15s;">★</span>
+                    <span onclick="setReviewStar(3)" data-star="3" style="font-size:28px; cursor:pointer; opacity:.3; transition:opacity .15s;">★</span>
+                    <span onclick="setReviewStar(4)" data-star="4" style="font-size:28px; cursor:pointer; opacity:.3; transition:opacity .15s;">★</span>
+                    <span onclick="setReviewStar(5)" data-star="5" style="font-size:28px; cursor:pointer; opacity:.3; transition:opacity .15s;">★</span>
                 </div>
                 <input type="text" id="review-author" placeholder="Tu nombre" maxlength="40"
                     style="width:100%; padding:9px 12px; border:1px solid var(--border-color); border-radius:7px; font-size:13px; outline:none; margin-bottom:8px; box-sizing:border-box;">
@@ -1687,7 +1690,7 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbz9NGc87e63NXBt2wbqU3HbftqPL2E39X9h-qBrT8Cvc7RH_c8azeUm4jRpn66FqDNUKg/exec";
         const WHATSAPP_NUMBER = "573108340344";
 
-        let dbData = { products: [], providers: [], orders: [], modules: [], moduleData: {}, billing: { total: 0, profit: 0 }, config: {} };
+        let dbData = { products: [], providers: [], orders: [], modules: [], moduleData: {}, billing: { total: 0, profit: 0 }, config: {}, users: [] };
         const CART_KEY = 'stivzapat_cart';
         function _restoreCart() {
             try {
@@ -2851,6 +2854,7 @@
                 moduleData: fresh.moduleData || {},
                 billing:    fresh.billing    || { total: 0, profit: 0 },
                 config:     fresh.config     || {},
+                users:      fresh.users      || [],
             };
             if (!dbData.config) dbData.config = {};
         }
@@ -4745,7 +4749,7 @@
             if (tabId === 'tab-dashboard')  { renderDashboardKPIs(); setTimeout(renderDashboardCharts, 50); }
             if (tabId === 'tab-pending')    renderPendingOrders();
             if (tabId === 'tab-modules')    renderDynamicModulesAdmin();
-            if (tabId === 'tab-pagos') { renderPagosAdmin(); renderCuponesList(); }
+            if (tabId === 'tab-pagos') { renderAdminPagos(); renderCuponesList(); }
             if (tabId === 'tab-visibility') renderVisibilityPlan();
         }
 
