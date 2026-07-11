@@ -835,9 +835,10 @@
         </div>
 
         <div class="dashboard-grid">
-            <div class="kpi-card">
+            <div class="kpi-card" onclick="openSalesHistoryModal()" style="cursor:pointer;" title="Clic para ver el historial de ventas">
                 <h3>Ventas Totales</h3>
                 <div class="value" id="kpi-sales">$ 0</div>
+                <div style="font-size:10px; font-weight:700; color:var(--accent-dark); text-transform:uppercase; margin-top:4px;">📊 Ver historial →</div>
             </div>
             <div class="kpi-card">
                 <h3>Utilidad Neta</h3>
@@ -1231,6 +1232,40 @@
             <div id="checkout-modal-body" style="padding:22px 24px;"></div>
         </div>
     </div>
+
+    <!-- MODAL HISTORIAL DE VENTAS -->
+    <div id="sales-history-overlay" style="display:none; position:fixed; inset:0; z-index:2100; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+        <div style="background:#fff; border-radius:12px; width:100%; max-width:920px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25); animation:slideUpModal .3s ease; display:flex; flex-direction:column;">
+            <div style="padding:20px 24px 16px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#fff; z-index:1;">
+                <h3 style="font-size:17px; font-weight:800; text-transform:uppercase; letter-spacing:-0.3px;">📊 Historial de Ventas</h3>
+                <button onclick="closeSalesHistoryModal()" style="background:#f1f5f9; border:none; border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <div style="padding:18px 24px 0; position:sticky; top:57px; background:#fff; z-index:1;">
+                <input type="text" id="sales-history-search" placeholder="🔍 Buscar por cliente, celular, N° de pedido o ciudad..."
+                    oninput="renderSalesHistory()"
+                    style="width:100%; padding:11px 14px; border:1px solid var(--border-color); border-radius:8px; font-size:14px; margin-bottom:12px;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px;" id="sales-history-quick-filters">
+                    <button data-range="all" onclick="setSalesHistoryRange('all')" class="sh-filter-btn sh-filter-active">Todas</button>
+                    <button data-range="today" onclick="setSalesHistoryRange('today')" class="sh-filter-btn">Hoy</button>
+                    <button data-range="7d" onclick="setSalesHistoryRange('7d')" class="sh-filter-btn">Últimos 7 días</button>
+                    <button data-range="30d" onclick="setSalesHistoryRange('30d')" class="sh-filter-btn">Este mes</button>
+                    <span style="flex:1;"></span>
+                    <button onclick="exportSalesHistoryCSV()" class="sh-filter-btn" style="background:#020617; color:#fff; border-color:#020617;">⬇ Exportar CSV</button>
+                </div>
+            </div>
+            <div id="sales-history-summary" style="padding:10px 24px; font-size:12px; color:var(--text-muted); font-weight:600;"></div>
+            <div id="sales-history-list" style="padding:0 24px 24px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <style>
+        .sh-filter-btn { background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:7px 14px; cursor:pointer; font-size:12px; font-weight:700; color:var(--text-main); }
+        .sh-filter-btn.sh-filter-active { background:var(--accent-dark); color:#fff; border-color:var(--accent-dark); }
+        .sh-order-row { border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; margin-bottom:10px; transition:box-shadow .15s; }
+        .sh-order-row:hover { box-shadow:0 2px 10px rgba(0,0,0,.06); }
+    </style>
+
+
 
     <!-- SPINNER DE CARGA -->
     <div id="loading-spinner" class="loading-overlay" style="display:none;">Cargando...</div>
@@ -4063,6 +4098,133 @@
                 return;
             }
             renderPendingOrders();
+        }
+
+        // ─────────────────────────────────────────────
+        // HISTORIAL DE VENTAS — modal interactivo
+        // ─────────────────────────────────────────────
+        let salesHistoryRange = 'all';
+
+        function openSalesHistoryModal() {
+            document.getElementById('sales-history-overlay').style.display = 'flex';
+            document.getElementById('sales-history-search').value = '';
+            salesHistoryRange = 'all';
+            document.querySelectorAll('#sales-history-quick-filters .sh-filter-btn').forEach(b => b.classList.remove('sh-filter-active'));
+            document.querySelector('#sales-history-quick-filters [data-range="all"]').classList.add('sh-filter-active');
+            renderSalesHistory();
+        }
+
+        function closeSalesHistoryModal() {
+            document.getElementById('sales-history-overlay').style.display = 'none';
+        }
+
+        function setSalesHistoryRange(range) {
+            salesHistoryRange = range;
+            document.querySelectorAll('#sales-history-quick-filters .sh-filter-btn').forEach(b => b.classList.remove('sh-filter-active'));
+            const btn = document.querySelector(`#sales-history-quick-filters [data-range="${range}"]`);
+            if (btn) btn.classList.add('sh-filter-active');
+            renderSalesHistory();
+        }
+
+        function getFilteredSalesHistory() {
+            const search = (document.getElementById('sales-history-search')?.value || '').trim().toLowerCase();
+            const now = new Date();
+            let orders = (dbData.orders || []).filter(o => o.estado === 'confirmado');
+
+            if (salesHistoryRange === 'today') {
+                orders = orders.filter(o => new Date(o.fecha).toDateString() === now.toDateString());
+            } else if (salesHistoryRange === '7d') {
+                const limit = new Date(now); limit.setDate(limit.getDate() - 7);
+                orders = orders.filter(o => new Date(o.fecha) >= limit);
+            } else if (salesHistoryRange === '30d') {
+                orders = orders.filter(o => { const d = new Date(o.fecha); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+            }
+
+            if (search) {
+                orders = orders.filter(o =>
+                    (o.id||'').toLowerCase().includes(search) ||
+                    (o.cliente||'').toLowerCase().includes(search) ||
+                    (o.celular||'').toLowerCase().includes(search) ||
+                    (o.ciudad||'').toLowerCase().includes(search) ||
+                    (o.items||[]).some(i => (i.title||'').toLowerCase().includes(search))
+                );
+            }
+
+            return orders.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+        }
+
+        function renderSalesHistory() {
+            const orders = getFilteredSalesHistory();
+            const listEl = document.getElementById('sales-history-list');
+            const summaryEl = document.getElementById('sales-history-summary');
+
+            const total = orders.reduce((s,o) => s + (Number(o.total)||0), 0);
+            summaryEl.innerText = `${orders.length} venta${orders.length !== 1 ? 's' : ''} · Total: ${formatCOP(total)}`;
+
+            if (orders.length === 0) {
+                listEl.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:20px 0; text-align:center;">No hay ventas que coincidan con la búsqueda.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = orders.map(o => `
+                <div class="sh-order-row">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <span style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">N° Pedido</span>
+                            <div style="font-family:monospace; font-size:13px; font-weight:800;">${o.id}</div>
+                            <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${new Date(o.fecha).toLocaleString('es-CO')}</div>
+                        </div>
+                        <div>
+                            <div style="font-size:14px; font-weight:700;">${o.cliente}</div>
+                            <div style="font-size:12px; color:var(--text-muted);">${o.celular} · ${o.ciudad}</div>
+                            <div style="font-size:12px; color:var(--text-muted);">${o.metodoPago}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:18px; font-weight:800;">${formatCOP(o.total)}</div>
+                            <div style="font-size:11px; color:var(--whatsapp-color); font-weight:700; margin-top:2px;">✓ PAGADA</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; border-top:1px solid var(--border-color); padding-top:10px; font-size:12px; color:var(--text-muted);">
+                        ${(o.items||[]).map(i=>`${i.title} × ${i.quantity}`).join(' | ')}
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+                        <button onclick="generateInvoicePDF('${o.id}')" style="background:#020617; color:#fff; border:none; padding:7px 14px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase;">
+                            🧾 Regenerar Factura
+                        </button>
+                        <button onclick="reenviarFacturaWhatsapp('${o.id}')" style="background:var(--whatsapp-color); color:#fff; border:none; padding:7px 14px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase;">
+                            💬 Enviar por WhatsApp
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function reenviarFacturaWhatsapp(orderId) {
+            const o = getOrderById(orderId);
+            if (!o) return;
+            let msg = `Hola ${o.cliente}, aquí tienes el resumen de tu pedido *${o.id}*:\n\n`;
+            (o.items||[]).forEach((item, i) => {
+                msg += `[${i+1}] ${item.title} × ${item.quantity} = ${formatCOP(item.price*item.quantity)}\n`;
+            });
+            msg += `\n*TOTAL:* ${formatCOP(o.total)}\n*Estado:* Pagado ✓\n\n¡Gracias por tu compra!`;
+            let phone = (o.celular || '').replace(/\D/g,'');
+            if (phone && !phone.startsWith('57')) phone = '57' + phone;
+            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        function exportSalesHistoryCSV() {
+            const orders = getFilteredSalesHistory();
+            if (orders.length === 0) { alert('No hay ventas para exportar con estos filtros.'); return; }
+            const headers = ['N° Pedido','Fecha','Cliente','Celular','Ciudad','Metodo Pago','Total','Items'];
+            const rows = orders.map(o => [
+                o.id, new Date(o.fecha).toLocaleString('es-CO'), o.cliente, o.celular, o.ciudad, o.metodoPago,
+                o.total, (o.items||[]).map(i=>`${i.title} x${i.quantity}`).join(' | ')
+            ]);
+            const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Ventas_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
         }
 
         // ─────────────────────────────────────────────
