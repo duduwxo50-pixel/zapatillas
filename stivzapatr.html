@@ -3982,6 +3982,13 @@
             return (dbData.orders || []).filter(o => o.estado === 'pendiente');
         }
 
+        function getOrderById(orderId) {
+            // Busca en TODOS los pedidos (cualquier estado), no solo pendientes.
+            // Necesario porque después de confirmar un pedido, ya no está en 'pendiente'
+            // pero seguimos necesitando sus datos (ej. para generar la factura).
+            return (dbData.orders || []).find(o => o.id === orderId);
+        }
+
         function renderPendingOrders() {
             const cont = document.getElementById('admin-pending-orders-list');
             if (!cont) return;
@@ -4028,28 +4035,24 @@
         async function confirmOrderPayment(orderId) {
             if (!confirm(`¿Confirmar el pago del pedido ${orderId}?\n\nEsto descontará el stock del inventario.`)) return;
 
-            let orders = getPendingOrders();
-            const idx = orders.findIndex(o => o.id === orderId);
-            if (idx === -1) return;
-
-            orders[idx].estado = 'confirmado';
-            orders[idx].fechaConfirmacion = new Date().toISOString();
-            localStorage.setItem('pending_orders', JSON.stringify(orders));
-
-            // Descontar stock en Google Sheets
-            const pedido = orders[idx];
-            await sendPostRequest({ action: 'registerSale', cart: pedido.items });
+            const json = await sendPostRequest({ action: 'confirmOrder', orderId });
+            if (!json || json.success === false) {
+                alert(`❌ No se pudo confirmar el pedido${json && json.message ? ':\n' + json.message : '.'}`);
+                return;
+            }
 
             renderPendingOrders();
             generateInvoicePDF(orderId);
             alert(`✅ Pago confirmado. Stock descontado. Generando factura...`);
         }
 
-        function rejectOrder(orderId) {
+        async function rejectOrder(orderId) {
             if (!confirm(`¿Rechazar y cancelar el pedido ${orderId}?`)) return;
-            let orders = getPendingOrders();
-            const idx = orders.findIndex(o => o.id === orderId);
-            if (idx !== -1) { orders[idx].estado = 'rechazado'; localStorage.setItem('pending_orders', JSON.stringify(orders)); }
+            const json = await sendPostRequest({ action: 'updateOrderStatus', orderId, estado: 'rechazado' });
+            if (!json || json.success === false) {
+                alert(`❌ No se pudo rechazar el pedido${json && json.message ? ':\n' + json.message : '.'}`);
+                return;
+            }
             renderPendingOrders();
         }
 
@@ -4057,8 +4060,7 @@
         // FACTURA PDF — PROFESIONAL SIN COLORES
         // ─────────────────────────────────────────────
         function generateInvoicePDF(orderId) {
-            const orders = getPendingOrders();
-            const o = orders.find(ord => ord.id === orderId);
+            const o = getOrderById(orderId);
             if (!o) { alert('Pedido no encontrado.'); return; }
 
             const { jsPDF } = window.jspdf;
