@@ -679,7 +679,12 @@
                     <button class="btn-action" style="width:100%; padding:12px;" onclick="saveBrandConfig()">Aplicar Cambios</button>
                 </div>
             </div>
+            <div style="margin-top:16px;">
+                <label style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Eslogan (aparece en la factura, debajo del nombre de la tienda)</label>
+                <input type="text" id="brand-slogan-input" placeholder="Ej: Pisando fuerte, siempre a la moda" maxlength="80" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
+            </div>
         </div>
+
 
         <!-- PEDIDOS PENDIENTES -->
         <div class="admin-section" style="margin-bottom:30px;" id="admin-pending-orders-section">
@@ -1290,6 +1295,7 @@
             const bc      = getCfg('brand_config', {});
             const name    = bc.name    || (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
             const logoUrl = bc.logo    || localStorage.getItem('brand_logo') || '';
+            const slogan  = bc.slogan  || '';
 
             // Header
             const brandText = document.getElementById('header-brand-text');
@@ -1327,8 +1333,10 @@
             // Preview en admin si está abierto
             const preview = document.getElementById('brand-logo-preview');
             const nameInput = document.getElementById('brand-name-input');
+            const sloganInput = document.getElementById('brand-slogan-input');
             if (preview && logoUrl) { preview.src = logoUrl; preview.style.display = 'block'; }
             if (nameInput) nameInput.value = name;
+            if (sloganInput) sloganInput.value = slogan;
         }
 
         async function uploadBrandLogo(inputEl) {
@@ -1358,9 +1366,10 @@
 
         async function saveBrandConfig() {
             const name = document.getElementById('brand-name-input').value.trim();
+            const slogan = (document.getElementById('brand-slogan-input')?.value || '').trim();
             const logoUrl = localStorage.getItem('brand_logo') || getCfg('brand_config', {}).logo || '';
             if (!name) { alert('Escribe el nombre de la tienda.'); return; }
-            await saveCfg('brand_config', { name, logo: logoUrl });
+            await saveCfg('brand_config', { name, logo: logoUrl, slogan });
             // Limpiar localStorage viejo
             localStorage.removeItem('brand_name');
             localStorage.removeItem('brand_logo');
@@ -4059,13 +4068,39 @@
         // ─────────────────────────────────────────────
         // FACTURA PDF — PROFESIONAL SIN COLORES
         // ─────────────────────────────────────────────
-        function generateInvoicePDF(orderId) {
+        function loadImageAsBase64(url) {
+            // Convierte una URL de imagen (ej. imgbb) a base64 para poder
+            // incrustarla con jsPDF. Si falla (CORS, red, etc.) resuelve null
+            // y la factura se genera igual, solo sin el logo.
+            return new Promise((resolve) => {
+                if (!url) { resolve(null); return; }
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        resolve({ dataUrl: canvas.toDataURL('image/png'), w: img.naturalWidth, h: img.naturalHeight });
+                    } catch (e) { resolve(null); }
+                };
+                img.onerror = () => resolve(null);
+                img.src = url;
+            });
+        }
+
+        async function generateInvoicePDF(orderId) {
             const o = getOrderById(orderId);
             if (!o) { alert('Pedido no encontrado.'); return; }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-            const storeName = ((getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat')).toUpperCase();
+            const bc = getCfg('brand_config', {});
+            const storeName = ((bc.name || localStorage.getItem('brand_name') || 'StivZapat')).toUpperCase();
+            const slogan = bc.slogan || '';
+            const logoUrl = bc.logo || localStorage.getItem('brand_logo') || '';
             const pageW = 210;
             const margin = 20;
             const col2 = 130;
@@ -4074,20 +4109,45 @@
             doc.setFont('helvetica');
             let y = margin;
 
+            // ── Logo (si existe) ──
+            let textStartX = margin;
+            const logo = await loadImageAsBase64(logoUrl);
+            if (logo) {
+                const logoSize = 18;
+                try {
+                    const ratio = logo.w / logo.h;
+                    const w = ratio >= 1 ? logoSize : logoSize * ratio;
+                    const h = ratio >= 1 ? logoSize / ratio : logoSize;
+                    doc.addImage(logo.dataUrl, 'PNG', margin, y - 4, w, h);
+                    textStartX = margin + logoSize + 6;
+                } catch (e) { /* si falla, seguimos sin logo */ }
+            }
+
             // ── Encabezado: nombre tienda ──
             doc.setFontSize(20);
             doc.setFont('helvetica','bold');
-            doc.text(storeName, margin, y);
+            doc.text(storeName, textStartX, y);
 
             // ── Título FACTURA ──
             doc.setFontSize(20);
             doc.text('FACTURA DE VENTA', col2, y, { align: 'left' });
-            y += 7;
+            y += 6;
+
+            // ── Eslogan personalizable ──
+            if (slogan) {
+                doc.setFontSize(9.5);
+                doc.setFont('helvetica','italic');
+                doc.setTextColor(90);
+                doc.text(slogan, textStartX, y);
+                y += 5;
+            } else {
+                y += 1;
+            }
 
             doc.setFontSize(9);
             doc.setFont('helvetica','normal');
             doc.setTextColor(100);
-            doc.text('Calzado · Comercio al por menor', margin, y);
+            doc.text('Calzado · Comercio al por menor', textStartX, y);
             doc.text(`No. ${o.id}`, col2, y);
             y += 5;
             doc.text(`Fecha: ${new Date(o.fecha).toLocaleDateString('es-CO', {year:'numeric',month:'long',day:'numeric'})}`, col2, y);
