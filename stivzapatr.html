@@ -4253,6 +4253,14 @@
             });
         }
 
+        function sanitizePdfText(str) {
+            if (!str) return '';
+            return str
+                .replace(/[^\x00-\xFF]/g, '')   // quita emojis y símbolos no soportados por la fuente
+                .replace(/\s{2,}/g, ' ')        // colapsa espacios dobles que quedan
+                .trim();
+        }
+
         async function generateInvoicePDF(orderId) {
             const o = getOrderById(orderId);
             if (!o) { alert('Pedido no encontrado.'); return; }
@@ -4288,7 +4296,7 @@
             // ── Encabezado: nombre tienda ──
             doc.setFontSize(20);
             doc.setFont('helvetica','bold');
-            doc.text(storeName, textStartX, y);
+            doc.text(sanitizePdfText(storeName), textStartX, y);
 
             // ── Título FACTURA ──
             doc.setFontSize(20);
@@ -4300,7 +4308,7 @@
                 doc.setFontSize(9.5);
                 doc.setFont('helvetica','italic');
                 doc.setTextColor(90);
-                doc.text(slogan, textStartX, y);
+                doc.text(sanitizePdfText(slogan), textStartX, y);
                 y += 5;
             } else {
                 y += 1;
@@ -4332,10 +4340,10 @@
             y += 5;
             doc.setFont('helvetica','normal');
             doc.setFontSize(10);
-            doc.text(`Nombre:     ${o.cliente}`, margin, y);      y += 5;
+            doc.text(`Nombre:     ${sanitizePdfText(o.cliente)}`, margin, y);      y += 5;
             doc.text(`Celular:    ${o.celular}`, margin, y);       y += 5;
-            doc.text(`Ciudad:     ${o.ciudad}`, margin, y);        y += 5;
-            doc.text(`Dirección:  ${o.dir}`, margin, y);           y += 5;
+            doc.text(`Ciudad:     ${sanitizePdfText(o.ciudad)}`, margin, y);        y += 5;
+            doc.text(`Dirección:  ${sanitizePdfText(o.dir)}`, margin, y);           y += 5;
             doc.text(`Método de pago: ${o.metodoPago}`, margin, y); y += 10;
 
             // ── Línea ──
@@ -4359,7 +4367,7 @@
             doc.setFont('helvetica','normal');
             doc.setFontSize(10);
             o.items.forEach(item => {
-                const desc = `${item.title} — ${(item.brand||'').toUpperCase()}`;
+                const desc = sanitizePdfText(`${item.title} — ${(item.brand||'').toUpperCase()}`);
                 doc.text(desc, margin, y, { maxWidth: 100 });
                 doc.text(`${item.quantity}`, 130, y, { align: 'right' });
                 doc.text(formatCOP(item.price), 158, y, { align: 'right' });
@@ -4388,7 +4396,7 @@
             doc.setTextColor(120);
             doc.text('Este documento sirve como comprobante de compra.', margin, y);
             y += 4;
-            doc.text(`Generada el ${new Date().toLocaleString('es-CO')} · ${storeName}`, margin, y);
+            doc.text(`Generada el ${new Date().toLocaleString('es-CO')} · ${sanitizePdfText(storeName)}`, margin, y);
 
             doc.save(`Factura_${o.id}.pdf`);
         }
