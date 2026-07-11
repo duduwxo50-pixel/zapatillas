@@ -3872,7 +3872,18 @@
                 total,
                 estado: 'pendiente'
             };
-            savePendingOrder(pedido);
+            let saveResult;
+            try {
+                saveResult = await savePendingOrder(pedido);
+            } catch (err) {
+                alert('❌ No se pudo registrar el pedido. Revisa tu conexión e inténtalo de nuevo.');
+                return;
+            }
+
+            if (!saveResult || saveResult.success === false) {
+                alert(`❌ El pedido no se pudo guardar en el sistema${saveResult && saveResult.message ? ':\n' + saveResult.message : '.'}\n\nPor favor inténtalo de nuevo o contacta al administrador.`);
+                return;
+            }
 
             // Notificar por WhatsApp
             let msg = `*${storeName.toUpperCase()} - NUEVA SOLICITUD DE PEDIDO*\n`;
@@ -3943,33 +3954,27 @@
         // PEDIDOS PENDIENTES — Google Sheets (Ordenes)
         // ─────────────────────────────────────────────
         async function savePendingOrder(pedido) {
-            // Guardar en Sheets
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        action: 'saveOrder',
-                        order: {
-                            orderId:    pedido.id,
-                            fecha:      pedido.fecha,
-                            cliente:    pedido.cliente,
-                            telefono:   pedido.celular,
-                            ciudad:     pedido.ciudad,
-                            dir:        pedido.dir,
-                            metodoPago: pedido.metodoPago,
-                            items:      JSON.stringify(pedido.items),
-                            total:      pedido.total,
-                            estado:     'pendiente'
-                        }
-                    })
-                });
-                // Re-sync para que el admin vea el pedido
-                await syncWithGoogleSheets();
-            } catch(err) {
-                console.error('savePendingOrder error:', err);
-            }
+            // Guardar en Sheets — usa sendPostRequest() para validar la respuesta real del backend
+            const payload = {
+                action: 'saveOrder',
+                order: {
+                    orderId:    pedido.id,
+                    id:         pedido.id,
+                    fecha:      pedido.fecha,
+                    cliente:    pedido.cliente,
+                    telefono:   pedido.celular,
+                    celular:    pedido.celular,
+                    ciudad:     pedido.ciudad,
+                    dir:        pedido.dir,
+                    metodoPago: pedido.metodoPago,
+                    items:      JSON.stringify(pedido.items),
+                    total:      pedido.total,
+                    estado:     'pendiente'
+                }
+            };
+            const json = await sendPostRequest(payload);
             if (isAdminLoggedIn) renderPendingOrders();
+            return json;
         }
 
         function getPendingOrders() {
