@@ -1336,6 +1336,27 @@
         </div>
     </div>
 
+    <!-- MODAL: VISTA PREVIA EDITABLE DE MENSAJE WHATSAPP -->
+    <div id="wa-preview-overlay" style="display:none; position:fixed; inset:0; z-index:2300; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+        <div style="background:#fff; border-radius:12px; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,.25); animation:slideUpModal .3s ease;">
+            <div style="padding:20px 24px 16px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+                <h3 style="font-size:16px; font-weight:800; text-transform:uppercase;">💬 Revisar Mensaje</h3>
+                <button onclick="closeWhatsappPreview()" style="background:#f1f5f9; border:none; border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:16px;">&times;</button>
+            </div>
+            <div style="padding:18px 24px;">
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Número de WhatsApp</label>
+                <input type="text" id="wa-preview-phone" style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:14px; margin:6px 0 14px;">
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Mensaje (puedes editarlo antes de enviar)</label>
+                <textarea id="wa-preview-message" rows="8" style="width:100%; padding:10px 12px; border:1px solid var(--border-color); border-radius:8px; font-size:13px; margin:6px 0 4px; font-family:inherit; resize:vertical;"></textarea>
+            </div>
+            <div style="padding:0 24px 22px; display:flex; gap:10px;">
+                <button onclick="closeWhatsappPreview()" style="flex:1; background:#f1f5f9; border:none; padding:11px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer;">Cancelar</button>
+                <button onclick="sendWhatsappPreview()" style="flex:1; background:var(--whatsapp-color); color:#fff; border:none; padding:11px; border-radius:8px; font-size:13px; font-weight:800; cursor:pointer; text-transform:uppercase;">Abrir WhatsApp</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
 
 
     <!-- SPINNER DE CARGA -->
@@ -4310,7 +4331,7 @@
             'Interrapidísimo':   () => 'https://interrapidisimo.com/',
             'Coordinadora':      (guia) => guia ? `https://rastreo.coordinadora.com/?guia=${encodeURIComponent(guia)}` : 'https://coordinadora.com/rastreo/',
             'TCC':                () => 'https://tcc.com.co/rastreo/',
-            'Envía':              () => 'https://envia.com/es-CO/rastreo',
+            'Envía':              () => 'https://envia.co/',
             'Recogida en tienda': () => '',
             'Otro':                () => ''
         };
@@ -4357,7 +4378,44 @@
 
             closeShipOrderModal();
             renderSalesHistory();
-            alert(`🚚 Pedido ${orderId} marcado como despachado.`);
+            sendShippingWhatsapp(orderId, transportadora, guia, trackingUrl);
+        }
+
+        function sendShippingWhatsapp(orderId, transportadora, guia, trackingUrl) {
+            const o = getOrderById(orderId);
+            if (!o) return;
+            const transportadoraFinal = transportadora || o.transportadora || '';
+            const guiaFinal = guia || o.guia || '';
+            const urlFinal = trackingUrl || o.trackingUrl || '';
+
+            let msg = `¡Hola ${o.cliente}! 📦 Tu pedido *${o.id}* ya fue despachado.\n\n`;
+            msg += `🚚 Transportadora: ${transportadoraFinal || 'No especificada'}\n`;
+            if (guiaFinal) msg += `🔖 N° de guía: ${guiaFinal}\n`;
+            if (urlFinal) msg += `📍 Rastrea tu envío aquí: ${urlFinal}\n`;
+            msg += `\nTambién puedes consultar el estado de tu pedido cuando quieras, desde la tienda, en la opción "📦 Mi Pedido", con tu número de celular.\n\n¡Gracias por tu compra! 🙌`;
+
+            let phone = (o.celular || '').replace(/\D/g,'');
+            if (phone && !phone.startsWith('57')) phone = '57' + phone;
+
+            openWhatsappPreview(phone, msg);
+        }
+
+        function openWhatsappPreview(phone, message) {
+            document.getElementById('wa-preview-phone').value = phone;
+            document.getElementById('wa-preview-message').value = message;
+            document.getElementById('wa-preview-overlay').style.display = 'flex';
+        }
+
+        function closeWhatsappPreview() {
+            document.getElementById('wa-preview-overlay').style.display = 'none';
+        }
+
+        function sendWhatsappPreview() {
+            const phone = document.getElementById('wa-preview-phone').value.replace(/\D/g,'');
+            const msg = document.getElementById('wa-preview-message').value;
+            if (!phone) { alert('Ingresa un número de WhatsApp válido.'); return; }
+            window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`, '_blank');
+            closeWhatsappPreview();
         }
 
         async function markOrderDelivered(orderId) {
@@ -4376,7 +4434,16 @@
             }
 
             renderSalesHistory();
-            alert(`✅ Pedido ${orderId} marcado como entregado.`);
+            sendDeliveredWhatsapp(orderId);
+        }
+
+        function sendDeliveredWhatsapp(orderId) {
+            const o = getOrderById(orderId);
+            if (!o) return;
+            const msg = `¡Hola ${o.cliente}! ✅ Tu pedido *${o.id}* fue entregado. Esperamos que lo disfrutes 🙌\n\nSi tienes cualquier inquietud con tu producto, escríbenos por este mismo medio. ¡Gracias por comprar con nosotros!`;
+            let phone = (o.celular || '').replace(/\D/g,'');
+            if (phone && !phone.startsWith('57')) phone = '57' + phone;
+            openWhatsappPreview(phone, msg);
         }
 
         // ─────────────────────────────────────────────
@@ -4465,6 +4532,13 @@
                 } else if (estado === 'despachado') {
                     actionButtons = `<button onclick="markOrderDelivered('${o.id}')" style="background:#15803d; color:#fff; border:none; padding:7px 14px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase;">
                             📬 Marcar Entregado
+                        </button>
+                        <button onclick="sendShippingWhatsapp('${o.id}')" style="background:var(--whatsapp-color); color:#fff; border:none; padding:7px 14px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase;">
+                            💬 Notificar Envío
+                        </button>`;
+                } else if (estado === 'entregado') {
+                    actionButtons = `<button onclick="sendDeliveredWhatsapp('${o.id}')" style="background:var(--whatsapp-color); color:#fff; border:none; padding:7px 14px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; text-transform:uppercase;">
+                            💬 Reenviar Confirmación
                         </button>`;
                 }
 
