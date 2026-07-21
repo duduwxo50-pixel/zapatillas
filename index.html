@@ -833,11 +833,7 @@
     <section id="catalog-view" class="spa-view">
         <!-- Filtros rápidos visibles, estilo Anval -->
         <div class="quick-filter-bar" id="quick-filter-bar">
-            <button class="qf-pill active" data-qf="all" onclick="quickFilter('all', this)">Todos</button>
-            <button class="qf-pill" data-qf="hombre" onclick="quickFilter('hombre', this)">Hombre</button>
-            <button class="qf-pill" data-qf="mujer" onclick="quickFilter('mujer', this)">Mujer</button>
-            <button class="qf-pill" data-qf="unisex" onclick="quickFilter('unisex', this)">Unisex</button>
-            <button class="qf-pill qf-sale" data-qf="sale" onclick="quickFilter('sale', this)">Sale</button>
+            <!-- Se genera dinámicamente desde las Categorías y Filtros de Tienda -->
         </div>
         <!-- Toolbar: botón filtros + ordenamiento + contador -->
         <div class="catalog-toolbar">
@@ -3037,10 +3033,24 @@
         function quickFilter(qf, btn) {
             _resetFiltersSilent();
             if (qf === 'sale') saleOnlyMode = true;
-            else if (qf !== 'all') activeFilters.genders = [qf];
+            else if (qf !== 'all') activeFilters.categories = [qf];
             _setActiveQuickPill(qf);
             engineFilter();
             renderActiveFilterChips();
+        }
+        function renderQuickFilterBar() {
+            const cont = document.getElementById('quick-filter-bar');
+            if (!cont) return;
+            const cats = getCategories();
+            const currentActive = cont.querySelector('.qf-pill.active')?.dataset.qf || 'all';
+            let html = cats.map(cat => {
+                const isSaleLike = cat.value === 'sale';
+                return `<button class="qf-pill ${isSaleLike ? 'qf-sale' : ''}" data-qf="${cat.value}" onclick="quickFilter('${cat.value}', this)">${cat.label}</button>`;
+            }).join('');
+            // Botón fijo de Sale al final (no depende de categorías, se basa en precio con descuento)
+            html += `<button class="qf-pill qf-sale" data-qf="sale" onclick="quickFilter('sale', this)">${(getCfg('nav_labels',{}).sale) || 'Sale'}</button>`;
+            cont.innerHTML = html;
+            _setActiveQuickPill(currentActive);
         }
         function navCategoryFilter(value) {
             _resetFiltersSilent();
@@ -5958,6 +5968,7 @@
             const cats = getCategories();
             const container = document.getElementById('pills-dynamic-container');
             renderNavCategories();
+            renderQuickFilterBar();
             if (!container) return;
             container.innerHTML = cats.map((cat, i) => {
                 let iconHtml = '';
