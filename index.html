@@ -774,11 +774,8 @@
                 <span id="header-brand-text">StivZapat</span>
             </div>
             <nav>
-                <ul class="navigation-menu">
-                    <li onclick="navGenderFilter('hombre')"><span id="nav-label-hombre">Hombre</span></li>
-                    <li onclick="navGenderFilter('mujer')"><span id="nav-label-mujer">Mujer</span></li>
-                    <li onclick="navGenderFilter('unisex')"><span id="nav-label-unisex">Unisex</span></li>
-                    <li class="nav-has-dropdown">
+                <ul class="navigation-menu" id="nav-menu-list">
+                    <li class="nav-has-dropdown" id="nav-marcas-li">
                         <span id="nav-label-marcas">Marcas</span> ▾
                         <ul class="nav-dropdown" id="nav-brands-dropdown"></ul>
                     </li>
@@ -932,20 +929,8 @@
         <!-- TEXTOS DEL MENÚ SUPERIOR -->
         <div class="admin-section" style="margin-bottom:30px;" data-rol="admin">
             <h2>📋 Textos del Menú</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Cambia las palabras que aparecen en la barra de navegación de arriba. Los enlaces siguen funcionando igual (Hombre/Mujer/Unisex filtran por género, Sale activa ofertas, etc.), solo cambia el texto visible.</p>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Cambia las palabras de los botones fijos de la barra de navegación. (Hombre/Mujer/Unisex y demás categorías ya no son fijos: edítalos en "🗂️ Categorías y Filtros de Tienda", más abajo — ahí también eliges cuáles se muestran arriba con el check "Menú superior").</p>
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:14px;">
-                <div>
-                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Hombre</label>
-                    <input type="text" id="nav-label-input-hombre" placeholder="Hombre" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                </div>
-                <div>
-                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Mujer</label>
-                    <input type="text" id="nav-label-input-mujer" placeholder="Mujer" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                </div>
-                <div>
-                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Unisex</label>
-                    <input type="text" id="nav-label-input-unisex" placeholder="Unisex" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                </div>
                 <div>
                     <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Marcas</label>
                     <input type="text" id="nav-label-input-marcas" placeholder="Marcas" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
@@ -1023,7 +1008,7 @@
         <!-- EDITOR DE CATEGORÍAS / PILLS DE FILTRO -->
         <div class="admin-section" style="margin-bottom:30px;" id="admin-categories-section" data-rol="admin">
             <h2>🗂️ Categorías y Filtros de Tienda</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Personaliza las píldoras de filtro que aparecen en la tienda. Puedes editar nombres, emojis y valores de filtro.</p>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Personaliza las píldoras de filtro que aparecen en la tienda. Puedes editar nombres, emojis y valores de filtro. Con "Menú superior" activo, la categoría también aparece como botón en la barra de navegación de arriba.</p>
             <div id="categories-editor" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
             <div style="display:flex; gap:10px;">
                 <button class="btn-action secondary" onclick="addCategory()">+ Agregar Categoría</button>
@@ -1762,7 +1747,7 @@
         // ─────────────────────────────────────────────
         // TEXTOS DEL MENÚ (Hombre / Mujer / Unisex / Marcas / Sale / Cambios y Garantía)
         // ─────────────────────────────────────────────
-        const DEFAULT_NAV_LABELS = { hombre: 'Hombre', mujer: 'Mujer', unisex: 'Unisex', marcas: 'Marcas', sale: 'SALE', garantia: 'Cambios y Garantía' };
+        const DEFAULT_NAV_LABELS = { marcas: 'Marcas', sale: 'SALE', garantia: 'Cambios y Garantía' };
 
         function applyNavLabels() {
             const nl = { ...DEFAULT_NAV_LABELS, ...getCfg('nav_labels', {}) };
@@ -3056,6 +3041,30 @@
             _setActiveQuickPill(qf);
             engineFilter();
             renderActiveFilterChips();
+        }
+        function navCategoryFilter(value) {
+            _resetFiltersSilent();
+            if (value === 'all') { /* sin filtro, muestra todo */ }
+            else if (value === 'recientes') activeFilters.categories = ['recientes'];
+            else activeFilters.categories = [value];
+            navigateTo('catalog-view');
+            engineFilter();
+            renderActiveFilterChips();
+            _setActiveQuickPill(value);
+        }
+        function renderNavCategories() {
+            const ul = document.getElementById('nav-menu-list');
+            const marcasLi = document.getElementById('nav-marcas-li');
+            if (!ul || !marcasLi) return;
+            ul.querySelectorAll('.nav-cat-item').forEach(el => el.remove());
+            const cats = getCategories().filter(c => c.showInNav !== false);
+            cats.forEach(cat => {
+                const li = document.createElement('li');
+                li.className = 'nav-cat-item';
+                li.innerHTML = `<span>${cat.label}</span>`;
+                li.onclick = () => navCategoryFilter(cat.value);
+                ul.insertBefore(li, marcasLi);
+            });
         }
         function navGenderFilter(gender) {
             _resetFiltersSilent();
@@ -5792,12 +5801,15 @@
                 const emoji    = row.querySelector('[data-cat="emoji"]')?.value.trim() || '';
                 const imgUrl   = row.querySelector('[data-cat="imgUrl"]')?.value.trim() || '';
                 const label    = row.querySelector('[data-cat="label"]')?.value.trim() || '';
-                const value    = row.querySelector('[data-cat="value"]')?.value || 'all';
+                const rawValue = row.querySelector('[data-cat="value"]')?.value || 'all';
+                const customValue = row.querySelector('[data-cat="valueCustom"]')?.value.trim() || '';
+                const value = rawValue === '__custom__' ? (customValue || 'all') : rawValue;
+                const showInNav = row.querySelector('[data-cat="showInNav"]')?.checked !== false;
                 if (!label) return;
                 cats.push({
                     emoji:  iconType === 'emoji'  ? emoji  : '',
                     imgUrl: iconType === 'imagen' ? imgUrl : '',
-                    label, value
+                    label, value, showInNav
                 });
             });
             if (cats.length === 0) { alert('⚠️ Agrega al menos una categoría.'); return; }
@@ -5818,7 +5830,7 @@
 
         function addCategory() {
             const cats = getCategories();
-            cats.push({ emoji:'🆕', imgUrl:'', label:'Nueva Categoría', value:'all' });
+            cats.push({ emoji:'🆕', imgUrl:'', label:'Nueva Categoría', value:'all', showInNav:true });
             // Solo actualiza en memoria para edición; se guarda al hacer clic en "Guardar Categorías"
             if (!dbData.config) dbData.config = {};
             dbData.config['store_categories'] = cats;
@@ -5910,9 +5922,20 @@
                         </select>
                         <input data-cat="valueCustom" value="${isCustom ? cat.value : ''}" placeholder="género exacto del producto" style="display:${isCustom?'block':'none'}; padding:6px 9px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-top:2px;">
                     </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:70px;">
+                        <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; text-align:center;">Menú superior</label>
+                        <input type="checkbox" data-cat="showInNav" ${cat.showInNav !== false ? 'checked' : ''} style="width:18px; height:18px; cursor:pointer;" title="Mostrar también como botón en la barra de navegación de arriba">
+                    </div>
                     <button onclick="this.closest('.cat-row').remove()" title="Eliminar" style="align-self:flex-end; background:none; border:none; color:var(--danger-color); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:4px; line-height:1; flex-shrink:0; margin-bottom:2px;">×</button>
                 </div>`;
             }).join('');
+        }
+
+        function onCatFilterChange(sel) {
+            const row = sel.closest('.cat-row');
+            const customInput = row.querySelector('[data-cat="valueCustom"]');
+            if (!customInput) return;
+            customInput.style.display = sel.value === '__custom__' ? 'block' : 'none';
         }
 
         function moveCategoryRow(btn, dir) {
@@ -5934,6 +5957,7 @@
         function renderPillsFromCategories() {
             const cats = getCategories();
             const container = document.getElementById('pills-dynamic-container');
+            renderNavCategories();
             if (!container) return;
             container.innerHTML = cats.map((cat, i) => {
                 let iconHtml = '';
