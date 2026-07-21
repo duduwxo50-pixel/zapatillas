@@ -606,6 +606,24 @@
         .cart-icon-wrapper:hover { border-color: var(--brand-yellow); }
         .cart-badge-count { background: var(--brand-yellow); color: #0d0d0d; }
 
+        /* ── HEADER RESPONSIVE: evita que "Mi Pedido" / "Bolsa" se salgan de la pantalla ── */
+        @media (max-width: 768px) {
+            .header-container { gap: 8px; }
+            .brand-logo { font-size: 16px !important; gap: 6px; flex-shrink: 0; }
+            .brand-logo img { height: 26px; width: 26px; }
+            .header-right-actions { gap: 6px; flex-shrink: 1; min-width: 0; }
+            .search-input-field { width: 84px; padding: 7px 10px; font-size: 12px; }
+            .search-input-field:focus { width: 110px; }
+            .cart-icon-wrapper { padding: 7px 9px; font-size: 12px; gap: 3px; }
+        }
+        @media (max-width: 400px) {
+            .brand-logo { font-size: 13px !important; }
+            .cart-icon-label { display: none; }
+            .cart-icon-wrapper { padding: 7px 8px; }
+            .search-input-field { width: 64px; }
+            .search-input-field:focus { width: 90px; }
+        }
+
         /* Botones */
         .btn-action { background-color: var(--brand-yellow); color: #0d0d0d; font-family: var(--font-head); font-weight: 700; letter-spacing: .05em; border-radius: 3px; }
         .btn-action:hover { background-color: var(--brand-yellow-2); }
@@ -786,10 +804,10 @@
             <div class="header-right-actions">
                 <input type="text" id="global-search" class="search-input-field" placeholder="Buscar calzado..." onkeyup="handleSearchInput(this.value)">
                 <div class="cart-icon-wrapper" onclick="openTrackOrderModal()" style="margin-right:4px;">
-                    📦 Mi Pedido
+                    📦 <span class="cart-icon-label">Mi Pedido</span>
                 </div>
                 <div class="cart-icon-wrapper" onclick="navigateTo('cart-view')">
-                    Bolsa <span class="cart-badge-count" id="global-cart-qty">0</span>
+                    🛍️ <span class="cart-icon-label">Bolsa</span> <span class="cart-badge-count" id="global-cart-qty">0</span>
                 </div>
             </div>
         </div>
