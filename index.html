@@ -580,6 +580,7 @@
         .navigation-menu li:hover { color: var(--brand-yellow); }
         .navigation-menu li.nav-sale { color: var(--brand-yellow); }
         .navigation-menu li.nav-has-dropdown { display: flex; align-items: center; gap: 4px; }
+        .nav-has-dropdown::after { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 14px; }
         .nav-dropdown { display: none; position: absolute; top: 100%; left: 0; margin-top: 14px; background: #141414; border: 1px solid var(--border-color); border-radius: 6px; min-width: 180px; padding: 8px 0; box-shadow: 0 16px 40px rgba(0,0,0,.5); z-index: 50; }
         .nav-has-dropdown:hover .nav-dropdown { display: block; }
         .nav-dropdown li { padding: 9px 18px; font-size: 13px; text-transform: none; letter-spacing: 0; color: #ddd; }
@@ -760,15 +761,15 @@
             </div>
             <nav>
                 <ul class="navigation-menu">
-                    <li onclick="navGenderFilter('hombre')">Hombre</li>
-                    <li onclick="navGenderFilter('mujer')">Mujer</li>
-                    <li onclick="navGenderFilter('unisex')">Unisex</li>
+                    <li onclick="navGenderFilter('hombre')"><span id="nav-label-hombre">Hombre</span></li>
+                    <li onclick="navGenderFilter('mujer')"><span id="nav-label-mujer">Mujer</span></li>
+                    <li onclick="navGenderFilter('unisex')"><span id="nav-label-unisex">Unisex</span></li>
                     <li class="nav-has-dropdown">
-                        Marcas ▾
+                        <span id="nav-label-marcas">Marcas</span> ▾
                         <ul class="nav-dropdown" id="nav-brands-dropdown"></ul>
                     </li>
-                    <li class="nav-sale" onclick="navSaleFilter()">SALE</li>
-                    <li onclick="document.getElementById('store-footer')?.scrollIntoView({behavior:'smooth'})">Cambios y Garantía</li>
+                    <li class="nav-sale" onclick="navSaleFilter()"><span id="nav-label-sale">SALE</span></li>
+                    <li onclick="document.getElementById('store-footer')?.scrollIntoView({behavior:'smooth'})"><span id="nav-label-garantia">Cambios y Garantía</span></li>
                 </ul>
             </nav>
             <div class="header-right-actions">
@@ -912,6 +913,39 @@
                 <label style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Eslogan (aparece en la factura, debajo del nombre de la tienda)</label>
                 <input type="text" id="brand-slogan-input" placeholder="Ej: Pisando fuerte, siempre a la moda" maxlength="80" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
             </div>
+        </div>
+
+        <!-- TEXTOS DEL MENÚ SUPERIOR -->
+        <div class="admin-section" style="margin-bottom:30px;" data-rol="admin">
+            <h2>📋 Textos del Menú</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Cambia las palabras que aparecen en la barra de navegación de arriba. Los enlaces siguen funcionando igual (Hombre/Mujer/Unisex filtran por género, Sale activa ofertas, etc.), solo cambia el texto visible.</p>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:14px;">
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Hombre</label>
+                    <input type="text" id="nav-label-input-hombre" placeholder="Hombre" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Mujer</label>
+                    <input type="text" id="nav-label-input-mujer" placeholder="Mujer" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Unisex</label>
+                    <input type="text" id="nav-label-input-unisex" placeholder="Unisex" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Marcas</label>
+                    <input type="text" id="nav-label-input-marcas" placeholder="Marcas" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Sale</label>
+                    <input type="text" id="nav-label-input-sale" placeholder="SALE" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Cambios y Garantía</label>
+                    <input type="text" id="nav-label-input-garantia" placeholder="Cambios y Garantía" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+            </div>
+            <button class="btn-action" style="margin-top:16px;" onclick="saveNavLabels()">Guardar Textos del Menú</button>
         </div>
 
 
@@ -1704,6 +1738,33 @@
             if (preview && logoUrl) { preview.src = logoUrl; preview.style.display = 'block'; }
             if (nameInput) nameInput.value = name;
             if (sloganInput) sloganInput.value = slogan;
+        }
+
+        // ─────────────────────────────────────────────
+        // TEXTOS DEL MENÚ (Hombre / Mujer / Unisex / Marcas / Sale / Cambios y Garantía)
+        // ─────────────────────────────────────────────
+        const DEFAULT_NAV_LABELS = { hombre: 'Hombre', mujer: 'Mujer', unisex: 'Unisex', marcas: 'Marcas', sale: 'SALE', garantia: 'Cambios y Garantía' };
+
+        function applyNavLabels() {
+            const nl = { ...DEFAULT_NAV_LABELS, ...getCfg('nav_labels', {}) };
+            Object.keys(DEFAULT_NAV_LABELS).forEach(key => {
+                const el = document.getElementById(`nav-label-${key}`);
+                if (el) el.innerText = nl[key];
+                const input = document.getElementById(`nav-label-input-${key}`);
+                if (input) input.value = nl[key];
+            });
+        }
+
+        async function saveNavLabels() {
+            const nl = {};
+            Object.keys(DEFAULT_NAV_LABELS).forEach(key => {
+                const input = document.getElementById(`nav-label-input-${key}`);
+                const val = (input?.value || '').trim();
+                nl[key] = val || DEFAULT_NAV_LABELS[key];
+            });
+            await saveCfg('nav_labels', nl);
+            applyNavLabels();
+            alert('✓ Textos del menú guardados en Google Sheets');
         }
 
         async function uploadBrandLogo(inputEl) {
@@ -2723,6 +2784,7 @@
                 await migrateLocalStorageToSheets();
                 // Aplicar config al frontend
                 applyBrandConfig();
+                applyNavLabels();
                 loadNoticeBar();
                 renderStoreFooter();
                 renderPillsFromCategories();
