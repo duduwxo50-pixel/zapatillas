@@ -187,7 +187,21 @@
         .data-table th { background: #f1f5f9; font-weight: 700; }
 
         .auth-gate { max-width: 360px; margin: 80px auto; background: white; padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            background-size: cover; background-position: center; background-color: #0d0d0d;
+            transition: opacity .35s ease;
+        }
+        .loading-overlay::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75));
+        }
+        .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+        .loading-overlay-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; color: #fff; }
+        .loading-overlay-spinner { width: 42px; height: 42px; border-radius: 50%; border: 3.5px solid rgba(255,255,255,.25); border-top-color: var(--brand-yellow, #f5c518); animation: loadingSpin .8s linear infinite; }
+        .loading-overlay-text { font-weight: 700; font-size: 15px; letter-spacing: .3px; text-transform: uppercase; }
+        @keyframes loadingSpin { to { transform: rotate(360deg); } }
 
         /* ── PRECIO CON DESCUENTO ── */
         .price-original { font-size: 12px; color: var(--text-muted); text-decoration: line-through; font-weight: 600; }
@@ -1631,7 +1645,12 @@
 
 
     <!-- SPINNER DE CARGA -->
-    <div id="loading-spinner" class="loading-overlay" style="display:none;">Cargando...</div>
+    <div id="loading-spinner" class="loading-overlay" style="display:flex; background-image:url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1600&q=80');">
+        <div class="loading-overlay-content">
+            <div class="loading-overlay-spinner"></div>
+            <div class="loading-overlay-text">Cargando...</div>
+        </div>
+    </div>
 
     <!-- NAV INFERIOR MÓVIL -->
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
@@ -2794,6 +2813,7 @@
                 renderCatalog();
                 buildBrandFilters();
                 updateCartBadge();
+                syncLoadingBackground();
                 if(isAdminLoggedIn) { renderAdminDashboard(); populateFooterAdmin(); }
             } catch (err) {
                 console.error("Error cargando base de datos:", err);
@@ -2831,7 +2851,24 @@
 
         function showLoading(show) {
             const el = document.getElementById('loading-spinner');
-            if (el) el.style.display = show ? 'flex' : 'none';
+            if (!el) return;
+            if (show) {
+                el.style.display = 'flex';
+                el.classList.remove('fade-out');
+            } else {
+                el.classList.add('fade-out');
+                setTimeout(() => { if (el.classList.contains('fade-out')) el.style.display = 'none'; }, 350);
+            }
+        }
+
+        // Sincroniza el fondo del loader con el primer slide real configurado (por si el admin lo cambió)
+        function syncLoadingBackground() {
+            try {
+                const slides = getHeroSlides();
+                const url = slides && slides[0] && slides[0].imgUrl;
+                const el = document.getElementById('loading-spinner');
+                if (el && url) el.style.backgroundImage = `url('${url}')`;
+            } catch(e) { /* usa la imagen por defecto del HTML */ }
         }
 
         function formatCOP(val) {
