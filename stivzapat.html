@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StivZapat Panel & Store v3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- jsPDF para facturas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -31,8 +33,8 @@
         .brand-logo { font-size: 24px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
         .brand-logo img { height: 38px; width: 38px; object-fit: contain; border-radius: 6px; }
         
-        .navigation-menu { display: flex; gap: 25px; list-style: none; }
-        .navigation-menu li { font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .navigation-menu { display: flex; gap: 16px; list-style: none; flex-wrap: wrap; row-gap: 6px; }
+        .navigation-menu li { font-size: 11.5px; font-weight: 600; cursor: pointer; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 
         .header-right-actions { display: flex; align-items: center; gap: 15px; }
         .search-input-field { padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 20px; font-size: 14px; outline: none; width: 220px; transition: all 0.2s ease; }
@@ -185,7 +187,21 @@
         .data-table th { background: #f1f5f9; font-weight: 700; }
 
         .auth-gate { max-width: 360px; margin: 80px auto; background: white; padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            background-size: cover; background-position: center; background-color: #0d0d0d;
+            transition: opacity .35s ease;
+        }
+        .loading-overlay::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75));
+        }
+        .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+        .loading-overlay-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; color: #fff; }
+        .loading-overlay-spinner { width: 42px; height: 42px; border-radius: 50%; border: 3.5px solid rgba(255,255,255,.25); border-top-color: var(--brand-yellow, #f5c518); animation: loadingSpin .8s linear infinite; }
+        .loading-overlay-text { font-weight: 700; font-size: 15px; letter-spacing: .3px; text-transform: uppercase; }
+        @keyframes loadingSpin { to { transform: rotate(360deg); } }
 
         /* ── PRECIO CON DESCUENTO ── */
         .price-original { font-size: 12px; color: var(--text-muted); text-decoration: line-through; font-weight: 600; }
@@ -538,6 +554,223 @@
         .footer-admin-field input, .footer-admin-field select, .footer-admin-field textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
         .footer-admin-field textarea { min-height: 56px; resize: vertical; }
         .footer-preview-badge { display: inline-block; background: #f1f5f9; color: var(--text-muted); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; margin-left: 8px; text-transform: uppercase; vertical-align: middle; }
+
+        /* ══════════════════════════════════════════════════════════════
+           ANVAL THEME — reskin oscuro/urbano de la tienda
+           (el panel admin y el login mantienen el tema claro original
+            gracias al scope de variables sobre #admin-view/#auth-gate-view)
+           ══════════════════════════════════════════════════════════════ */
+        :root {
+            --bg-light: #0d0d0d;
+            --bg-card: #161616;
+            --text-main: #f5f5f5;
+            --text-muted: #9a9a9a;
+            --border-color: #262626;
+            --brand-yellow: #f5c518;
+            --brand-yellow-2: #e0ad00;
+            --font-display: 'Bebas Neue', 'Barlow Condensed', sans-serif;
+            --font-head: 'Barlow Condensed', sans-serif;
+        }
+        body { background: var(--bg-light); color: var(--text-main); font-family: 'Inter', system-ui, sans-serif; }
+
+        /* El panel admin y el login recuperan el tema claro original */
+        #admin-view, #auth-gate-view {
+            --bg-light: #f8fafc; --bg-card: #ffffff; --text-main: #0f172a;
+            --text-muted: #64748b; --border-color: #e2e8f0;
+            background: #f8fafc; color: #0f172a; font-family: system-ui, -apple-system, sans-serif;
+        }
+        #admin-view h1, #admin-view h2, #admin-view h3,
+        #auth-gate-view h1, #auth-gate-view h2 { font-family: system-ui, -apple-system, sans-serif !important; }
+
+        /* Barra de aviso superior */
+        #top-notice-bar-wrapper { background-color: var(--brand-yellow) !important; color: #0d0d0d !important; }
+        #notice-bar-show-btn { background: var(--brand-yellow) !important; color: #0d0d0d !important; }
+
+        /* Header / nav */
+        header { background: rgba(6,6,6,.94); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-color); }
+        .brand-logo { font-family: var(--font-display); letter-spacing: .06em; color: #fff; font-size: 26px; }
+        .navigation-menu { gap: 16px; }
+        .navigation-menu li { font-family: var(--font-head); font-weight: 600; color: var(--text-main); transition: color .18s; position: relative; }
+        .navigation-menu li:hover { color: var(--brand-yellow); }
+        .navigation-menu li.nav-sale { color: var(--brand-yellow); }
+        .navigation-menu li.nav-has-dropdown { display: flex; align-items: center; gap: 4px; }
+        .nav-has-dropdown::after { content: ''; position: absolute; top: 100%; left: 0; width: 100%; height: 14px; }
+        .nav-dropdown { display: none; position: absolute; top: 100%; left: 0; margin-top: 14px; background: #141414; border: 1px solid var(--border-color); border-radius: 6px; min-width: 180px; padding: 8px 0; box-shadow: 0 16px 40px rgba(0,0,0,.5); z-index: 50; }
+        .nav-has-dropdown:hover .nav-dropdown { display: block; }
+        .nav-dropdown li { padding: 9px 18px; font-size: 13px; text-transform: none; letter-spacing: 0; color: #ddd; }
+        .nav-dropdown li:hover { background: rgba(245,197,24,.08); color: var(--brand-yellow); }
+        .search-input-field { background: #111; border: 1px solid var(--border-color); color: #fff; }
+        .search-input-field::placeholder { color: #777; }
+        .search-input-field:focus { border-color: var(--brand-yellow); }
+        .cart-icon-wrapper { background: #131313; border: 1px solid var(--border-color); color: #fff; }
+        .cart-icon-wrapper:hover { border-color: var(--brand-yellow); }
+        .cart-badge-count { background: var(--brand-yellow); color: #0d0d0d; }
+
+        /* ── HEADER RESPONSIVE: evita que "Mi Pedido" / "Bolsa" se salgan de la pantalla ── */
+        @media (max-width: 768px) {
+            .header-container { gap: 8px; }
+            .brand-logo { font-size: 16px !important; gap: 6px; flex-shrink: 0; }
+            .brand-logo img { height: 26px; width: 26px; }
+            .header-right-actions { gap: 6px; flex-shrink: 1; min-width: 0; }
+            .search-input-field { width: 84px; padding: 7px 10px; font-size: 12px; }
+            .search-input-field:focus { width: 110px; }
+            .cart-icon-wrapper { padding: 7px 9px; font-size: 12px; gap: 3px; }
+        }
+        @media (max-width: 400px) {
+            .brand-logo { font-size: 13px !important; }
+            .cart-icon-label { display: none; }
+            .cart-icon-wrapper { padding: 7px 8px; }
+            .search-input-field { width: 64px; }
+            .search-input-field:focus { width: 90px; }
+        }
+
+        /* Botones */
+        .btn-action { background-color: var(--brand-yellow); color: #0d0d0d; font-family: var(--font-head); font-weight: 700; letter-spacing: .05em; border-radius: 3px; }
+        .btn-action:hover { background-color: var(--brand-yellow-2); }
+        .btn-action.secondary { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,.4); }
+        .btn-action.secondary:hover { border-color: #fff; background: rgba(255,255,255,.06); }
+        .btn-action.danger { background-color: #e63946; color: #fff; }
+
+        /* Hero (bloque configurable desde el admin) */
+        .hero-banner, .store-hero-block {
+            background: linear-gradient(100deg, rgba(6,6,6,.85) 42%, rgba(6,6,6,.15) 100%), var(--hero-bg, url('https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80')) center/cover !important;
+            border: none; border-radius: 4px;
+        }
+        .hero-text h1 { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(34px, 5vw, 62px); line-height: .98; letter-spacing: .01em; color: #fff; }
+        .hero-text p { color: rgba(255,255,255,.72); font-size: 15px; }
+
+        /* Pills de categorías (home) */
+        .filter-pill-btn { color: var(--text-main); }
+        .filter-pill-btn .pill-icon-circle { background: #141414; border: 1px solid var(--border-color); }
+        .filter-pill-btn:hover .pill-icon-circle { border-color: var(--brand-yellow); }
+        .filter-pill-btn.active-pill .pill-icon-circle { background: var(--brand-yellow); color: #0d0d0d; border-color: var(--brand-yellow); }
+        .filter-pill-btn.active-pill { color: var(--brand-yellow); }
+        #home-section-title { font-family: var(--font-display); letter-spacing: .04em; text-transform: uppercase; }
+
+        /* Bloques de categorías del page builder */
+        .store-category-pill { background: #131313; border: 1px solid var(--border-color); color: #fff; }
+        .store-category-pill:hover { background: var(--brand-yellow); color: #0d0d0d; border-color: var(--brand-yellow); }
+        .store-promo-block { background: var(--brand-yellow) !important; color: #0d0d0d !important; }
+
+        /* Tarjetas de producto */
+        .product-item-card { background: var(--bg-card); border: 1px solid var(--border-color); }
+        .product-image-frame { background-color: #1a1a1a; }
+        .price-normal { color: #fff; }
+        .price-original { color: #8a8a8a; }
+        .price-sale { color: var(--brand-yellow); }
+        .discount-badge { background: #e63946; }
+        .card-size-chip { background: #1a1a1a; border-color: #333; color: #bbb; }
+        .featured-ribbon { background: var(--brand-yellow); color: #0d0d0d; }
+
+        /* Catálogo / filtros */
+        .btn-open-filters { background: #131313; border-color: #333; color: #fff; }
+        .btn-open-filters:hover { background: var(--brand-yellow); border-color: var(--brand-yellow); color: #0d0d0d; }
+        .btn-open-filters .filter-badge { background: var(--brand-yellow); color: #0d0d0d; }
+        .btn-open-filters:hover .filter-badge { background: #0d0d0d; color: var(--brand-yellow); }
+        .sort-select { background: #131313; border-color: #333; color: #fff; }
+        .results-count { color: var(--text-muted); }
+        .active-filter-chip { background: var(--brand-yellow); color: #0d0d0d; }
+        .active-filter-chip button { color: rgba(13,13,13,.6); }
+        .active-filter-chip button:hover { color: #0d0d0d; }
+        .btn-clear-all-filters { border-color: #333; color: #ccc; }
+        .btn-clear-all-filters:hover { border-color: #e63946; color: #e63946; }
+
+        .filter-drawer { background: #111; }
+        .filter-drawer-header { border-color: var(--border-color); }
+        .filter-drawer-header h3 { color: #fff; }
+        .filter-drawer-close { background: #1e1e1e; color: #fff; }
+        .filter-drawer-close:hover { background: #292929; }
+        .filter-drawer-footer { border-color: var(--border-color); }
+        .btn-apply-filters { background: var(--brand-yellow); color: #0d0d0d; }
+        .btn-apply-filters:hover { background: var(--brand-yellow-2); }
+        .btn-reset-filters { background: #1a1a1a; color: #fff; border-color: #333 !important; }
+        .btn-reset-filters:hover { background: #232323; }
+        .filter-accordion-item { border-color: var(--border-color); }
+        .filter-accordion-header:hover { background: #171717; }
+        .filter-accordion-title { color: #fff; }
+        .filter-accordion-count { background: var(--brand-yellow); color: #0d0d0d; }
+        .filter-accordion-arrow { color: var(--text-muted); }
+        .filter-option:hover { background: #171717; }
+        .filter-option-label { color: #ddd; }
+        .filter-size-chip { background: #131313; border-color: #333; color: #ccc; }
+        .filter-size-chip:hover { border-color: var(--brand-yellow); }
+        .filter-size-chip.selected { background: var(--brand-yellow); color: #0d0d0d; border-color: var(--brand-yellow); }
+        .filter-color-swatch { border-color: #333; }
+        .filter-color-chip.selected .filter-color-swatch { border-color: var(--brand-yellow); box-shadow: 0 0 0 2px var(--brand-yellow); }
+        .price-range-inputs input { background: #131313; border-color: #333; color: #fff; }
+        .price-range-inputs input:focus { border-color: var(--brand-yellow); }
+        .price-range-slider { accent-color: var(--brand-yellow); }
+
+        /* Detalle de producto */
+        .product-detail-img-col, .thumbnail-card, .color-swatch { background: #1a1a1a; }
+        .thumbnail-card:hover { border-color: #555; }
+        .thumbnail-card.active-thumb { border-color: var(--brand-yellow); }
+        .color-swatch:hover { border-color: #555; }
+        .color-swatch.active-swatch { border-color: var(--brand-yellow); box-shadow: 0 0 0 1px var(--brand-yellow); }
+        .color-chip-btn { background: #131313; border-color: #333; color: #fff; }
+        .color-chip-btn.selected-chip { background: var(--brand-yellow); color: #0d0d0d; border-color: var(--brand-yellow); }
+        .size-tile { background: #131313; border-color: #333; color: #fff; }
+        .size-tile:hover:not(.size-out) { border-color: var(--brand-yellow); }
+        .size-tile.size-selected { background: var(--brand-yellow); border-color: var(--brand-yellow); color: #0d0d0d; }
+
+        /* Carrito */
+        .cart-item { border-color: var(--border-color); }
+
+        /* Footer */
+        .footer-trust-bar { background: #131313; border-bottom: 1px solid var(--border-color); }
+        .footer-trust-card .ftc-title { color: #fff; }
+        .footer-trust-card .ftc-sub { color: #9a9a9a; }
+        .footer-col-title { color: #777; }
+        .footer-newsletter-form button { background: var(--brand-yellow); color: #0d0d0d; }
+        .footer-newsletter-form button:hover { background: var(--brand-yellow-2); }
+        .footer-social-btn:hover { background: var(--brand-yellow); color: #0d0d0d; }
+
+        /* Nav inferior móvil */
+        .mobile-bottom-nav { background: #0d0d0d; border-top: 1px solid var(--border-color); }
+        .mobile-bottom-nav li { color: var(--text-muted); }
+        .mobile-bottom-nav li.active-nav { color: var(--brand-yellow) !important; }
+
+        /* Barra de filtros rápidos visibles (estilo Anval) */
+        .quick-filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+        .qf-pill { background: transparent; border: 1.5px solid rgba(255,255,255,.35); color: #fff; font-family: var(--font-head); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; padding: 9px 20px; border-radius: 2px; cursor: pointer; transition: all .18s; }
+        .qf-pill:hover { border-color: var(--brand-yellow); color: var(--brand-yellow); }
+        .qf-pill.active { background: var(--brand-yellow); border-color: var(--brand-yellow); color: #0d0d0d; }
+        .qf-pill.qf-sale { border-color: var(--brand-yellow); color: var(--brand-yellow); }
+        .qf-pill.qf-sale.active { background: var(--brand-yellow); color: #0d0d0d; }
+
+        /* Slider principal (hero) — imagen que rota, estilo Anval */
+        .hero-slider-store { position: relative; width: 100%; overflow: hidden; background: #060606; margin-bottom: 40px; user-select: none; }
+        .hs-track { display: flex; transition: transform .65s cubic-bezier(.4,0,.2,1); }
+        .hs-slide { min-width: 100%; height: clamp(320px, 50vw, 560px); position: relative; display: flex; align-items: center; }
+        .hs-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+        .hs-overlay { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(0,0,0,.8) 42%, rgba(0,0,0,.15) 100%); }
+        .hs-content { position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; width: 100%; padding: 0 50px; }
+        .hs-eyebrow { font-family: var(--font-head); font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--brand-yellow); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+        .hs-eyebrow::before { content: ''; display: block; width: 28px; height: 2px; background: var(--brand-yellow); }
+        .hs-title { font-family: var(--font-display); font-size: clamp(38px, 6.5vw, 88px); line-height: .95; letter-spacing: .01em; text-transform: uppercase; color: #fff; margin-bottom: 16px; }
+        .hs-title em { font-style: normal; color: var(--brand-yellow); display: block; }
+        .hs-sub { font-size: 14px; color: rgba(255,255,255,.7); max-width: 340px; margin-bottom: 26px; line-height: 1.6; }
+        .hs-arrow { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 44px; height: 44px; border: 1.5px solid rgba(255,255,255,.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.3); backdrop-filter: blur(4px); transition: all .18s; color: #fff; }
+        .hs-arrow:hover { border-color: var(--brand-yellow); background: rgba(0,0,0,.6); color: var(--brand-yellow); }
+        .hs-arrow svg { width: 18px; height: 18px; }
+        .hs-prev { left: 18px; }
+        .hs-next { right: 18px; }
+        .hs-dots { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 5; }
+        .hs-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.35); border: none; padding: 0; cursor: pointer; transition: all .2s; }
+        .hs-dot.active { background: var(--brand-yellow); width: 20px; border-radius: 3px; }
+        @media (max-width: 640px) {
+            .hs-arrow { display: none; }
+            .hs-content { padding: 0 24px; }
+        }
+
+        /* Botón flotante de WhatsApp */
+        .wa-float-btn { position: fixed; bottom: 22px; right: 22px; z-index: 500; display: flex; align-items: center; gap: 8px; background: var(--whatsapp-color); color: #fff; padding: 13px 18px 13px 14px; border-radius: 50px; box-shadow: 0 8px 24px rgba(0,0,0,.4); font-family: var(--font-head); font-weight: 700; font-size: 14px; text-decoration: none; transition: transform .18s, box-shadow .18s; }
+        .wa-float-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+        .wa-float-btn svg { width: 22px; height: 22px; flex-shrink: 0; }
+        @media (max-width: 480px) {
+            .wa-float-btn span { display: none; }
+            .wa-float-btn { padding: 14px; }
+        }
     </style>
 </head>
 <body>
@@ -559,23 +792,38 @@
                 <span id="header-brand-text">StivZapat</span>
             </div>
             <nav>
-                <ul class="navigation-menu">
-                    <li onclick="navigateTo('catalog-view')">Ver Catálogo</li>
+                <ul class="navigation-menu" id="nav-menu-list">
+                    <li class="nav-has-dropdown" id="nav-marcas-li">
+                        <span id="nav-label-marcas">Marcas</span> ▾
+                        <ul class="nav-dropdown" id="nav-brands-dropdown"></ul>
+                    </li>
+                    <li class="nav-sale" onclick="navSaleFilter()"><span id="nav-label-sale">SALE</span></li>
+                    <li onclick="document.getElementById('store-footer')?.scrollIntoView({behavior:'smooth'})"><span id="nav-label-garantia">Cambios y Garantía</span></li>
                 </ul>
             </nav>
             <div class="header-right-actions">
                 <input type="text" id="global-search" class="search-input-field" placeholder="Buscar calzado..." onkeyup="handleSearchInput(this.value)">
                 <div class="cart-icon-wrapper" onclick="openTrackOrderModal()" style="margin-right:4px;">
-                    📦 Mi Pedido
+                    📦 <span class="cart-icon-label">Mi Pedido</span>
                 </div>
                 <div class="cart-icon-wrapper" onclick="navigateTo('cart-view')">
-                    Bolsa <span class="cart-badge-count" id="global-cart-qty">0</span>
+                    🛍️ <span class="cart-icon-label">Bolsa</span> <span class="cart-badge-count" id="global-cart-qty">0</span>
                 </div>
             </div>
         </div>
     </header>
 
     <main id="home-view" class="spa-view active-view">
+        <section class="hero-slider-store" id="hero-slider-store">
+            <div class="hs-track" id="hs-track"></div>
+            <button class="hs-arrow hs-prev" onclick="heroPrev()" aria-label="Anterior">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button class="hs-arrow hs-next" onclick="heroNext()" aria-label="Siguiente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+            <div class="hs-dots" id="hs-dots"></div>
+        </section>
         <div id="home-blocks-container"></div>
         <div id="home-pills-section">
             <div class="visual-filters-container" id="pills-dynamic-container"></div>
@@ -601,6 +849,10 @@
     </div>
 
     <section id="catalog-view" class="spa-view">
+        <!-- Filtros rápidos visibles, estilo Anval -->
+        <div class="quick-filter-bar" id="quick-filter-bar">
+            <!-- Se genera dinámicamente desde las Categorías y Filtros de Tienda -->
+        </div>
         <!-- Toolbar: botón filtros + ordenamiento + contador -->
         <div class="catalog-toolbar">
             <button class="btn-open-filters" onclick="openFilterDrawer()">
@@ -642,571 +894,6 @@
         </div>
     </section>
 
-    <section id="auth-gate-view" class="spa-view">
-        <div class="auth-gate">
-            <h2 style="margin-bottom:15px; text-transform:uppercase;">Acceso Seguro</h2>
-            <input type="text" id="auth-user" placeholder="Usuario" style="width:100%; padding:10px; margin-bottom:10px; border:1px solid var(--border-color); border-radius:6px;"><br>
-            <input type="password" id="auth-pass" placeholder="Contraseña" style="width:100%; padding:10px; margin-bottom:20px; border:1px solid var(--border-color); border-radius:6px;"><br>
-            <button class="btn-action" style="width:100%;" onclick="checkAuthAdmin()">Ingresar</button>
-        </div>
-    </section>
-
-    <section id="admin-view" class="spa-view">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap:wrap; gap:10px;">
-            <div>
-                <h1 style="text-transform:uppercase; margin:0;">Consola de Control Integral</h1>
-                <p id="admin-user-label" style="font-size:12px; color:var(--text-muted); margin:4px 0 0 0;"></p>
-            </div>
-            <button class="btn-action secondary" onclick="logoutAdmin()">Cerrar Sesión</button>
-        </div>
-
-        <!-- IDENTIDAD DE MARCA -->
-        <div class="admin-section" style="margin-bottom:30px;" data-rol="admin">
-            <h2>Identidad de Marca</h2>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; align-items:end;">
-                <div>
-                    <label style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Nombre de la Tienda</label>
-                    <input type="text" id="brand-name-input" placeholder="Ej: StivZapat" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-                </div>
-                <div>
-                    <label style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Logo (imagen)</label>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img id="brand-logo-preview" src="" style="width:44px; height:44px; object-fit:contain; border-radius:6px; border:1px solid var(--border-color); background:#f1f5f9; display:none;">
-                        <div style="flex:1;">
-                            <input type="file" id="brand-logo-file" accept="image/*" onchange="uploadBrandLogo(this)" style="font-size:12px; width:100%;">
-                            <span id="brand-logo-status" style="font-size:11px; color:var(--text-muted);"></span>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <button class="btn-action" style="width:100%; padding:12px;" onclick="saveBrandConfig()">Aplicar Cambios</button>
-                </div>
-            </div>
-            <div style="margin-top:16px;">
-                <label style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Eslogan (aparece en la factura, debajo del nombre de la tienda)</label>
-                <input type="text" id="brand-slogan-input" placeholder="Ej: Pisando fuerte, siempre a la moda" maxlength="80" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-            </div>
-        </div>
-
-
-        <!-- PEDIDOS PENDIENTES -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-pending-orders-section">
-            <h2>📋 Pedidos Pendientes de Confirmación</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Confirma el pago recibido para descontar el stock automáticamente y generar la factura.</p>
-            <div id="admin-pending-orders-list">
-                <p style="color:var(--text-muted); font-size:13px; padding:10px 0;">Sin pedidos pendientes.</p>
-            </div>
-        </div>
-
-        <!-- MEDIOS DE PAGO -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagos-section" data-rol="admin">
-            <h2>Medios de Pago</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Configura los datos de cada método. Solo los que actives aparecerán al cliente en el checkout.</p>
-            <div id="admin-pagos-list"></div>
-            <button class="btn-action" style="margin-top:10px; padding:10px 20px; font-size:13px;" onclick="savePagosConfig()">Guardar Medios de Pago</button>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             EDITOR DE PÁGINA — PAGE BUILDER
-        ═══════════════════════════════════════════════════════ -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-pagebuilder-section" data-rol="admin">
-            <h2>🎨 Editor de Página — Bloques de Contenido</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Agrega, ordena y personaliza cada sección de tu tienda. Arrastra para reordenar. Los cambios se aplican en tiempo real.</p>
-
-            <!-- Botones para agregar bloques -->
-            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding:14px; background:#f8fafc; border-radius:8px; border:1px solid var(--border-color);">
-                <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); align-self:center; margin-right:4px;">+ Agregar bloque:</span>
-                <button onclick="addBlock('hero')"        class="pb-add-btn">🖼️ Banner Hero</button>
-                <button onclick="addBlock('video')"       class="pb-add-btn">▶️ Video</button>
-                <button onclick="addBlock('text')"        class="pb-add-btn">📝 Texto / Anuncio</button>
-                <button onclick="addBlock('banner2')"     class="pb-add-btn">📸 Banner Imagen</button>
-                <button onclick="addBlock('categories')"  class="pb-add-btn">🗂️ Categorías</button>
-                <button onclick="addBlock('promo')"       class="pb-add-btn">🏷️ Banda Promocional</button>
-                <button onclick="addBlock('spacer')"      class="pb-add-btn">⬜ Separador</button>
-            </div>
-
-            <div id="page-blocks-editor" style="display:flex; flex-direction:column; gap:10px; min-height:60px;">
-                <p id="pb-empty-msg" style="text-align:center; color:var(--text-muted); font-size:13px; padding:20px;">Sin bloques. Agrega uno arriba para empezar.</p>
-            </div>
-
-            <div style="display:flex; gap:10px; margin-top:16px; justify-content:flex-end;">
-                <button class="btn-action secondary" onclick="previewPageBlocks()">👁️ Vista Previa</button>
-                <button class="btn-action" onclick="savePageBlocks()">💾 Guardar Página</button>
-            </div>
-        </div>
-
-        <!-- EDITOR DE CATEGORÍAS / PILLS DE FILTRO -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-categories-section" data-rol="admin">
-            <h2>🗂️ Categorías y Filtros de Tienda</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Personaliza las píldoras de filtro que aparecen en la tienda. Puedes editar nombres, emojis y valores de filtro.</p>
-            <div id="categories-editor" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
-            <div style="display:flex; gap:10px;">
-                <button class="btn-action secondary" onclick="addCategory()">+ Agregar Categoría</button>
-                <button class="btn-action" onclick="saveCategories()">Guardar Categorías</button>
-            </div>
-        </div>
-
-        <!-- GESTIÓN DE USUARIOS Y PERMISOS -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-users-section" data-rol="admin">
-            <h2>👥 Usuarios y Permisos</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Administra quién puede acceder al panel. Roles: <strong>admin</strong> (acceso total) y <strong>vendedor</strong> (solo ventas y pedidos).</p>
-            <div id="users-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
-            <button class="btn-action secondary" onclick="openUserForm()">+ Agregar Usuario</button>
-
-            <!-- Formulario inline para crear/editar usuario -->
-            <div id="user-form-panel" style="display:none; margin-top:16px; background:#f8fafc; border:1px solid var(--border-color); border-radius:10px; padding:18px;">
-                <h3 id="user-form-title" style="margin:0 0 14px 0; font-size:15px;">Nuevo Usuario</h3>
-                <input type="hidden" id="user-original-name">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-                    <div>
-                        <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Usuario</label>
-                        <input type="text" id="user-form-usuario" placeholder="Ej: maria" style="width:100%; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                    </div>
-                    <div>
-                        <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Contraseña</label>
-                        <input type="text" id="user-form-contrasena" placeholder="Contraseña" style="width:100%; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                    </div>
-                    <div>
-                        <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Rol</label>
-                        <select id="user-form-rol" style="width:100%; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                            <option value="admin">👑 Admin</option>
-                            <option value="vendedor">🧾 Vendedor</option>
-                        </select>
-                    </div>
-                    <div style="display:flex; align-items:flex-end;">
-                        <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; cursor:pointer; padding-bottom:9px;">
-                            <input type="checkbox" id="user-form-activo" checked style="width:16px; height:16px; cursor:pointer;">
-                            Usuario activo
-                        </label>
-                    </div>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-action" onclick="saveUserHandler()">💾 Guardar</button>
-                    <button class="btn-action secondary" onclick="closeUserForm()">Cancelar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             MÓDULOS DINÁMICOS — ADMINISTRACIÓN
-        ═══════════════════════════════════════════════════════ -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-modules-section" data-rol="admin">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h2 style="border-bottom:none; margin-bottom:0; padding-bottom:0;">🧩 Módulos Dinámicos</h2>
-                <button class="btn-action secondary" style="padding:8px 16px; font-size:12px;" onclick="openModuleForm()">+ Nuevo Módulo</button>
-            </div>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px; border-bottom:1px solid var(--border-color); padding-bottom:14px;">Crea colecciones personalizadas (CRM, servicios, gastos, lo que necesites). Cada módulo genera su propia hoja en Google Sheets.</p>
-
-            <div id="modules-list" style="display:flex; flex-direction:column; gap:10px;"></div>
-
-            <!-- Panel de registros de un módulo -->
-            <div id="module-records-panel" style="display:none; margin-top:20px; border:2px solid var(--accent-dark); border-radius:10px; overflow:hidden;">
-                <div style="background:var(--accent-dark); color:#fff; padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <span id="module-records-icon" style="font-size:20px; margin-right:8px;"></span>
-                        <span id="module-records-title" style="font-size:16px; font-weight:800; text-transform:uppercase;"></span>
-                    </div>
-                    <div style="display:flex; gap:8px;">
-                        <button onclick="openModuleRecordForm(currentModuloId)" style="background:rgba(255,255,255,0.2); color:#fff; border:none; border-radius:6px; padding:7px 14px; font-size:12px; font-weight:700; cursor:pointer;">+ Nuevo Registro</button>
-                        <button onclick="closeModuleRecordsPanel()" style="background:rgba(255,255,255,0.15); color:#fff; border:none; border-radius:6px; padding:7px 12px; font-size:12px; cursor:pointer;">✕ Cerrar</button>
-                    </div>
-                </div>
-                <div style="padding:16px; overflow-x:auto;">
-                    <div id="module-records-table"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONFIGURACIÓN DE NAVEGACIÓN -->
-        <div class="admin-section" style="margin-bottom:30px;">
-            <h2>🧭 Barra de Aviso y Navegación</h2>
-            <div style="display:grid; grid-template-columns:1fr auto; gap:10px; align-items:end; margin-bottom:14px;">
-                <div>
-                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:5px;">Texto de la barra superior</label>
-                    <input id="notice-bar-text" type="text" placeholder="Ej: ENVÍOS A TODA COLOMBIA 🚚 · PIDE HOY · PAGA AL RECIBIR" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;" value="">
-                </div>
-                <button class="btn-action" style="padding:9px 20px;" onclick="saveNoticeBar()">Guardar</button>
-            </div>
-            <!-- Controles de la barra (solo visibles en admin) -->
-            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:#f8fafc; padding:12px 14px; border-radius:8px; border:1px solid var(--border-color);">
-                <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">Controles:</span>
-                <button onclick="changeBarSpeed(1)" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;">🐢 Más lento</button>
-                <button id="btn-bar-pause" onclick="toggleBarPause()" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;">⏸ Pausar</button>
-                <button onclick="changeBarSpeed(-1)" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;">🐇 Más rápido</button>
-                <button onclick="toggleBarVisibility()" style="background:#fff; border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:700;" id="btn-bar-toggle">👁 Ocultar barra</button>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="kpi-card" onclick="openSalesHistoryModal()" style="cursor:pointer;" title="Clic para ver el historial de ventas">
-                <h3>Ventas Totales</h3>
-                <div class="value" id="kpi-sales">$ 0</div>
-                <div style="font-size:10px; font-weight:700; color:var(--accent-dark); text-transform:uppercase; margin-top:4px;">📊 Ver historial →</div>
-            </div>
-            <div class="kpi-card">
-                <h3>Utilidad Neta</h3>
-                <div class="value" id="kpi-profit" style="color:var(--whatsapp-color);">$ 0</div>
-            </div>
-            <div class="kpi-card">
-                <h3>Total Referencias</h3>
-                <div class="value" id="kpi-count">0</div>
-            </div>
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1.6fr 1.4fr; gap:30px;">
-            <div>
-                <div class="admin-section">
-                    <h2 id="form-product-title">Registrar Nuevo Calzado</h2>
-                    <form id="product-admin-form" onsubmit="saveProductHandler(event)">
-                        <input type="hidden" id="form-p-id">
-                        <div class="admin-form">
-                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Nombre del Producto</label>
-                            <input type="text" id="form-p-title" placeholder="Ej: Nike Quest 6" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
-                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Marca</label>
-                            <input type="text" id="form-p-brand" placeholder="Ej: Nike" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
-                            <div style="display:flex; gap:6px; align-items:center; grid-column:auto;">
-                                <select id="form-p-gender" required style="flex:1; padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px; outline:none; min-width:0;">
-                                    <option value="">-- Línea / Género --</option>
-                                    <option value="hombre">Hombre</option>
-                                    <option value="mujer">Mujer</option>
-                                </select>
-                                <button type="button" onclick="openGenderManager()" title="Personalizar líneas/géneros" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; padding:8px 10px; cursor:pointer; font-size:15px; flex-shrink:0; height:42px;">⚙️</button>
-                            </div>
-                            <!-- Precio + Descuento interactivo -->
-                            <div style="grid-column:1/-1; background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px;">
-                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; align-items:end;">
-                                    <div>
-                                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Precio de Venta</label>
-                                        <input type="number" id="form-p-price" placeholder="Ej: 199000" required
-                                            style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"
-                                            oninput="onPriceInput()">
-                                    </div>
-                                    <div>
-                                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Precio Anterior (sin dcto)</label>
-                                        <input type="number" id="form-p-price-old" placeholder="Ej: 499000 (opcional)"
-                                            style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"
-                                            oninput="onPriceOldInput()">
-                                    </div>
-                                    <div>
-                                        <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">% Descuento</label>
-                                        <div style="display:flex;gap:6px;align-items:center;">
-                                            <input type="number" id="form-p-discount" placeholder="Ej: 20" min="0" max="99"
-                                                style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"
-                                                oninput="onDiscountInput()">
-                                            <button type="button" title="Quitar descuento" onclick="clearDiscount()"
-                                                style="flex-shrink:0;background:#fee2e2;border:none;border-radius:6px;padding:10px 10px;cursor:pointer;font-size:14px;color:#dc2626;font-weight:700;">✕</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="discount-preview" style="margin-top:8px;font-size:12px;font-weight:700;color:#dc2626;display:none;"></div>
-                            </div>
-                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Costo de Fábrica (COP)</label>
-                            <input type="number" id="form-p-cost" placeholder="Ej: 150000" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
-                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Stock (unidades)</label>
-                            <input type="number" id="form-p-stock" placeholder="Ej: 10" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;"></div>
-                            <div><label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:4px;">Proveedor</label>
-                            <select id="form-p-provider" required style="width:100%;padding:10px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;outline:none;">
-                                <option value="">-- Seleccionar Proveedor --</option>
-                            </select></div>
-                        </div>
-                        <div style="display:flex; gap:20px; align-items:center; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid var(--border-color);">
-                            <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; cursor:pointer;">
-                                <input type="checkbox" id="form-p-featured" style="width:16px; height:16px; cursor:pointer;">
-                                Mostrar en página principal (Destacado)
-                            </label>
-                        </div>
-
-                        <!-- TALLAS POR VARIANTE: se configuran dentro de cada color abajo -->
-                        <!-- El botón de Gestionar Tallas sigue disponible para el catálogo global -->
-                        <div style="margin-bottom:16px; background:#f0fdf4; padding:10px 16px; border-radius:8px; border:1px solid #86efac; display:flex; align-items:center; gap:10px;">
-                            <span style="font-size:12px; font-weight:700; color:#16a34a;">📏 Las tallas ahora se configuran dentro de cada color — cada color puede tener sus propias tallas y stock.</span>
-                            <button type="button" onclick="openSizesManager()" style="background:#fff; border:1px solid #86efac; border-radius:6px; padding:4px 10px; cursor:pointer; font-size:12px; font-weight:700; color:#16a34a; white-space:nowrap;">⚙️ Gestionar catálogo de tallas</button>
-                        </div>
-                        <input type="hidden" id="form-p-sizes">
-                        <div id="sizes-chips-admin" style="display:none;"></div>
-
-                        <div style="margin-bottom: 20px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                                <h3 style="font-size:14px; text-transform:uppercase; color:var(--text-muted);">Colores y Fotos (hasta 7 fotos por color)</h3>
-                                <button type="button" class="btn-action" style="padding:6px 14px; font-size:12px;" onclick="addColorVariant()">+ Añadir Color</button>
-                            </div>
-                            <div id="variants-container"></div>
-                        </div>
-
-                        <textarea id="form-p-desc" rows="3" placeholder="Descripción de la zapatilla..." required></textarea>
-                        <div style="display:flex; gap:10px; margin-top:15px;">
-                            <button type="submit" class="btn-action">Guardar Calzado</button>
-                            <button type="button" id="btn-cancel-edit" class="btn-action secondary" style="display:none;" onclick="resetProductForm()">Cancelar</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="admin-section">
-                    <h2>Inventario de Almacén Real</h2>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Calzado</th>
-                                <th>Stock</th>
-                                <th>Precio</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-inventory-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <aside>
-                <div class="admin-section">
-                    <h2 id="prov-form-title">Registrar Proveedor</h2>
-                    <form onsubmit="saveProviderHandler(event)" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-                        <input type="hidden" id="prov-form-original-name">
-                        <input type="text" id="prov-form-name" placeholder="Nombre / Fábrica *" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-                        <input type="text" id="prov-form-contact" placeholder="Contacto / Teléfono *" required style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-                        <input type="text" id="prov-form-nit" placeholder="NIT o Cédula" style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-                        <input type="text" id="prov-form-address" placeholder="Dirección" style="padding:10px; border:1px solid var(--border-color); border-radius:6px; font-size:14px;">
-                        <div style="display:flex; gap:8px;">
-                            <button type="submit" class="btn-action" style="font-size:13px; padding:10px; flex:1;">Guardar Proveedor</button>
-                            <button type="button" id="btn-cancel-prov" class="btn-action secondary" style="font-size:13px; padding:10px; display:none;" onclick="resetProviderForm()">Cancelar</button>
-                        </div>
-                    </form>
-
-                    <h3 style="font-size:14px; text-transform:uppercase; margin-bottom:10px; color:var(--text-muted);">Proveedores Vinculados</h3>
-                    <table class="data-table" style="font-size:12px;">
-                        <thead>
-                            <tr>
-                                <th>Proveedor</th>
-                                <th>Contacto</th>
-                                <th>NIT</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-providers-body"></tbody>
-                    </table>
-                </div>
-            </aside>
-        </div>
-
-        <!-- ═══════════════════════════════════════════════════════
-             EDITOR DE FOOTER — SECCIÓN PERSONALIZABLE
-        ═══════════════════════════════════════════════════════ -->
-        <div class="admin-section" style="margin-bottom:30px;" id="admin-footer-section" data-rol="admin">
-            <h2>🦶 Editor de Footer — Pie de Página</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Personaliza completamente el pie de página de tu tienda: colores, columnas, enlaces, redes sociales, barra de confianza y más. Todos los cambios se guardan en Google Sheets.</p>
-
-            <!-- Tabs de secciones -->
-            <div class="footer-admin-tabs">
-                <div class="footer-admin-tab active" onclick="switchFooterTab('general')">🎨 General</div>
-                <div class="footer-admin-tab" onclick="switchFooterTab('trust')">✅ Barra de Confianza</div>
-                <div class="footer-admin-tab" onclick="switchFooterTab('columns')">📋 Columnas &amp; Links</div>
-                <div class="footer-admin-tab" onclick="switchFooterTab('contact')">📍 Contacto &amp; Horarios</div>
-                <div class="footer-admin-tab" onclick="switchFooterTab('newsletter')">✉️ Newsletter</div>
-                <div class="footer-admin-tab" onclick="switchFooterTab('social')">📲 Redes Sociales</div>
-            </div>
-
-            <!-- ── PANEL: GENERAL ── -->
-            <div class="footer-admin-panel active" id="footer-panel-general">
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
-                    <div class="footer-admin-field">
-                        <label>Color de Fondo del Footer</label>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="color" id="footer-bg-color" value="#0f172a" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
-                            <input type="text" id="footer-bg-color-text" value="#0f172a" placeholder="#0f172a" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-bg-color','footer-bg-color-text')">
-                        </div>
-                    </div>
-                    <div class="footer-admin-field">
-                        <label>Color del Texto Principal</label>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="color" id="footer-text-color" value="#ffffff" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
-                            <input type="text" id="footer-text-color-text" value="#ffffff" placeholder="#ffffff" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-text-color','footer-text-color-text')">
-                        </div>
-                    </div>
-                    <div class="footer-admin-field">
-                        <label>Color de Acentos / Botones</label>
-                        <div style="display:flex; gap:8px; align-items:center;">
-                            <input type="color" id="footer-accent-color" value="#ffffff" style="width:48px; height:38px; padding:2px; border-radius:6px; cursor:pointer; border:1px solid var(--border-color);">
-                            <input type="text" id="footer-accent-color-text" value="#ffffff" placeholder="#ffffff" style="flex:1; padding:9px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; outline:none; font-family:monospace;" oninput="syncColorPicker('footer-accent-color','footer-accent-color-text')">
-                        </div>
-                    </div>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
-                    <div class="footer-admin-field">
-                        <label>Texto de Copyright</label>
-                        <input type="text" id="footer-copyright" placeholder="© 2025 StivZapat. Todos los derechos reservados." value="">
-                    </div>
-                    <div class="footer-admin-field">
-                        <label>Mostrar Footer en la Tienda</label>
-                        <select id="footer-visible">
-                            <option value="1">Sí, mostrar el footer</option>
-                            <option value="0">No, ocultar footer</option>
-                        </select>
-                    </div>
-                </div>
-                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; margin-bottom:16px;">
-                    <p style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:10px; text-transform:uppercase;">Vista previa de colores:</p>
-                    <div id="footer-color-preview" style="border-radius:8px; padding:18px 20px; transition: all .3s;">
-                        <p style="font-size:13px; margin-bottom:6px;" id="fcp-title">StivZapat — Tienda</p>
-                        <p style="font-size:11px; opacity:.6;" id="fcp-sub">© 2025 Todos los derechos reservados</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ── PANEL: BARRA DE CONFIANZA ── -->
-            <div class="footer-admin-panel" id="footer-panel-trust">
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Edita las tarjetas de confianza (ícono, título y subtítulo). Puedes reordenarlas y activar/desactivar cada una.</p>
-                <div id="footer-trust-editor"></div>
-                <button class="btn-action secondary" style="margin-top:10px; font-size:13px; padding:8px 16px;" onclick="addFooterTrustCard()">+ Agregar Tarjeta</button>
-            </div>
-
-            <!-- ── PANEL: COLUMNAS Y LINKS ── -->
-            <div class="footer-admin-panel" id="footer-panel-columns">
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Configura las columnas de navegación del footer. Cada columna tiene un título y una lista de enlaces personalizables.</p>
-                <div id="footer-columns-editor"></div>
-                <button class="btn-action secondary" style="margin-top:10px; font-size:13px; padding:8px 16px;" onclick="addFooterColumn()">+ Agregar Columna</button>
-            </div>
-
-            <!-- ── PANEL: CONTACTO Y HORARIOS ── -->
-            <div class="footer-admin-panel" id="footer-panel-contact">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div>
-                        <h3 style="font-size:14px; font-weight:800; text-transform:uppercase; margin-bottom:14px; color:var(--text-muted);">Información de Contacto</h3>
-                        <div class="footer-admin-field">
-                            <label>Dirección / Tienda Física</label>
-                            <input type="text" id="footer-address" placeholder="Calle 11 #9-20, CC Aristi, Local 121. Cali">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Teléfono Atención al Cliente</label>
-                            <input type="text" id="footer-phone-main" placeholder="+57 312 207 2057">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Teléfono Mayoristas</label>
-                            <input type="text" id="footer-phone-wholesale" placeholder="+57 314 695 8003">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Correo Electrónico</label>
-                            <input type="email" id="footer-email" placeholder="contacto@stivzapat.com">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>URL del Formulario PQRSF</label>
-                            <input type="text" id="footer-pqrsf-url" placeholder="https://forms.google.com/...">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>URL Cambios / Garantías / Devoluciones</label>
-                            <input type="text" id="footer-devolutions-url" placeholder="https://...">
-                        </div>
-                    </div>
-                    <div>
-                        <h3 style="font-size:14px; font-weight:800; text-transform:uppercase; margin-bottom:14px; color:var(--text-muted);">Horarios de Atención</h3>
-                        <div class="footer-admin-field">
-                            <label>Atención PQRS (días y horas)</label>
-                            <input type="text" id="footer-hours-pqrs" placeholder="Lunes a Viernes de 8:30 AM - 5:30 PM">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Horario Tienda Física</label>
-                            <input type="text" id="footer-hours-store" placeholder="Lunes a Sábado de 11AM - 4:30 PM">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Nota adicional (ej: festivos)</label>
-                            <input type="text" id="footer-hours-note" placeholder="Sin atención en días festivos">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Mostrar sección de contacto</label>
-                            <select id="footer-show-contact">
-                                <option value="1">Mostrar</option>
-                                <option value="0">Ocultar</option>
-                            </select>
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Mostrar sección de horarios</label>
-                            <select id="footer-show-hours">
-                                <option value="1">Mostrar</option>
-                                <option value="0">Ocultar</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ── PANEL: NEWSLETTER ── -->
-            <div class="footer-admin-panel" id="footer-panel-newsletter">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                    <div>
-                        <div class="footer-admin-field">
-                            <label>Mostrar sección de Newsletter</label>
-                            <select id="footer-show-newsletter">
-                                <option value="1">Mostrar</option>
-                                <option value="0">Ocultar</option>
-                            </select>
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Título del Newsletter</label>
-                            <input type="text" id="footer-newsletter-title" placeholder="Suscríbete a nuestra newsletter">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Subtítulo / descripción</label>
-                            <input type="text" id="footer-newsletter-subtitle" placeholder="Y recibe consejos y ofertas exclusivas">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Texto del placeholder del campo email</label>
-                            <input type="text" id="footer-newsletter-placeholder" placeholder="Correo electrónico">
-                        </div>
-                        <div class="footer-admin-field">
-                            <label>Nota de privacidad (debajo del campo)</label>
-                            <input type="text" id="footer-newsletter-note" placeholder="No spam. Solo lo mejor de nuestra tienda.">
-                        </div>
-                    </div>
-                    <div>
-                        <div class="footer-admin-field">
-                            <label>URL del formulario de suscripción (Google Forms / Mailchimp etc.)</label>
-                            <input type="text" id="footer-newsletter-url" placeholder="https://forms.google.com/...">
-                        </div>
-                        <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:14px 16px; margin-top:8px;">
-                            <p style="font-size:12px; font-weight:700; color:#16a34a; margin-bottom:6px;">💡 Tip de integración</p>
-                            <p style="font-size:12px; color:#15803d; line-height:1.5;">Puedes usar un Google Form, Mailchimp, Brevo o cualquier herramienta de email marketing. Pega la URL del formulario de suscripción arriba y el botón enviará al cliente a registrarse.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ── PANEL: REDES SOCIALES ── -->
-            <div class="footer-admin-panel" id="footer-panel-social">
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">Agrega los links de tus redes sociales. Solo las que tengan URL aparecerán en el footer.</p>
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:12px;" id="footer-social-editor">
-                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
-                        <label>📘 Facebook</label>
-                        <input type="url" id="footer-social-facebook" placeholder="https://facebook.com/tupagina">
-                    </div>
-                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
-                        <label>📸 Instagram</label>
-                        <input type="url" id="footer-social-instagram" placeholder="https://instagram.com/tuperfil">
-                    </div>
-                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
-                        <label>🎵 TikTok</label>
-                        <input type="url" id="footer-social-tiktok" placeholder="https://tiktok.com/@tuperfil">
-                    </div>
-                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
-                        <label>▶️ YouTube</label>
-                        <input type="url" id="footer-social-youtube" placeholder="https://youtube.com/@tucanal">
-                    </div>
-                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
-                        <label>💬 WhatsApp</label>
-                        <input type="text" id="footer-social-whatsapp" placeholder="573108340344 (solo número)">
-                    </div>
-                    <div class="footer-admin-field" style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
-                        <label>🐦 X / Twitter</label>
-                        <input type="url" id="footer-social-twitter" placeholder="https://x.com/tuperfil">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Botones de acción -->
-            <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:16px;">
-                <button class="btn-action secondary" onclick="previewFooter()">👁️ Vista Previa en Tienda</button>
-                <button class="btn-action" onclick="saveFooterConfig()">💾 Guardar Footer en Google Sheets</button>
-            </div>
-        </div>
-    </section>
 
     <!-- ══ FOOTER PERSONALIZABLE DE TIENDA ══ -->
     <footer id="store-footer" style="display:none;">
@@ -1360,7 +1047,12 @@
 
 
     <!-- SPINNER DE CARGA -->
-    <div id="loading-spinner" class="loading-overlay" style="display:none;">Cargando...</div>
+    <div id="loading-spinner" class="loading-overlay" style="display:flex; background-image:url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1600&q=80');">
+        <div class="loading-overlay-content">
+            <div class="loading-overlay-spinner"></div>
+            <div class="loading-overlay-text">Cargando...</div>
+        </div>
+    </div>
 
     <!-- NAV INFERIOR MÓVIL -->
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
@@ -1467,6 +1159,33 @@
             if (preview && logoUrl) { preview.src = logoUrl; preview.style.display = 'block'; }
             if (nameInput) nameInput.value = name;
             if (sloganInput) sloganInput.value = slogan;
+        }
+
+        // ─────────────────────────────────────────────
+        // TEXTOS DEL MENÚ (Hombre / Mujer / Unisex / Marcas / Sale / Cambios y Garantía)
+        // ─────────────────────────────────────────────
+        const DEFAULT_NAV_LABELS = { marcas: 'Marcas', sale: 'SALE', garantia: 'Cambios y Garantía' };
+
+        function applyNavLabels() {
+            const nl = { ...DEFAULT_NAV_LABELS, ...getCfg('nav_labels', {}) };
+            Object.keys(DEFAULT_NAV_LABELS).forEach(key => {
+                const el = document.getElementById(`nav-label-${key}`);
+                if (el) el.innerText = nl[key];
+                const input = document.getElementById(`nav-label-input-${key}`);
+                if (input) input.value = nl[key];
+            });
+        }
+
+        async function saveNavLabels() {
+            const nl = {};
+            Object.keys(DEFAULT_NAV_LABELS).forEach(key => {
+                const input = document.getElementById(`nav-label-input-${key}`);
+                const val = (input?.value || '').trim();
+                nl[key] = val || DEFAULT_NAV_LABELS[key];
+            });
+            await saveCfg('nav_labels', nl);
+            applyNavLabels();
+            alert('✓ Textos del menú guardados en Google Sheets');
         }
 
         async function uploadBrandLogo(inputEl) {
@@ -1932,6 +1651,9 @@
             const footer = document.getElementById('store-footer');
             if (!footer) return;
 
+            // Botón flotante de WhatsApp (independiente de si el footer está visible)
+            updateWaFloatButton((cfg.social && cfg.social.whatsapp) || '');
+
             // Visibility
             footer.style.display = cfg.visible === '0' ? 'none' : 'block';
 
@@ -2166,6 +1888,7 @@
 
         function renderVariantsContainer() {
             const container = document.getElementById('variants-container');
+            if (!container) return; // este archivo no incluye el panel admin — evita romper el arranque
             container.innerHTML = '';
             runtimeVariants.forEach((variant, vi) => {
                 const row = document.createElement('div');
@@ -2341,19 +2064,10 @@
         function handleRouting() {
             const hash = window.location.hash;
             if (hash === '#admin') {
-                if (isAdminLoggedIn) {
-                    renderAdminDashboard();
-                    renderAdminPagos();
-                    renderPendingOrders();
-                    renderBlocksEditor();
-                    renderCategoriesEditor();
-                    populateFooterAdmin();
-                    navigateTo('admin-view');
-                } else {
-                    navigateTo('auth-gate-view');
-                }
+                // El panel admin ahora vive en erp.html (app separada)
+                window.location.replace('erp.html');
+                return;
             } else {
-                // Cualquier hash que no sea #admin → ir a home
                 navigateTo('home-view');
             }
         }
@@ -2482,6 +2196,7 @@
                 await migrateLocalStorageToSheets();
                 // Aplicar config al frontend
                 applyBrandConfig();
+                applyNavLabels();
                 loadNoticeBar();
                 renderStoreFooter();
                 renderPillsFromCategories();
@@ -2491,6 +2206,7 @@
                 renderCatalog();
                 buildBrandFilters();
                 updateCartBadge();
+                syncLoadingBackground();
                 if(isAdminLoggedIn) { renderAdminDashboard(); populateFooterAdmin(); }
             } catch (err) {
                 console.error("Error cargando base de datos:", err);
@@ -2528,7 +2244,24 @@
 
         function showLoading(show) {
             const el = document.getElementById('loading-spinner');
-            if (el) el.style.display = show ? 'flex' : 'none';
+            if (!el) return;
+            if (show) {
+                el.style.display = 'flex';
+                el.classList.remove('fade-out');
+            } else {
+                el.classList.add('fade-out');
+                setTimeout(() => { if (el.classList.contains('fade-out')) el.style.display = 'none'; }, 350);
+            }
+        }
+
+        // Sincroniza el fondo del loader con el primer slide real configurado (por si el admin lo cambió)
+        function syncLoadingBackground() {
+            try {
+                const slides = getHeroSlides();
+                const url = slides && slides[0] && slides[0].imgUrl;
+                const el = document.getElementById('loading-spinner');
+                if (el && url) el.style.backgroundImage = `url('${url}')`;
+            } catch(e) { /* usa la imagen por defecto del HTML */ }
         }
 
         function formatCOP(val) {
@@ -2576,6 +2309,8 @@
                 return;
             }
             container.innerHTML = itemsToDisplay.map(p => ArrayToCardHTML(p)).join('');
+            renderNavBrands();
+            renderHeroSlider();
         }
 
         function renderCatalog() { engineFilter(); renderActiveFilterChips(); }
@@ -2688,6 +2423,113 @@
             priceMax: null,
             inStockOnly: false
         };
+        let saleOnlyMode = false; // usado por el link SALE del nav
+
+        // ── Navegación rápida desde el menú principal (estilo Anval) ──
+        function _resetFiltersSilent() {
+            activeFilters.genders = [];
+            activeFilters.brands = [];
+            activeFilters.sizes = [];
+            activeFilters.colors = [];
+            activeFilters.categories = [];
+            activeFilters.priceMin = null;
+            activeFilters.priceMax = null;
+            activeFilters.inStockOnly = false;
+            saleOnlyMode = false;
+        }
+        function _setActiveQuickPill(qf) {
+            document.querySelectorAll('#quick-filter-bar .qf-pill').forEach(b => {
+                b.classList.toggle('active', b.dataset.qf === qf);
+            });
+        }
+        function quickFilter(qf, btn) {
+            _resetFiltersSilent();
+            if (qf === 'sale') saleOnlyMode = true;
+            else if (qf !== 'all') activeFilters.categories = [qf];
+            _setActiveQuickPill(qf);
+            engineFilter();
+            renderActiveFilterChips();
+        }
+        function renderQuickFilterBar() {
+            const cont = document.getElementById('quick-filter-bar');
+            if (!cont) return;
+            const cats = getCategories();
+            const currentActive = cont.querySelector('.qf-pill.active')?.dataset.qf || 'all';
+            let html = cats.map(cat => {
+                const isSaleLike = cat.value === 'sale';
+                return `<button class="qf-pill ${isSaleLike ? 'qf-sale' : ''}" data-qf="${cat.value}" onclick="quickFilter('${cat.value}', this)">${cat.label}</button>`;
+            }).join('');
+            // Botón fijo de Sale al final (no depende de categorías, se basa en precio con descuento)
+            html += `<button class="qf-pill qf-sale" data-qf="sale" onclick="quickFilter('sale', this)">${(getCfg('nav_labels',{}).sale) || 'Sale'}</button>`;
+            cont.innerHTML = html;
+            _setActiveQuickPill(currentActive);
+        }
+        function navCategoryFilter(value) {
+            _resetFiltersSilent();
+            if (value === 'all') { /* sin filtro, muestra todo */ }
+            else if (value === 'recientes') activeFilters.categories = ['recientes'];
+            else activeFilters.categories = [value];
+            navigateTo('catalog-view');
+            engineFilter();
+            renderActiveFilterChips();
+            _setActiveQuickPill(value);
+        }
+        function renderNavCategories() {
+            const ul = document.getElementById('nav-menu-list');
+            const marcasLi = document.getElementById('nav-marcas-li');
+            if (!ul || !marcasLi) return;
+            ul.querySelectorAll('.nav-cat-item').forEach(el => el.remove());
+            const cats = getCategories().filter(c => c.showInNav !== false);
+            cats.forEach(cat => {
+                const li = document.createElement('li');
+                li.className = 'nav-cat-item';
+                li.innerHTML = `<span>${cat.label}</span>`;
+                li.onclick = () => navCategoryFilter(cat.value);
+                ul.insertBefore(li, marcasLi);
+            });
+        }
+        function navGenderFilter(gender) {
+            _resetFiltersSilent();
+            activeFilters.genders = [gender];
+            navigateTo('catalog-view');
+            engineFilter();
+            renderActiveFilterChips();
+            _setActiveQuickPill(gender);
+        }
+        function navBrandFilter(brand) {
+            _resetFiltersSilent();
+            activeFilters.brands = [String(brand).toLowerCase()];
+            navigateTo('catalog-view');
+            engineFilter();
+            renderActiveFilterChips();
+            _setActiveQuickPill('');
+        }
+        function navSaleFilter() {
+            _resetFiltersSilent();
+            saleOnlyMode = true;
+            navigateTo('catalog-view');
+            engineFilter();
+            renderActiveFilterChips();
+            _setActiveQuickPill('sale');
+        }
+        function renderNavBrands() {
+            const cont = document.getElementById('nav-brands-dropdown');
+            if (!cont || !dbData.products) return;
+            const brands = [...new Set(dbData.products.map(p => p.brand).filter(Boolean))].sort();
+            if (brands.length === 0) { cont.innerHTML = ''; return; }
+            cont.innerHTML = brands.map(b => `<li onclick="navBrandFilter('${b.replace(/'/g,"\\'")}')">${b}</li>`).join('');
+        }
+        function updateWaFloatButton(rawNumber) {
+            const btn = document.getElementById('wa-float-btn');
+            if (!btn) return;
+            const digits = (rawNumber || '').replace(/\D/g, '');
+            if (digits) {
+                btn.href = `https://wa.me/${digits}`;
+                btn.style.display = 'flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
 
         // ── Drawer abre / cierra ──
         function openFilterDrawer() {
@@ -2707,6 +2549,7 @@
             closeFilterDrawer();
             engineFilter();
             renderActiveFilterChips();
+            _setActiveQuickPill('');
         }
         function resetAllFilters() {
             activeFilters.genders = [];
@@ -2717,9 +2560,11 @@
             activeFilters.priceMin = null;
             activeFilters.priceMax = null;
             activeFilters.inStockOnly = false;
+            saleOnlyMode = false;
             closeFilterDrawer();
             engineFilter();
             renderActiveFilterChips();
+            _setActiveQuickPill('all');
         }
 
         function _readDrawerValues() {
@@ -3003,6 +2848,8 @@
                 if (activeFilters.priceMax !== null && p.price > activeFilters.priceMax) return false;
                 // Stock
                 if (activeFilters.inStockOnly && p.stock <= 0) return false;
+                // SALE (link del menú principal)
+                if (saleOnlyMode && !(p.priceOld && p.priceOld > p.price)) return false;
                 return true;
             });
 
@@ -5128,6 +4975,191 @@
         // CATEGORÍAS PERSONALIZADAS
         // ══════════════════════════════════════════════════════
 
+        // ══════════════════════════════════════════════════════
+        // SLIDES DEL HERO (banner principal rotativo, estilo Anval)
+        // ══════════════════════════════════════════════════════
+        const DEFAULT_HERO_SLIDES = [
+            {
+                imgUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1600&q=80',
+                eyebrow: 'Nueva Temporada',
+                title: 'Tus sneakers favoritos|están a un solo clic.',
+                subtitle: 'Las mejores marcas del mercado. Envío gratis. Garantía real.',
+                btnText: 'Compra ahora', btnLink: 'catalog-view'
+            },
+            {
+                imgUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=1600&q=80',
+                eyebrow: 'Colección Sale',
+                title: 'Hasta|50% Off|en marcas top.',
+                subtitle: 'Nike, Adidas, New Balance. Solo por tiempo limitado.',
+                btnText: 'Ver ofertas', btnLink: 'catalog-view'
+            },
+            {
+                imgUrl: 'https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=1600&q=80',
+                eyebrow: 'Envío Express',
+                title: 'En tus pies|en 24 horas.',
+                subtitle: 'Despacho a todas las ciudades de Colombia. Rastreo en tiempo real.',
+                btnText: 'Explorar', btnLink: 'catalog-view'
+            }
+        ];
+        let heroSlideIndex = 0;
+        let heroAutoTimer = null;
+
+        function getHeroSlides() {
+            const fromSheets = getCfg('hero_slides', null);
+            if (fromSheets && Array.isArray(fromSheets) && fromSheets.length > 0) return fromSheets;
+            try {
+                const local = JSON.parse(localStorage.getItem('hero_slides'));
+                if (local && Array.isArray(local) && local.length > 0) return local;
+            } catch(e) {}
+            return DEFAULT_HERO_SLIDES;
+        }
+
+        function renderHeroSlider(force) {
+            const track = document.getElementById('hs-track');
+            const dotsWrap = document.getElementById('hs-dots');
+            if (!track || !dotsWrap) return;
+            const slides = getHeroSlides();
+            if (!force && track.children.length === slides.length && track.children.length > 0) return; // ya construido
+            if (heroSlideIndex >= slides.length) heroSlideIndex = 0;
+
+            track.innerHTML = slides.map(s => {
+                const titleHTML = (s.title || '').split('|').map((line, i) =>
+                    i === 0 ? line : `<em>${line}</em>`
+                ).join('<br>');
+                const clickAttr = (s.btnLink || '').startsWith('http')
+                    ? `onclick="window.open('${s.btnLink}','_blank')"`
+                    : `onclick="navigateTo('${s.btnLink || 'catalog-view'}')"`;
+                return `
+                <div class="hs-slide">
+                    <div class="hs-bg" style="background-image:url('${s.imgUrl || ''}')"></div>
+                    <div class="hs-overlay"></div>
+                    <div class="hs-content">
+                        ${s.eyebrow ? `<p class="hs-eyebrow">${s.eyebrow}</p>` : ''}
+                        ${titleHTML ? `<h1 class="hs-title">${titleHTML}</h1>` : ''}
+                        ${s.subtitle ? `<p class="hs-sub">${s.subtitle}</p>` : ''}
+                        ${s.btnText ? `<button class="btn-action" ${clickAttr}>${s.btnText}</button>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+
+            dotsWrap.innerHTML = slides.map((_, i) =>
+                `<button class="hs-dot ${i === heroSlideIndex ? 'active' : ''}" onclick="heroGoTo(${i})"></button>`
+            ).join('');
+
+            heroApplyPosition();
+            heroStartAuto();
+
+            const heroEl = document.getElementById('hero-slider-store');
+            if (heroEl && !heroEl.dataset.hoverBound) {
+                heroEl.addEventListener('mouseenter', () => clearInterval(heroAutoTimer));
+                heroEl.addEventListener('mouseleave', () => heroStartAuto());
+                heroEl.dataset.hoverBound = '1';
+            }
+        }
+
+        function heroApplyPosition() {
+            const track = document.getElementById('hs-track');
+            if (!track) return;
+            track.style.transform = `translateX(-${heroSlideIndex * 100}%)`;
+            document.querySelectorAll('#hs-dots .hs-dot').forEach((d, i) => d.classList.toggle('active', i === heroSlideIndex));
+        }
+        function heroGoTo(i) {
+            heroSlideIndex = i;
+            heroApplyPosition();
+            heroStartAuto();
+        }
+        function heroNext() {
+            const total = getHeroSlides().length;
+            heroSlideIndex = (heroSlideIndex + 1) % total;
+            heroApplyPosition();
+        }
+        function heroPrev() {
+            const total = getHeroSlides().length;
+            heroSlideIndex = (heroSlideIndex - 1 + total) % total;
+            heroApplyPosition();
+        }
+        function heroStartAuto() {
+            clearInterval(heroAutoTimer);
+            heroAutoTimer = setInterval(heroNext, 5000);
+        }
+
+        // ── Administración de slides ──
+        function addHeroSlide() {
+            const slides = getHeroSlides();
+            slides.push({ imgUrl:'', eyebrow:'', title:'Nuevo título', subtitle:'', btnText:'Ver más', btnLink:'catalog-view' });
+            if (!dbData.config) dbData.config = {};
+            dbData.config['hero_slides'] = slides;
+            renderHeroSlidesEditor();
+        }
+        function removeHeroSlide(idx) {
+            const slides = getHeroSlides();
+            slides.splice(idx, 1);
+            if (!dbData.config) dbData.config = {};
+            dbData.config['hero_slides'] = slides;
+            renderHeroSlidesEditor();
+        }
+        function moveHeroSlide(idx, dir) {
+            const slides = getHeroSlides();
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= slides.length) return;
+            [slides[idx], slides[newIdx]] = [slides[newIdx], slides[idx]];
+            if (!dbData.config) dbData.config = {};
+            dbData.config['hero_slides'] = slides;
+            renderHeroSlidesEditor();
+        }
+        function renderHeroSlidesEditor() {
+            const cont = document.getElementById('hero-slides-editor');
+            if (!cont) return;
+            const slides = getHeroSlides();
+            cont.innerHTML = slides.map((s, i) => `
+                <div class="cat-row" style="flex-direction:column; align-items:stretch; gap:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="font-size:12px; text-transform:uppercase; color:var(--text-muted);">Slide ${i+1}</strong>
+                        <div style="display:flex; gap:6px;">
+                            <button onclick="moveHeroSlide(${i}, -1)" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; width:28px; height:24px; cursor:pointer; font-size:12px;">▲</button>
+                            <button onclick="moveHeroSlide(${i}, 1)" style="background:#f1f5f9; border:1px solid var(--border-color); border-radius:6px; width:28px; height:24px; cursor:pointer; font-size:12px;">▼</button>
+                            <button onclick="removeHeroSlide(${i})" style="background:#fee2e2; border:none; border-radius:6px; width:28px; height:24px; cursor:pointer; font-size:12px; color:#dc2626;">✕</button>
+                        </div>
+                    </div>
+                    <input data-hs="imgUrl" data-idx="${i}" value="${(s.imgUrl||'').replace(/"/g,'&quot;')}" placeholder="URL de la imagen de fondo" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    <input data-hs="eyebrow" data-idx="${i}" value="${(s.eyebrow||'').replace(/"/g,'&quot;')}" placeholder="Texto pequeño (ej: Nueva Temporada)" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    <input data-hs="title" data-idx="${i}" value="${(s.title||'').replace(/"/g,'&quot;')}" placeholder="Título grande. Usa | para saltos de línea, la última línea queda resaltada" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    <input data-hs="subtitle" data-idx="${i}" value="${(s.subtitle||'').replace(/"/g,'&quot;')}" placeholder="Subtítulo" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    <div style="display:flex; gap:8px;">
+                        <input data-hs="btnText" data-idx="${i}" value="${(s.btnText||'').replace(/"/g,'&quot;')}" placeholder="Texto del botón" style="flex:1; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                        <input data-hs="btnLink" data-idx="${i}" value="${(s.btnLink||'').replace(/"/g,'&quot;')}" placeholder="Destino (ej: catalog-view)" style="flex:1; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                    </div>
+                </div>
+            `).join('');
+        }
+        async function saveHeroSlides() {
+            const slides = [];
+            const count = document.querySelectorAll('#hero-slides-editor .cat-row').length;
+            for (let i = 0; i < count; i++) {
+                const get = (field) => document.querySelector(`[data-hs="${field}"][data-idx="${i}"]`)?.value.trim() || '';
+                slides.push({
+                    imgUrl: get('imgUrl'), eyebrow: get('eyebrow'), title: get('title'),
+                    subtitle: get('subtitle'), btnText: get('btnText'), btnLink: get('btnLink') || 'catalog-view'
+                });
+            }
+            if (slides.length === 0) { alert('⚠️ Agrega al menos un slide.'); return; }
+            showLoading(true);
+            try {
+                await saveCfg('hero_slides', slides);
+                localStorage.setItem('hero_slides', JSON.stringify(slides));
+                await new Promise(r => setTimeout(r, 1800));
+                await syncWithGoogleSheets();
+                heroSlideIndex = 0;
+                renderHeroSlider(true);
+                alert('✅ Slides guardados correctamente.');
+            } catch(err) {
+                alert('❌ Error al guardar los slides. Intenta de nuevo.');
+                console.error(err);
+            } finally {
+                showLoading(false);
+            }
+        }
+
         const DEFAULT_CATEGORIES = [
             { emoji:'👟', label:'Todo el Stock',         value:'all'       },
             { emoji:'🔥', label:'Línea Masculina',       value:'hombre'    },
@@ -5191,12 +5223,15 @@
                 const emoji    = row.querySelector('[data-cat="emoji"]')?.value.trim() || '';
                 const imgUrl   = row.querySelector('[data-cat="imgUrl"]')?.value.trim() || '';
                 const label    = row.querySelector('[data-cat="label"]')?.value.trim() || '';
-                const value    = row.querySelector('[data-cat="value"]')?.value || 'all';
+                const rawValue = row.querySelector('[data-cat="value"]')?.value || 'all';
+                const customValue = row.querySelector('[data-cat="valueCustom"]')?.value.trim() || '';
+                const value = rawValue === '__custom__' ? (customValue || 'all') : rawValue;
+                const showInNav = row.querySelector('[data-cat="showInNav"]')?.checked !== false;
                 if (!label) return;
                 cats.push({
                     emoji:  iconType === 'emoji'  ? emoji  : '',
                     imgUrl: iconType === 'imagen' ? imgUrl : '',
-                    label, value
+                    label, value, showInNav
                 });
             });
             if (cats.length === 0) { alert('⚠️ Agrega al menos una categoría.'); return; }
@@ -5217,7 +5252,7 @@
 
         function addCategory() {
             const cats = getCategories();
-            cats.push({ emoji:'🆕', imgUrl:'', label:'Nueva Categoría', value:'all' });
+            cats.push({ emoji:'🆕', imgUrl:'', label:'Nueva Categoría', value:'all', showInNav:true });
             // Solo actualiza en memoria para edición; se guarda al hacer clic en "Guardar Categorías"
             if (!dbData.config) dbData.config = {};
             dbData.config['store_categories'] = cats;
@@ -5309,9 +5344,20 @@
                         </select>
                         <input data-cat="valueCustom" value="${isCustom ? cat.value : ''}" placeholder="género exacto del producto" style="display:${isCustom?'block':'none'}; padding:6px 9px; border:1px solid var(--border-color); border-radius:6px; font-size:12px; margin-top:2px;">
                     </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:4px; min-width:70px;">
+                        <label style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; text-align:center;">Menú superior</label>
+                        <input type="checkbox" data-cat="showInNav" ${cat.showInNav !== false ? 'checked' : ''} style="width:18px; height:18px; cursor:pointer;" title="Mostrar también como botón en la barra de navegación de arriba">
+                    </div>
                     <button onclick="this.closest('.cat-row').remove()" title="Eliminar" style="align-self:flex-end; background:none; border:none; color:var(--danger-color); font-size:22px; cursor:pointer; padding:4px 8px; border-radius:4px; line-height:1; flex-shrink:0; margin-bottom:2px;">×</button>
                 </div>`;
             }).join('');
+        }
+
+        function onCatFilterChange(sel) {
+            const row = sel.closest('.cat-row');
+            const customInput = row.querySelector('[data-cat="valueCustom"]');
+            if (!customInput) return;
+            customInput.style.display = sel.value === '__custom__' ? 'block' : 'none';
         }
 
         function moveCategoryRow(btn, dir) {
@@ -5333,6 +5379,8 @@
         function renderPillsFromCategories() {
             const cats = getCategories();
             const container = document.getElementById('pills-dynamic-container');
+            renderNavCategories();
+            renderQuickFilterBar();
             if (!container) return;
             container.innerHTML = cats.map((cat, i) => {
                 let iconHtml = '';
@@ -6455,5 +6503,11 @@
         lbOpen(imgs, startIdx >= 0 ? startIdx : 0);
     });
     </script>
+
+    <!-- Botón flotante de WhatsApp -->
+    <a id="wa-float-btn" class="wa-float-btn" href="https://wa.me/" target="_blank" rel="noopener" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.29-.15-1.7-.84-1.97-.93-.26-.1-.46-.15-.65.15-.2.29-.75.93-.92 1.12-.17.2-.34.22-.63.08-.29-.15-1.22-.45-2.33-1.43-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.6.13-.13.29-.34.44-.51.15-.17.2-.29.29-.48.1-.2.05-.37-.02-.51-.08-.15-.65-1.56-.89-2.14-.23-.56-.47-.48-.65-.49-.17-.01-.36-.01-.56-.01-.2 0-.51.07-.78.37-.26.29-1.02 1-1.02 2.42 0 1.42 1.05 2.8 1.2 3 .15.2 2.06 3.14 5 4.4.7.3 1.24.48 1.67.61.7.22 1.34.19 1.84.12.56-.08 1.7-.7 1.94-1.37.24-.68.24-1.26.17-1.38-.07-.12-.26-.2-.55-.34z"/><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.38 5.06L2 22l5.1-1.34C8.53 21.52 10.22 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18.31c-1.62 0-3.13-.47-4.4-1.28l-.32-.19-3.03.8.81-2.94-.2-.32C4 15.02 3.5 13.55 3.5 12 3.5 7.31 7.31 3.5 12 3.5s8.5 3.81 8.5 8.5-3.81 8.5-8.5 8.5z"/></svg>
+        <span>¡Escríbenos!</span>
+    </a>
 </body>
 </html>
