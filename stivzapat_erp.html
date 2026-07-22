@@ -206,6 +206,11 @@
         .upload-status.ok { color: #16a34a; }
         .upload-status.uploading { color: #d97706; }
         .upload-status.err { color: var(--danger-color); }
+        .btn-multi-upload { display:inline-flex; align-items:center; gap:6px; background:#eef2ff; border:1px dashed #818cf8; color:#4338ca; padding:7px 12px; border-radius:6px; font-size:11.5px; font-weight:700; cursor:pointer; }
+        .btn-multi-upload:hover { background:#e0e7ff; }
+        .btn-paste-url { background:#f1f5f9; border:1px solid var(--border-color); border-radius:4px; padding:2px 5px; font-size:9.5px; font-weight:700; cursor:pointer; color:var(--text-muted); margin-top:2px; }
+        .btn-paste-url:hover { background:#e2e8f0; }
+        .url-paste-input { width:100%; font-size:10px; padding:3px 5px; border:1px solid var(--border-color); border-radius:4px; margin-top:2px; outline:none; }
 
         .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
         .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
@@ -2602,6 +2607,10 @@
                             <img id="prev-${vi}-${pi}" class="img-preview-thumb ${hasImg ? 'visible' : ''}" src="${hasImg ? url : ''}">
                             <input type="file" accept="image/*" onchange="handlePhotoUpload(this, ${vi}, ${pi})">
                             <span id="status-${vi}-${pi}" class="upload-status ${hasImg ? 'ok' : ''}">${hasImg ? '✓ Guardada' : ''}</span>
+                            <button type="button" class="btn-paste-url" onclick="toggleUrlInput(${vi}, ${pi})">🔗 Pegar URL</button>
+                            <input type="text" id="url-input-${vi}-${pi}" class="url-paste-input" placeholder="https://..." style="display:none;"
+                                   onkeydown="if(event.key==='Enter'){event.preventDefault(); applyImageUrl(${vi}, ${pi});}"
+                                   onblur="applyImageUrlIfFilled(${vi}, ${pi})">
                         </div>`;
                 }).join('');
 
@@ -2618,7 +2627,11 @@
                         })()}
                         ${runtimeVariants.length > 1 ? `<button class="btn-remove-color" onclick="removeColorVariant(${vi})" title="Eliminar esta variante">×</button>` : ''}
                     </div>
-                    <div class="image-inputs-grid">${photosHTML}</div>
+                    <label class="btn-multi-upload">
+                        📎 Seleccionar varias fotos (se asignan en orden 1→7)
+                        <input type="file" accept="image/*" multiple style="display:none;" onchange="handleMultiPhotoUpload(this, ${vi})">
+                    </label>
+                    <div class="image-inputs-grid" style="margin-top:10px;">${photosHTML}</div>
                     <div id="sizes-stock-table-${vi}">${buildSizesStockTable(vi)}</div>`;
                 container.appendChild(row);
             });
@@ -2659,19 +2672,16 @@
         // ─────────────────────────────────────────────
         // SUBIDA DE FOTO → ImgBB → guardar URL
         // ─────────────────────────────────────────────
-        async function handlePhotoUpload(inputEl, vi, pi) {
-            const file = inputEl.files[0];
-            if (!file) return;
 
+        // Sube UN archivo a un slot (vi, pi) específico. Usado tanto por la subida individual como la múltiple.
+        async function uploadFileToSlot(file, vi, pi) {
             const statusEl = document.getElementById(`status-${vi}-${pi}`);
             const prevEl   = document.getElementById(`prev-${vi}-${pi}`);
 
-            statusEl.className = 'upload-status uploading';
-            statusEl.innerText = '⏳ Subiendo...';
-            prevEl.classList.remove('visible');
+            if (statusEl) { statusEl.className = 'upload-status uploading'; statusEl.innerText = '⏳ Subiendo...'; }
+            if (prevEl) prevEl.classList.remove('visible');
 
             try {
-                // Leer como base64
                 const base64 = await new Promise((res, rej) => {
                     const fr = new FileReader();
                     fr.onload = e => res(e.target.result);
@@ -2679,22 +2689,65 @@
                     fr.readAsDataURL(file);
                 });
 
-                // Subir a freeimage.host
                 const url = await uploadToImgHost(base64);
 
-                // Guardar URL en la estructura
                 runtimeVariants[vi].images[pi] = url;
 
-                // Mostrar preview
-                prevEl.src = url;
-                prevEl.classList.add('visible');
-                statusEl.className = 'upload-status ok';
-                statusEl.innerText = '✓ Lista';
+                if (prevEl) { prevEl.src = url; prevEl.classList.add('visible'); }
+                if (statusEl) { statusEl.className = 'upload-status ok'; statusEl.innerText = '✓ Lista'; }
             } catch (err) {
-                statusEl.className = 'upload-status err';
-                statusEl.innerText = '✗ Error al subir — intenta de nuevo';
+                if (statusEl) { statusEl.className = 'upload-status err'; statusEl.innerText = '✗ Error al subir — intenta de nuevo'; }
                 console.error(err);
             }
+        }
+
+        async function handlePhotoUpload(inputEl, vi, pi) {
+            const file = inputEl.files[0];
+            if (!file) return;
+            await uploadFileToSlot(file, vi, pi);
+        }
+
+        // Selecciona VARIAS fotos de una vez y las asigna en orden a los slots 1→7 de ese color
+        async function handleMultiPhotoUpload(inputEl, vi) {
+            const files = Array.from(inputEl.files || []).slice(0, 7);
+            if (files.length === 0) return;
+            for (let pi = 0; pi < files.length; pi++) {
+                await uploadFileToSlot(files[pi], vi, pi);
+            }
+            inputEl.value = ''; // permite volver a seleccionar el mismo grupo de archivos si se necesita
+        }
+
+        // ─────────────────────────────────────────────
+        // PEGAR URL EN LUGAR DE SUBIR ARCHIVO
+        // ─────────────────────────────────────────────
+        function toggleUrlInput(vi, pi) {
+            const inp = document.getElementById(`url-input-${vi}-${pi}`);
+            if (!inp) return;
+            const showing = inp.style.display !== 'none';
+            inp.style.display = showing ? 'none' : 'block';
+            if (!showing) inp.focus();
+        }
+
+        function applyImageUrl(vi, pi) {
+            const inp = document.getElementById(`url-input-${vi}-${pi}`);
+            if (!inp) return;
+            const url = inp.value.trim();
+            if (!url) { inp.style.display = 'none'; return; }
+            if (!/^https?:\/\//i.test(url)) { alert('La URL debe empezar con http:// o https://'); return; }
+
+            runtimeVariants[vi].images[pi] = url;
+
+            const prevEl   = document.getElementById(`prev-${vi}-${pi}`);
+            const statusEl = document.getElementById(`status-${vi}-${pi}`);
+            if (prevEl) { prevEl.src = url; prevEl.classList.add('visible'); }
+            if (statusEl) { statusEl.className = 'upload-status ok'; statusEl.innerText = '✓ URL guardada'; }
+            inp.style.display = 'none';
+            inp.value = '';
+        }
+
+        function applyImageUrlIfFilled(vi, pi) {
+            const inp = document.getElementById(`url-input-${vi}-${pi}`);
+            if (inp && inp.value.trim()) applyImageUrl(vi, pi);
         }
 
         function initVariantsForNew() {
