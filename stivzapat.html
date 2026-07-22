@@ -1921,6 +1921,12 @@
                         ${runtimeVariants.length > 1 ? `<button class="btn-remove-color" onclick="removeColorVariant(${vi})" title="Eliminar esta variante">×</button>` : ''}
                     </div>
                     <div class="image-inputs-grid">${photosHTML}</div>
+                    <div style="margin-top:10px;">
+                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">🎬 Video del color (opcional) — URL directa a .mp4</label>
+                        <input type="text" placeholder="https://.../video.mp4" value="${variant.video || ''}"
+                               style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:12.5px;"
+                               oninput="runtimeVariants[${vi}].video = this.value.trim();">
+                    </div>
                     <div id="sizes-stock-table-${vi}">${buildSizesStockTable(vi)}</div>`;
                 container.appendChild(row);
             });
@@ -1945,7 +1951,7 @@
         }
 
         function addColorVariant() {
-            runtimeVariants.push({ colorName: '', images: Array(7).fill(''), sizesStock: [] });
+            runtimeVariants.push({ colorName: '', images: Array(7).fill(''), video: '', sizesStock: [] });
             renderVariantsContainer();
             // scroll al nuevo
             const last = document.getElementById(`variant-row-${runtimeVariants.length - 1}`);
@@ -2000,7 +2006,7 @@
         }
 
         function initVariantsForNew() {
-            runtimeVariants = [{ colorName: 'Único', images: Array(7).fill(''), sizesStock: [] }];
+            runtimeVariants = [{ colorName: 'Único', images: Array(7).fill(''), video: '', sizesStock: [] }];
             renderVariantsContainer();
         }
 
@@ -2907,13 +2913,20 @@
                 const variant = variants[vi];
                 const validImages = (variant.images || []).filter(img => img && img.trim() !== '');
                 if (validImages.length === 0) validImages.push('https://via.placeholder.com/500');
+                const videoUrl = (variant.video || '').trim();
 
                 // ── Miniaturas verticales ──
                 const thumbsHTML = validImages.map((img, i) =>
                     `<div id="thumb-${i}" class="thumbnail-card ${i === 0 ? 'active-thumb' : ''}"
                         onclick="selectManualImage(${i}, '${img.replace(/'/g,"\\'")}')">
                         <img src="${img}" loading="lazy">
-                    </div>`).join('');
+                    </div>`).join('')
+                    + (videoUrl ? `
+                    <div id="thumb-video" class="thumbnail-card" style="position:relative;"
+                        onclick="selectVideoThumb('${videoUrl.replace(/'/g,"\\'")}')">
+                        <img src="${validImages[0]}" loading="lazy" style="filter:brightness(.6);">
+                        <span style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff;">▶️</span>
+                    </div>` : '');
 
                 // ── Swatches de color (imagen miniatura por variante) ──
                 const colorSwatchHTML = `
@@ -3003,6 +3016,7 @@
                         <div class="product-detail-img-col">
                             <div class="main-product-preview" title="Clic para ver galería">
                                 <img id="detail-master-img" src="${validImages[0]}" alt="${p.title}">
+                                <video id="detail-master-video" controls playsinline style="display:none; width:100%; height:100%; object-fit:cover; border-radius:inherit; background:#000;"></video>
                             </div>
                             ${validImages.length > 1 ? `
                             <button onclick="lbOpen(${JSON.stringify(validImages)}, currentImageIndex)"
@@ -3089,10 +3103,33 @@
         function selectManualImage(index, src) {
             if (carouselInterval) clearInterval(carouselInterval); // Detiene el auto-pase si el usuario interactúa
             currentImageIndex = index;
-            
-            document.getElementById('detail-master-img').src = src;
+
+            const videoEl = document.getElementById('detail-master-video');
+            if (videoEl) { videoEl.pause(); videoEl.style.display = 'none'; }
+            const imgEl = document.getElementById('detail-master-img');
+            if (imgEl) { imgEl.style.display = ''; imgEl.src = src; }
+
             document.querySelectorAll('.thumbnail-card').forEach(c => c.classList.remove('active-thumb'));
             document.getElementById(`thumb-${index}`).classList.add('active-thumb');
+        }
+
+        // Muestra el video de la variante activa en el visor principal, junto a las fotos
+        function selectVideoThumb(url) {
+            if (carouselInterval) clearInterval(carouselInterval); // Detiene el auto-pase de fotos
+
+            const imgEl = document.getElementById('detail-master-img');
+            if (imgEl) imgEl.style.display = 'none';
+
+            const videoEl = document.getElementById('detail-master-video');
+            if (videoEl) {
+                videoEl.src = url;
+                videoEl.style.display = '';
+                videoEl.play().catch(() => {});
+            }
+
+            document.querySelectorAll('.thumbnail-card').forEach(c => c.classList.remove('active-thumb'));
+            const thumb = document.getElementById('thumb-video');
+            if (thumb) thumb.classList.add('active-thumb');
         }
 
         // BOLSA DE COMPRAS
@@ -3476,6 +3513,7 @@
                 .map(v => ({
                     colorName:  v.colorName.trim() || 'Único',
                     images:     v.images.filter(u => u && u.trim() !== ''),
+                    video:      (v.video || '').trim(),
                     sizesStock: (v.sizesStock || []).map(r => ({
                         size:  r.size,
                         sku:   r.sku   || '',
@@ -3548,6 +3586,7 @@
                 runtimeVariants = p.variants.map(v => ({
                     colorName:  v.colorName || 'Único',
                     images:     [...Array(7).fill('')].map((_, i) => v.images[i] || ''),
+                    video:      v.video || '',
                     sizesStock: (v.sizesStock || []).map(r => ({
                         size:  r.size,
                         sku:   r.sku   || '',
@@ -3556,7 +3595,7 @@
                     }))
                 }));
             } else {
-                runtimeVariants = [{ colorName: 'Único', images: Array(7).fill(''), sizesStock: [] }];
+                runtimeVariants = [{ colorName: 'Único', images: Array(7).fill(''), video: '', sizesStock: [] }];
             }
 
             renderVariantsContainer();
