@@ -1244,6 +1244,25 @@
                             <button type="button" class="btn-action" style="background:#16a34a;" onclick="openBulkImportModal()">📦 Carga Masiva</button>
                         </div>
                     </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+                        <input type="text" id="inv-search-input" placeholder="🔍 Buscar por nombre, marca, color o referencia..."
+                               oninput="renderInventoryTable()"
+                               style="flex:1; min-width:220px; padding:9px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                        <select id="inv-filter-brand" onchange="renderInventoryTable()"
+                                style="padding:9px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                            <option value="">Todas las marcas</option>
+                        </select>
+                        <select id="inv-filter-stock" onchange="renderInventoryTable()"
+                                style="padding:9px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                            <option value="">Todos los estados</option>
+                            <option value="ok">Disponible</option>
+                            <option value="low">Pocas unidades</option>
+                            <option value="out">Agotado</option>
+                        </select>
+                        <button type="button" onclick="clearInventoryFilters()"
+                                style="padding:9px 14px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; background:#f8fafc; cursor:pointer;">Limpiar</button>
+                    </div>
+                    <div id="inv-filter-count" style="font-size:12px; color:var(--text-muted); margin-bottom:8px;"></div>
                     <table class="data-table" id="table-inventory">
                         <thead>
                             <tr>
@@ -4508,16 +4527,66 @@
             });
         }
 
-        function renderAdminDashboard() {
-            document.getElementById('kpi-sales').innerText = formatCOP(dbData.billing.total);
-            document.getElementById('kpi-profit').innerText = formatCOP(dbData.billing.profit);
-            document.getElementById('kpi-count').innerText = dbData.products.length;
+        // ── BÚSQUEDA Y FILTROS DE INVENTARIO ──────────────────
+        function renderInventoryTable() {
+            const searchEl = document.getElementById('inv-search-input');
+            const brandEl  = document.getElementById('inv-filter-brand');
+            const stockEl  = document.getElementById('inv-filter-stock');
+            const search      = (searchEl?.value || '').trim().toLowerCase();
+            const brandFilter = brandEl?.value || '';
+            const stockFilter = stockEl?.value || '';
 
-            const selectProv = document.getElementById('form-p-provider');
-            selectProv.innerHTML = `<option value="">-- Asociar Proveedor --</option>` + dbData.providers.map(p => `<option value="${p.name}">${p.name.toUpperCase()}</option>`).join('');
+            // Poblar el select de marcas una sola vez (conserva la selección si ya había una)
+            if (brandEl && brandEl.dataset.populated !== '1') {
+                const brands = [...new Set(dbData.products.map(p => (p.brand||'').trim()).filter(Boolean))].sort();
+                const prevVal = brandEl.value;
+                brandEl.innerHTML = `<option value="">Todas las marcas</option>` + brands.map(b => `<option value="${b}">${b.toUpperCase()}</option>`).join('');
+                brandEl.value = prevVal;
+                brandEl.dataset.populated = '1';
+            }
+
+            const filtered = dbData.products.filter(p => {
+                const variants = (p.variants && p.variants.length) ? p.variants : [{ colorName: 'Único', sizesStock: [] }];
+
+                if (brandFilter && (p.brand || '').trim() !== brandFilter) return false;
+
+                const matchesSearch = !search || (
+                    (p.title || '').toLowerCase().includes(search) ||
+                    (p.brand || '').toLowerCase().includes(search) ||
+                    variants.some(v =>
+                        (v.colorName || '').toLowerCase().includes(search) ||
+                        (v.sizesStock || []).some(r => (r.sku || '').toLowerCase().includes(search))
+                    )
+                );
+                if (!matchesSearch) return false;
+
+                if (stockFilter) {
+                    const matchesStock = variants.some(v => {
+                        const cTotal = (v.sizesStock || []).reduce((a, r) => a + (Number(r.stock) || 0), 0);
+                        const cls = cTotal <= 0 ? 'out' : cTotal <= 3 ? 'low' : 'ok';
+                        return cls === stockFilter;
+                    });
+                    if (!matchesStock) return false;
+                }
+                return true;
+            });
+
+            const countEl = document.getElementById('inv-filter-count');
+            if (countEl) {
+                const totalVariants = filtered.reduce((a, p) => a + ((p.variants && p.variants.length) ? p.variants.length : 1), 0);
+                countEl.textContent = (search || brandFilter || stockFilter)
+                    ? `Mostrando ${filtered.length} producto(s), ${totalVariants} variante(s) de ${dbData.products.length} en total.`
+                    : '';
+            }
 
             const tableInv = document.getElementById('table-inventory-body');
-            tableInv.innerHTML = dbData.products.map(p => {
+            if (filtered.length === 0) {
+                tableInv.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No se encontraron productos con esos filtros.</td></tr>`;
+                applyRolePermissions();
+                return;
+            }
+
+            tableInv.innerHTML = filtered.map(p => {
                 const variants = (p.variants && p.variants.length) ? p.variants : [{ colorName: 'Único', sizesStock: [] }];
                 return variants.map((v, idx) => {
                     const cTotal = (v.sizesStock || []).reduce((a,r) => a+(Number(r.stock)||0), 0) || (idx === 0 && !p.variants ? Number(p.stock)||0 : 0);
@@ -4537,6 +4606,29 @@
                     </tr>`;
                 }).join('');
             }).join('');
+
+            applyRolePermissions();
+        }
+
+        function clearInventoryFilters() {
+            const searchEl = document.getElementById('inv-search-input');
+            const brandEl  = document.getElementById('inv-filter-brand');
+            const stockEl  = document.getElementById('inv-filter-stock');
+            if (searchEl) searchEl.value = '';
+            if (brandEl) brandEl.value = '';
+            if (stockEl) stockEl.value = '';
+            renderInventoryTable();
+        }
+
+        function renderAdminDashboard() {
+            document.getElementById('kpi-sales').innerText = formatCOP(dbData.billing.total);
+            document.getElementById('kpi-profit').innerText = formatCOP(dbData.billing.profit);
+            document.getElementById('kpi-count').innerText = dbData.products.length;
+
+            const selectProv = document.getElementById('form-p-provider');
+            selectProv.innerHTML = `<option value="">-- Asociar Proveedor --</option>` + dbData.providers.map(p => `<option value="${p.name}">${p.name.toUpperCase()}</option>`).join('');
+
+            renderInventoryTable();
 
             const tableProv = document.getElementById('table-providers-body');
             tableProv.innerHTML = dbData.providers.map(p => `
