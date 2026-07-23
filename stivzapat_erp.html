@@ -1803,6 +1803,34 @@
         let cart = [];
         let isAdminLoggedIn = false;
         let currentUser = null; // { usuario, rol } al loguearse
+
+        // ── SESIÓN DE ADMIN PERSISTENTE: para que no toque loguearse cada vez que recarga ──
+        const ADMIN_SESSION_KEY = 'stivzapat_admin_session_v1';
+        const ADMIN_SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 días
+
+        function saveAdminSession(user) {
+            try { localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify({ user, ts: Date.now() })); }
+            catch (e) { /* no crítico */ }
+        }
+
+        function restoreAdminSession() {
+            try {
+                const raw = localStorage.getItem(ADMIN_SESSION_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (!parsed || !parsed.user || !parsed.ts) return;
+                if (Date.now() - parsed.ts > ADMIN_SESSION_DURATION_MS) {
+                    localStorage.removeItem(ADMIN_SESSION_KEY);
+                    return;
+                }
+                isAdminLoggedIn = true;
+                currentUser = parsed.user;
+            } catch (e) { /* sesión guardada corrupta — se ignora */ }
+        }
+
+        function clearAdminSession() {
+            try { localStorage.removeItem(ADMIN_SESSION_KEY); } catch (e) { /* no crítico */ }
+        }
         let activeHomeFilter = "all";
 
         // ══════════════════════════════════════════════════════════
@@ -2900,6 +2928,7 @@
                 if (match) {
                     isAdminLoggedIn = true;
                     currentUser = { usuario: match.usuario, rol: match.rol || 'admin' };
+                    saveAdminSession(currentUser);
                     document.getElementById('auth-user').value = '';
                     document.getElementById('auth-pass').value = '';
                     handleRouting();
@@ -2908,6 +2937,7 @@
                     if (u === 'admin' && p === 'Pag12345') {
                         isAdminLoggedIn = true;
                         currentUser = { usuario: 'admin', rol: 'admin' };
+                        saveAdminSession(currentUser);
                         document.getElementById('auth-user').value = '';
                         document.getElementById('auth-pass').value = '';
                         handleRouting();
@@ -2925,6 +2955,7 @@
         function logoutAdmin() {
             isAdminLoggedIn = false;
             currentUser = null;
+            clearAdminSession();
             window.location.hash = "";
             handleRouting();
         }
@@ -7528,6 +7559,7 @@
             pageBlocks = getPageBlocks();
             renderHomeBlocks();
             window.addEventListener('hashchange', handleRouting);
+            restoreAdminSession(); // si ya había una sesión válida guardada, no pide login de nuevo
             _suppressHistoryPush = true;
             handleRouting();
             _suppressHistoryPush = false;
