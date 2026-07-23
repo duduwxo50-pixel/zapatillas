@@ -877,6 +877,7 @@
 
     <section id="product-detail-view" class="spa-view">
         <div id="detail-view-container"></div>
+        <div id="related-products-container" style="max-width:1400px; margin:0 auto; padding:0 clamp(14px, 3vw, 40px) 60px;"></div>
     </section>
 
     <section id="cart-view" class="spa-view">
@@ -980,9 +981,9 @@
                 <button onclick="closeTrackOrderModal()" style="background:#f1f5f9; border:none; border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">&times;</button>
             </div>
             <div style="padding:18px 24px 0;">
-                <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">Ingresa el número de celular con el que hiciste tu pedido para ver su estado.</p>
+                <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">Ingresa tu número de celular o el número de pedido (ej: PED-1737654321000) para ver el estado de tus pedidos en proceso.</p>
                 <div style="display:flex; gap:8px;">
-                    <input type="tel" id="track-order-phone" placeholder="Ej: 312 207 2057" onkeydown="if(event.key==='Enter'){event.preventDefault();searchMyOrders();}"
+                    <input type="text" id="track-order-phone" placeholder="Celular o N° de pedido" onkeydown="if(event.key==='Enter'){event.preventDefault();searchMyOrders();}"
                         style="flex:1; padding:11px 14px; border:1px solid var(--border-color); border-radius:8px; font-size:14px;">
                     <button onclick="searchMyOrders()" style="background:var(--accent-dark); color:#fff; border:none; border-radius:8px; padding:0 20px; font-size:13px; font-weight:800; cursor:pointer; text-transform:uppercase;">Buscar</button>
                 </div>
@@ -3081,7 +3082,63 @@
             };
 
             buildDetailHTML(activeVariantIndex);
+            renderRelatedProducts(p);
             if (!_fromHistory) navigateTo('product-detail-view', { productId: id });
+        }
+
+        // ── PRODUCTOS RELACIONADOS Y RECOMENDADOS ──────────────
+        function getRelatedProducts(p, excludeIds, limit) {
+            const norm = s => (s || '').toLowerCase().trim();
+            return dbData.products
+                .filter(x => x.id !== p.id && !excludeIds.includes(x.id))
+                .map(x => {
+                    let score = 0;
+                    if (norm(x.brand) === norm(p.brand) && norm(x.brand) !== '') score += 3;
+                    if (norm(x.gender) === norm(p.gender) && norm(x.gender) !== '') score += 2;
+                    if (p.price && x.price) {
+                        const diff = Math.abs(x.price - p.price) / p.price;
+                        if (diff <= 0.3) score += 1;
+                    }
+                    return { product: x, score };
+                })
+                .filter(e => e.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, limit)
+                .map(e => e.product);
+        }
+
+        function getRecommendedProducts(excludeIds, limit) {
+            const pool = dbData.products.filter(x => !excludeIds.includes(x.id) && x.stock > 0);
+            const featured = pool.filter(x => x.featured).sort(() => Math.random() - 0.5);
+            const rest = pool.filter(x => !x.featured).sort(() => Math.random() - 0.5);
+            return [...featured, ...rest].slice(0, limit);
+        }
+
+        function renderRelatedProducts(p) {
+            const container = document.getElementById('related-products-container');
+            if (!container) return;
+            if (!dbData.products || dbData.products.length <= 1) { container.innerHTML = ''; return; }
+
+            const related = getRelatedProducts(p, [p.id], 8);
+            const excludeForRecs = [p.id, ...related.map(r => r.id)];
+            const recommended = getRecommendedProducts(excludeForRecs, 8);
+
+            let html = '';
+            if (related.length > 0) {
+                html += `
+                    <div style="margin-top:50px;">
+                        <h3 style="font-size:18px; font-weight:800; text-transform:uppercase; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">🔗 Productos Relacionados</h3>
+                        <div class="featured-products-grid">${related.map(r => ArrayToCardHTML(r)).join('')}</div>
+                    </div>`;
+            }
+            if (recommended.length > 0) {
+                html += `
+                    <div style="margin-top:40px;">
+                        <h3 style="font-size:18px; font-weight:800; text-transform:uppercase; margin-bottom:16px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">✨ También te puede interesar</h3>
+                        <div class="featured-products-grid">${recommended.map(r => ArrayToCardHTML(r)).join('')}</div>
+                    </div>`;
+            }
+            container.innerHTML = html;
         }
 
         function startAutomatedCarousel(imagesArray) {
@@ -4035,12 +4092,11 @@
         }
 
         async function searchMyOrders() {
-            const raw = document.getElementById('track-order-phone').value;
-            const phone = normalizePhone(raw);
+            const raw = (document.getElementById('track-order-phone').value || '').trim();
             const resultsEl = document.getElementById('track-order-results');
 
-            if (phone.length < 7) {
-                resultsEl.innerHTML = `<p style="color:#b91c1c; font-size:13px; padding:10px 0;">Por favor ingresa un número de celular válido.</p>`;
+            if (raw.length < 4) {
+                resultsEl.innerHTML = `<p style="color:#b91c1c; font-size:13px; padding:10px 0;">Por favor ingresa un número de celular o número de pedido válido.</p>`;
                 return;
             }
 
@@ -4049,18 +4105,37 @@
             // Refrescamos datos por si hubo cambios de estado recientes
             try { await syncWithGoogleSheets(); } catch (e) { /* seguimos con los datos que ya tengamos */ }
 
-            const orders = (dbData.orders || [])
-                .filter(o => normalizePhone(o.celular) === phone)
-                .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            // Detectamos si el dato ingresado parece un N° de pedido (contiene letras, ej: PED-...) o un celular (solo dígitos)
+            const looksLikeOrderId = /[a-zA-Z]/.test(raw);
+            let allOrders;
+            if (looksLikeOrderId) {
+                const needle = raw.toLowerCase().replace(/\s+/g, '');
+                allOrders = (dbData.orders || []).filter(o => (o.id || '').toLowerCase().includes(needle));
+            } else {
+                const phone = normalizePhone(raw);
+                if (phone.length < 7) {
+                    resultsEl.innerHTML = `<p style="color:#b91c1c; font-size:13px; padding:10px 0;">Por favor ingresa un número de celular válido, o el N° de pedido completo.</p>`;
+                    return;
+                }
+                allOrders = (dbData.orders || []).filter(o => normalizePhone(o.celular) === phone);
+            }
+            allOrders = allOrders.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-            renderTrackedOrders(orders);
+            // "Cerrado" = ya entregado o rechazado (nada pendiente para el cliente). Solo mostramos lo que sigue en proceso.
+            const openOrders = allOrders.filter(o => !['entregado', 'rechazado'].includes(o.estado || 'pendiente'));
+
+            renderTrackedOrders(openOrders, allOrders.length);
         }
 
-        function renderTrackedOrders(orders) {
+        function renderTrackedOrders(orders, totalFound) {
             const resultsEl = document.getElementById('track-order-results');
 
             if (orders.length === 0) {
-                resultsEl.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:14px 0; text-align:center;">No encontramos pedidos con ese número de celular.<br>Verifica que sea el mismo con el que hiciste la compra.</p>`;
+                if (totalFound && totalFound > 0) {
+                    resultsEl.innerHTML = `<p style="color:#16a34a; font-size:13px; padding:14px 0; text-align:center; font-weight:600;">✅ No tienes pedidos pendientes en este momento.<br><span style="color:var(--text-muted); font-weight:400;">Todos tus pedidos anteriores ya fueron entregados o cerrados.</span></p>`;
+                } else {
+                    resultsEl.innerHTML = `<p style="color:var(--text-muted); font-size:13px; padding:14px 0; text-align:center;">No encontramos pedidos con ese dato.<br>Verifica el número de celular o el N° de pedido.</p>`;
+                }
                 return;
             }
 
