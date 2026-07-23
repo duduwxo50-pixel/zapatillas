@@ -2994,12 +2994,39 @@
             }
         }
 
-        async function syncWithGoogleSheets() {
-            showLoading(true);
+        // ── CACHÉ LOCAL: para que el panel cargue de inmediato mientras llega la versión fresca de Sheets ──
+        const DB_CACHE_KEY = 'stivzapat_db_cache_v1';
+        function saveDbCache(data) {
+            try { localStorage.setItem(DB_CACHE_KEY, JSON.stringify({ data, ts: Date.now() })); }
+            catch (e) { /* localStorage lleno o no disponible — no es crítico */ }
+        }
+        function loadDbCache() {
+            try {
+                const raw = localStorage.getItem(DB_CACHE_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                return (parsed && parsed.data) ? parsed.data : null;
+            } catch (e) { return null; }
+        }
+
+        function showToast(msg, isError) {
+            const existing = document.getElementById('sz-toast');
+            if (existing) existing.remove();
+            const el = document.createElement('div');
+            el.id = 'sz-toast';
+            el.textContent = msg;
+            el.style.cssText = `position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:${isError ? '#b91c1c' : '#020617'}; color:#fff; padding:10px 20px; border-radius:8px; font-size:13px; font-weight:700; z-index:6000; box-shadow:0 8px 24px rgba(0,0,0,.25);`;
+            document.body.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 2200);
+        }
+
+        async function syncWithGoogleSheets(silent) {
+            if (!silent) showLoading(true);
             try {
                 const response = await fetch(`${API_URL}?action=readAll`);
                 dbData = await response.json();
                 if (!dbData.config) dbData.config = {};
+                saveDbCache(dbData);
                 // Migrar localStorage → Sheets si es la primera vez
                 await migrateLocalStorageToSheets();
                 // Aplicar config al frontend
@@ -3019,7 +3046,7 @@
             } catch (err) {
                 console.error("Error cargando base de datos:", err);
             } finally {
-                showLoading(false);
+                if (!silent) showLoading(false);
             }
         }
 
@@ -3035,13 +3062,19 @@
                 });
                 let json = {};
                 try { json = await resp.json(); } catch(e) { /* respuesta vacía o HTML de error */ }
+                showLoading(false);
                 if (json.success === false) {
                     console.warn('⚠️ GAS respondió error:', json.message);
-                    // Aún así sincronizamos para reflejar el estado real
+                    showToast(json.message || 'Se guardó con advertencias, revisa los datos', true);
+                } else {
+                    showToast('✓ Guardado');
                 }
-                await syncWithGoogleSheets();
+                // Resincronizamos en SEGUNDO PLANO (sin el spinner de pantalla completa)
+                // para que la tabla se actualice sola apenas Sheets responda.
+                syncWithGoogleSheets(true);
                 return json;
             } catch (err) {
+                showLoading(false);
                 console.error("Error al guardar:", err);
                 alert('❌ Error de red al contactar Google Sheets. Revisa tu conexión o el despliegue de la Web App.');
                 throw err;
@@ -7498,8 +7531,30 @@
             _suppressHistoryPush = true;
             handleRouting();
             _suppressHistoryPush = false;
-            // Sync con Sheets (aplica config real y re-renderiza todo)
-            syncWithGoogleSheets();
+
+            // ── Carga rápida: si hay una versión guardada en este dispositivo, la mostramos
+            //    de inmediato mientras llega la versión fresca de Sheets en segundo plano ──
+            const cached = loadDbCache();
+            if (cached) {
+                dbData = cached;
+                if (!dbData.config) dbData.config = {};
+                applyBrandConfig();
+                applyNavLabels();
+                loadNoticeBar();
+                renderStoreFooter();
+                renderPillsFromCategories();
+                populateGenderSelect();
+                renderHome();
+                renderCatalog();
+                buildBrandFilters();
+                updateCartBadge();
+                syncLoadingBackground();
+                if (isAdminLoggedIn) { renderAdminDashboard(); populateFooterAdmin(); }
+                showLoading(false);
+                syncWithGoogleSheets(true);
+            } else {
+                syncWithGoogleSheets();
+            }
         });
 
     </script>
