@@ -33,8 +33,12 @@
         .brand-logo { font-size: 24px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
         .brand-logo img { height: 38px; width: 38px; object-fit: contain; border-radius: 6px; }
         
-        .navigation-menu { display: flex; gap: 16px; list-style: none; flex-wrap: wrap; row-gap: 6px; }
-        .navigation-menu li { font-size: 11.5px; font-weight: 600; cursor: pointer; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+        .header-nav-row { display: flex; justify-content: center; padding: 8px 20px 12px; border-top: 1px solid var(--border-color); }
+        .navigation-menu { display: flex; gap: 24px; list-style: none; flex-wrap: wrap; justify-content: center; }
+        .navigation-menu li { font-size: 12px; font-weight: 600; cursor: pointer; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+        @media (max-width: 640px) {
+            .header-nav-row { display: none; } /* en móvil ya tienes mobile-bottom-nav */
+        }
 
         .header-right-actions { display: flex; align-items: center; gap: 15px; }
         .search-input-field { padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 20px; font-size: 14px; outline: none; width: 220px; transition: all 0.2s ease; }
@@ -606,6 +610,19 @@
         .cart-icon-wrapper:hover { border-color: var(--brand-yellow); }
         .cart-badge-count { background: var(--brand-yellow); color: #0d0d0d; }
 
+        /* Vista: Política de Cambios y Garantías */
+        .warranty-page { max-width: 900px; margin: 0 auto; color: #e5e5e5; line-height: 1.7; font-size: 15px; }
+        .warranty-title { color: #fff; font-size: 26px; font-weight: 900; text-transform: uppercase; margin-bottom: 28px; letter-spacing: 0.3px; }
+        .warranty-page p { margin-bottom: 18px; }
+        .warranty-page ul { margin: 0 0 18px 0; padding-left: 22px; }
+        .warranty-page li { margin-bottom: 12px; }
+        .warranty-page strong { color: var(--brand-yellow); font-weight: 800; }
+        .warranty-highlight { color: var(--brand-yellow); font-weight: 700; }
+        @media (max-width: 640px) {
+            .warranty-title { font-size: 20px; }
+            .warranty-page { font-size: 14px; }
+        }
+
         /* ── HEADER RESPONSIVE: evita que "Mi Pedido" / "Bolsa" se salgan de la pantalla ── */
         @media (max-width: 768px) {
             .header-container { gap: 8px; }
@@ -791,16 +808,6 @@
             <div class="brand-logo" onclick="navigateTo('home-view')" id="header-brand">
                 <span id="header-brand-text">StivZapat</span>
             </div>
-            <nav>
-                <ul class="navigation-menu" id="nav-menu-list">
-                    <li class="nav-has-dropdown" id="nav-marcas-li">
-                        <span id="nav-label-marcas">Marcas</span> ▾
-                        <ul class="nav-dropdown" id="nav-brands-dropdown"></ul>
-                    </li>
-                    <li class="nav-sale" onclick="navSaleFilter()"><span id="nav-label-sale">SALE</span></li>
-                    <li onclick="document.getElementById('store-footer')?.scrollIntoView({behavior:'smooth'})"><span id="nav-label-garantia">Cambios y Garantía</span></li>
-                </ul>
-            </nav>
             <div class="header-right-actions">
                 <input type="text" id="global-search" class="search-input-field" placeholder="Buscar calzado..." onkeyup="handleSearchInput(this.value)">
                 <div class="cart-icon-wrapper" onclick="openTrackOrderModal()" style="margin-right:4px;">
@@ -811,6 +818,16 @@
                 </div>
             </div>
         </div>
+        <nav class="header-nav-row">
+            <ul class="navigation-menu" id="nav-menu-list">
+                <li class="nav-has-dropdown" id="nav-marcas-li">
+                    <span id="nav-label-marcas">Marcas</span> ▾
+                    <ul class="nav-dropdown" id="nav-brands-dropdown"></ul>
+                </li>
+                <li class="nav-sale" onclick="navSaleFilter()"><span id="nav-label-sale">SALE</span></li>
+                <li onclick="navigateTo('warranty-view')"><span id="nav-label-garantia">Cambios y Garantía</span></li>
+            </ul>
+        </nav>
     </header>
 
     <main id="home-view" class="spa-view active-view">
@@ -892,6 +909,39 @@
                 <h2 style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:20px;">Total: <span id="summary-total">$ 0</span></h2>
                 <button class="btn-action" style="width:100%;" onclick="openCheckoutModal()">Finalizar Pedido</button>
             </div>
+        </div>
+    </section>
+    <!-- ══ ZONA DE GARANTIA ══ -->
+    <section id="warranty-view" class="spa-view">
+        <div class="warranty-page">
+            <h1 class="warranty-title">Política de Cambios y Garantías</h1>
+            <p class="warranty-subtitle">Queremos que estés <strong style="color: #60a5fa;">satisfecho</strong> con tu calzado. Conoce nuestras condiciones.</p>
+
+            <p>Los cambios se realizan <strong>únicamente por talla.</strong></p>
+            <ul>
+                <li>La solicitud debe realizarse dentro de los <strong>3 días calendario</strong> siguientes a la recepción del producto.</li>
+                <li>Si el cliente eligió incorrectamente la talla, deberá asumir los costos de envío. Si el error fue de nuestra tienda, asumimos nosotros estos costos.</li>
+                <li>El calzado debe estar en perfecto estado, sin señales de uso, limpio, con su relleno interno y en la misma bolsa transparente y caja en la que fue enviado.</li>
+                <li>El tiempo de procesamiento del cambio es de hasta <strong>15 días hábiles</strong> (sin contar domingos ni festivos), contados a partir de la recepción del producto en nuestras instalaciones.</li>
+            </ul>
+
+            <p class="warranty-highlight">Las referencias en Campañas, liquidación o salida de stock no tienen cambio ni devolución por ningún motivo y sin excepción alguna.</p>
+
+            <p>La garantía cubre únicamente:</p>
+            <ul>
+                <li>Daños en costuras.</li>
+                <li>Despegues.</li>
+                <li>Defectos de fabricación que impidan el uso normal del calzado.</li>
+            </ul>
+
+            <p class="warranty-highlight">No se consideran garantías los daños ocasionados por uso inadecuado, desgaste normal, golpes, humedad, lavado o cualquier otra causa ajena a defectos de fabricación.</p>
+
+            <ul>
+                <li>El término de garantía es de <strong>30 días calendario</strong> contados a partir de la fecha de recepción del producto.</li>
+                <li>Cuando la garantía sea aprobada, los costos de transporte asociados al proceso serán asumidos por nuestra tienda.</li>
+            </ul>
+
+            <p class="warranty-highlight">Al realizar una compra, el cliente declara haber leído y aceptado la presente Política de Cambios y Garantías.</p>
         </div>
     </section>
 
