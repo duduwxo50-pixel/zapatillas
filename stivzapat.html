@@ -3172,23 +3172,23 @@
 
         // ── PRODUCTOS RELACIONADOS Y RECOMENDADOS ──────────────
         function getRelatedProducts(p, excludeIds, limit) {
-            const norm = s => (s || '').toLowerCase().trim();
-            return dbData.products
-                .filter(x => x.id !== p.id && !excludeIds.includes(x.id))
-                .map(x => {
-                    let score = 0;
-                    if (norm(x.brand) === norm(p.brand) && norm(x.brand) !== '') score += 3;
-                    if (norm(x.gender) === norm(p.gender) && norm(x.gender) !== '') score += 2;
-                    if (p.price && x.price) {
-                        const diff = Math.abs(x.price - p.price) / p.price;
-                        if (diff <= 0.3) score += 1;
-                    }
-                    return { product: x, score };
-                })
-                .filter(e => e.score > 0)
-                .sort((a, b) => b.score - a.score)
-                .slice(0, limit)
-                .map(e => e.product);
+            const norm = s => (s || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+            const sameCategory = x => norm(x.gender) === norm(p.gender) && norm(p.gender) !== '';
+
+            // 1) Prioridad absoluta: misma categoría (género/tipo de producto)
+            const pool = dbData.products.filter(x => x.id !== p.id && !excludeIds.includes(x.id) && sameCategory(x));
+
+            const scored = pool.map(x => {
+                let score = 0;
+                if (norm(x.brand) === norm(p.brand) && norm(x.brand) !== '') score += 2;
+                if (p.price && x.price) {
+                    const diff = Math.abs(x.price - p.price) / p.price;
+                    if (diff <= 0.3) score += 1;
+                }
+                return { product: x, score };
+            }).sort((a, b) => b.score - a.score);
+
+            return scored.slice(0, limit).map(e => e.product);
         }
 
         function getRecommendedProducts(excludeIds, limit) {
