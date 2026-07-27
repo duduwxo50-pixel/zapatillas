@@ -835,7 +835,7 @@
                         <ul class="nav-dropdown" id="nav-brands-dropdown"></ul>
                     </li>
                     <li class="nav-sale" onclick="navSaleFilter()"><span id="nav-label-sale">SALE</span></li>
-                    <li onclick="document.getElementById('store-footer')?.scrollIntoView({behavior:'smooth'})"><span id="nav-label-garantia">Cambios y Garantía</span></li>
+                    <li onclick="openWarrantyModal()"><span id="nav-label-garantia">Cambios y Garantía</span></li>
                 </ul>
             </nav>
             <div class="header-right-actions">
@@ -922,10 +922,16 @@
                 <h2 style="text-transform:uppercase; margin-bottom:20px;">Tu Bolsa de Compras</h2>
                 <div id="cart-items-wrapper"></div>
             </div>
-            <div style="background:white; padding:24px; border-radius:8px; border:1px solid var(--border-color); height:fit-content;">
-                <h3 style="text-transform:uppercase; margin-bottom:15px;">Resumen</h3>
-                <p style="display:flex; justify-content:space-between; margin-bottom:10px;">Total pares: <span id="summary-qty">0</span></p>
-                <h2 style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:20px;">Total: <span id="summary-total">$ 0</span></h2>
+            <div style="background:white; color:#0f172a; padding:24px; border-radius:8px; border:1px solid var(--border-color); height:fit-content;">
+                <h3 style="text-transform:uppercase; margin-bottom:15px; color:#0f172a;">Resumen</h3>
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b; display:block; margin-bottom:4px;">Tu ciudad (para calcular envío)</label>
+                    <input id="cart-city-input" type="text" placeholder="Ej: Bogotá" oninput="onCartCityChange()" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; color:#0f172a;">
+                </div>
+                <div id="free-shipping-box" style="margin-bottom:16px;"></div>
+                <p style="display:flex; justify-content:space-between; margin-bottom:10px; color:#0f172a;">Total pares: <span id="summary-qty">0</span></p>
+                <p style="display:flex; justify-content:space-between; margin-bottom:10px; color:#0f172a;"><span id="summary-shipping-label">Envío</span>: <span id="summary-shipping">$ 0</span></p>
+                <h2 style="display:flex; justify-content:space-between; margin-bottom:20px; font-size:20px; color:#0f172a;">Total: <span id="summary-total">$ 0</span></h2>
                 <button class="btn-action" style="width:100%;" onclick="openCheckoutModal()">Finalizar Pedido</button>
             </div>
         </div>
@@ -1018,23 +1024,21 @@
 
         <!-- TEXTOS DEL MENÚ SUPERIOR -->
         <div class="admin-section" style="margin-bottom:30px;" data-rol="admin" data-module="config">
-            <h2>📋 Textos del Menú</h2>
-            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Cambia las palabras de los botones fijos de la barra de navegación. (Hombre/Mujer/Unisex y demás categorías ya no son fijos: edítalos en "🗂️ Categorías y Filtros de Tienda", más abajo — ahí también eliges cuáles se muestran arriba con el check "Menú superior").</p>
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:14px;">
-                <div>
-                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Marcas</label>
-                    <input type="text" id="nav-label-input-marcas" placeholder="Marcas" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                </div>
-                <div>
-                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Sale</label>
-                    <input type="text" id="nav-label-input-sale" placeholder="SALE" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                </div>
-                <div>
-                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:6px;">Cambios y Garantía</label>
-                    <input type="text" id="nav-label-input-garantia" placeholder="Cambios y Garantía" style="width:100%; padding:9px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                </div>
+            <h2>📋 Menú de Navegación</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Cambia las palabras, oculta los que no uses, y agrega tantos enlaces propios como quieras. (Hombre/Mujer/Unisex y demás categorías ya no son fijos: edítalos en "🗂️ Categorías y Filtros de Tienda", más abajo — ahí también eliges cuáles se muestran arriba con el check "Menú superior").</p>
+
+            <h3 style="font-size:13px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Botones fijos</h3>
+            <div id="nav-fixed-buttons-list" style="margin-bottom:10px;"></div>
+            <div id="nav-fixed-restore-buttons" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;"></div>
+
+            <h3 style="font-size:13px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Botones adicionales (agrega los que quieras)</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Elige qué hace cada botón: abrir una página, hacer scroll a una sección, o disparar una acción de la tienda (WhatsApp, rastrear pedido, etc).</p>
+            <div id="nav-extra-links-list" style="margin-bottom:10px;"></div>
+            <button class="btn-action" style="padding:8px 16px; font-size:12.5px; background:#f8fafc; color:#0f172a; border:1px solid var(--border-color);" onclick="addNavExtraLinkRow()">➕ Agregar botón</button>
+
+            <div style="margin-top:18px;">
+                <button class="btn-action" onclick="saveNavLabels()">Guardar Menú de Navegación</button>
             </div>
-            <button class="btn-action" style="margin-top:16px;" onclick="saveNavLabels()">Guardar Textos del Menú</button>
         </div>
 
 
@@ -1074,6 +1078,70 @@
             <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Configura los datos de cada método. Solo los que actives aparecerán al cliente en el checkout.</p>
             <div id="admin-pagos-list"></div>
             <button class="btn-action" style="margin-top:10px; padding:10px 20px; font-size:13px;" onclick="savePagosConfig()">Guardar Medios de Pago</button>
+        </div>
+
+        <!-- ENVÍOS -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-shipping-section" data-rol="admin" data-module="config">
+            <h2>🚚 Envíos</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Define costos por ciudad, cuándo es gratis, y personaliza los textos que ve el cliente.</p>
+
+            <h3 style="font-size:13px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Textos que ve el cliente</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; max-width:800px; margin-bottom:20px;">
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Etiqueta "Envío"</label>
+                    <input id="shipping-text-label" type="text" placeholder="Envío" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Texto "envío gratis desbloqueado"</label>
+                    <input id="shipping-text-free" type="text" placeholder="🎉 ¡Envío gratis desbloqueado!" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Texto "te faltan X" (usa {monto})</label>
+                    <input id="shipping-text-missing" type="text" placeholder="Te faltan {monto} para envío gratis" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+            </div>
+
+            <h3 style="font-size:13px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Zona por defecto (ciudades no listadas abajo)</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:500px; margin-bottom:20px;">
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Costo de envío</label>
+                    <input id="shipping-cost-input" type="number" min="0" step="1000" placeholder="15000" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Envío gratis desde</label>
+                    <input id="shipping-threshold-input" type="number" min="0" step="1000" placeholder="200000" style="width:100%; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                </div>
+            </div>
+
+            <h3 style="font-size:13px; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px;">Ciudades con costo personalizado</h3>
+            <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Si el cliente escribe una de estas ciudades en el checkout, se usa este costo en vez del de la zona por defecto.</p>
+            <div id="shipping-zones-list" style="margin-bottom:10px;"></div>
+            <button class="btn-action" style="padding:8px 16px; font-size:12.5px; background:#f8fafc; color:#0f172a; border:1px solid var(--border-color);" onclick="addShippingZoneRow()">➕ Agregar ciudad</button>
+
+            <div style="margin-top:18px;">
+                <button class="btn-action" style="padding:10px 20px; font-size:13px;" onclick="saveShippingConfig()">Guardar Configuración de Envío</button>
+            </div>
+        </div>
+
+        <!-- CAMBIOS Y GARANTÍAS: CONTENIDO -->
+        <div class="admin-section" style="margin-bottom:30px;" id="admin-warranty-section" data-rol="admin" data-module="config">
+            <h2>🛡️ Cambios y Garantías (contenido)</h2>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Escribe aquí tu política completa de cambios, garantías y devoluciones. Se muestra en un ventana emergente cuando el cliente haga clic en "Cambios y Garantía" en el menú o en el pie de página. Usa líneas en blanco para separar párrafos, y puedes empezar una línea con "- " para hacer una viñeta.</p>
+            <div style="margin-bottom:14px;">
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Título de la ventana</label>
+                <input id="warranty-title-input" type="text" placeholder="Cambios, Garantías y Devoluciones" style="width:100%; max-width:500px; padding:9px 11px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+            </div>
+            <div>
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-muted); display:block; margin-bottom:4px;">Contenido</label>
+                <textarea id="warranty-content-input" rows="12" placeholder="Ej: Tienes 60 días para solicitar un cambio por talla...
+
+- El producto debe estar sin uso y con etiquetas.
+- Los gastos de envío del cambio corren por cuenta del cliente.
+
+Para iniciar un cambio o devolución escríbenos por WhatsApp." style="width:100%; padding:12px; border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+            </div>
+            <button class="btn-action" style="margin-top:14px; padding:10px 20px; font-size:13px;" onclick="saveWarrantyContent()">Guardar Contenido</button>
+            <button class="btn-action" style="margin-top:14px; margin-left:8px; padding:10px 20px; font-size:13px; background:#f8fafc; color:#0f172a; border:1px solid var(--border-color);" onclick="openWarrantyModal()">👁️ Vista previa</button>
         </div>
 
         <!-- ═══════════════════════════════════════════════════════
@@ -1695,6 +1763,17 @@
         .to-progress-step.to-rejected .to-progress-label { color:#dc2626; }
     </style>
 
+    <!-- MODAL CAMBIOS Y GARANTÍAS (cliente) -->
+    <div id="warranty-overlay" style="display:none; position:fixed; inset:0; z-index:2100; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
+        <div style="background:#fff; border-radius:12px; width:100%; max-width:640px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25); animation:slideUpModal .3s ease; display:flex; flex-direction:column;">
+            <div style="padding:20px 24px 16px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#fff; z-index:1;">
+                <h3 id="warranty-modal-title" style="font-size:17px; font-weight:800; text-transform:uppercase; letter-spacing:-0.3px; color:#0f172a;">🛡️ Cambios, Garantías y Devoluciones</h3>
+                <button onclick="closeWarrantyModal()" style="background:#f1f5f9; border:none; border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">&times;</button>
+            </div>
+            <div id="warranty-modal-body" style="padding:20px 24px 28px; color:#0f172a; font-size:14px; line-height:1.7;"></div>
+        </div>
+    </div>
+
     <!-- MODAL RASTREAR MI PEDIDO (cliente) -->
     <div id="track-order-overlay" style="display:none; position:fixed; inset:0; z-index:2100; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px);">
         <div style="background:#fff; border-radius:12px; width:100%; max-width:640px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.25); animation:slideUpModal .3s ease; display:flex; flex-direction:column;">
@@ -1801,6 +1880,16 @@
 
         let dbData = { products: [], providers: [], billing: { total: 0, profit: 0 }, config: {} };
         let cart = [];
+        const CART_STORAGE_KEY = 'erp_carga_masiva_cart';
+        try {
+            const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+            if (savedCart) cart = JSON.parse(savedCart);
+        } catch (e) { /* carrito guardado corrupto o no disponible */ }
+
+        function persistCart() {
+            try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
+            catch (e) { /* localStorage lleno o no disponible — no es crítico */ }
+        }
         let isAdminLoggedIn = false;
         let currentUser = null; // { usuario, rol } al loguearse
 
@@ -1856,7 +1945,182 @@
                 });
             } catch(e) { console.error('saveCfg error:', e); }
         }
+
+        const SHIPPING_DEFAULT = {
+            default: { cost: 15000, threshold: 200000 },
+            zones: [],
+            texts: {
+                label: 'Envío',
+                freeUnlocked: '🎉 ¡Envío gratis desbloqueado!',
+                missingTemplate: 'Te faltan {monto} para envío gratis'
+            }
+        };
+
+        function normalizeCityName(s) {
+            return (s || '').toString().trim().toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // sin tildes
+        }
+
+        function getShippingConfig() {
+            const raw = getCfg('shipping_config', null);
+            if (!raw) return JSON.parse(JSON.stringify(SHIPPING_DEFAULT));
+            try {
+                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                // Compatibilidad con el formato anterior { cost, threshold }
+                if (parsed && parsed.default === undefined && parsed.cost !== undefined) {
+                    return {
+                        default: { cost: Number(parsed.cost) || 0, threshold: Number(parsed.threshold) || 0 },
+                        zones: [],
+                        texts: { ...SHIPPING_DEFAULT.texts }
+                    };
+                }
+                return {
+                    default: {
+                        cost: Number(parsed.default?.cost) || 0,
+                        threshold: Number(parsed.default?.threshold) || 0
+                    },
+                    zones: Array.isArray(parsed.zones) ? parsed.zones.map(z => ({
+                        city: z.city || '', cost: Number(z.cost) || 0, threshold: Number(z.threshold) || 0
+                    })) : [],
+                    texts: {
+                        label: parsed.texts?.label || SHIPPING_DEFAULT.texts.label,
+                        freeUnlocked: parsed.texts?.freeUnlocked || SHIPPING_DEFAULT.texts.freeUnlocked,
+                        missingTemplate: parsed.texts?.missingTemplate || SHIPPING_DEFAULT.texts.missingTemplate
+                    }
+                };
+            } catch (e) { return JSON.parse(JSON.stringify(SHIPPING_DEFAULT)); }
+        }
+
+        // Devuelve {cost, threshold} para una ciudad dada, o la zona por defecto si no hay match
+        function getShippingForCity(ciudad) {
+            const cfg = getShippingConfig();
+            const norm = normalizeCityName(ciudad);
+            if (norm) {
+                const match = cfg.zones.find(z => normalizeCityName(z.city) === norm);
+                if (match) return { cost: match.cost, threshold: match.threshold };
+            }
+            return cfg.default;
+        }
+
+        function renderShippingZonesAdmin() {
+            const cfg = getShippingConfig();
+            const cont = document.getElementById('shipping-zones-list');
+            if (!cont) return;
+            if (cfg.zones.length === 0) {
+                cont.innerHTML = `<p style="font-size:12.5px; color:var(--text-muted); margin-bottom:8px;">Sin ciudades personalizadas todavía — todas usan la zona por defecto.</p>`;
+                return;
+            }
+            cont.innerHTML = '';
+            cfg.zones.forEach(z => addShippingZoneRow(z));
+        }
+
+        function addShippingZoneRow(zone) {
+            const cont = document.getElementById('shipping-zones-list');
+            if (cont.querySelector('p')) cont.innerHTML = '';
+            const z = zone || { city: '', cost: 0, threshold: 0 };
+            const row = document.createElement('div');
+            row.className = 'shipping-zone-row';
+            row.style.cssText = 'display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:10px; margin-bottom:8px; align-items:center;';
+            row.innerHTML = `
+                <input class="sz-city" type="text" value="${(z.city||'').replace(/"/g,'&quot;')}" placeholder="Ej: Bogotá" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                <input class="sz-cost" type="number" min="0" step="1000" value="${z.cost||0}" placeholder="Costo" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                <input class="sz-threshold" type="number" min="0" step="1000" value="${z.threshold||0}" placeholder="Gratis desde" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                <button onclick="this.closest('.shipping-zone-row').remove()" style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-size:18px; line-height:1;" title="Eliminar ciudad">🗑️</button>
+            `;
+            cont.appendChild(row);
+        }
+
+        function collectShippingZonesFromDom() {
+            return Array.from(document.querySelectorAll('#shipping-zones-list .shipping-zone-row')).map(row => ({
+                city: row.querySelector('.sz-city').value.trim(),
+                cost: Number(row.querySelector('.sz-cost').value) || 0,
+                threshold: Number(row.querySelector('.sz-threshold').value) || 0
+            })).filter(z => z.city);
+        }
+
+        async function saveShippingConfig() {
+            const cost = Number(document.getElementById('shipping-cost-input').value) || 0;
+            const threshold = Number(document.getElementById('shipping-threshold-input').value) || 0;
+            const label = document.getElementById('shipping-text-label').value.trim() || SHIPPING_DEFAULT.texts.label;
+            const freeUnlocked = document.getElementById('shipping-text-free').value.trim() || SHIPPING_DEFAULT.texts.freeUnlocked;
+            const missingTemplate = document.getElementById('shipping-text-missing').value.trim() || SHIPPING_DEFAULT.texts.missingTemplate;
+            const zones = collectShippingZonesFromDom();
+            const btn = event.target;
+            const original = btn.textContent;
+            btn.textContent = 'Guardando...'; btn.disabled = true;
+            try {
+                await saveCfg('shipping_config', JSON.stringify({
+                    default: { cost, threshold },
+                    zones,
+                    texts: { label, freeUnlocked, missingTemplate }
+                }));
+                renderCart();
+                btn.textContent = '✅ Guardado';
+            } catch (e) {
+                btn.textContent = '❌ Error al guardar';
+            } finally {
+                setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+            }
+        }
         
+        const WARRANTY_DEFAULT = {
+            title: 'Cambios, Garantías y Devoluciones',
+            content: 'Tienes 60 días desde la fecha de compra para solicitar un cambio por talla o color.\n\n- El producto debe estar sin uso, sin señales de desgaste y con sus etiquetas originales.\n- Los gastos de envío del cambio corren por cuenta del cliente, salvo error nuestro en el despacho.\n- Las devoluciones de dinero se evalúan caso a caso.\n\nPara iniciar un cambio, garantía o devolución, escríbenos por WhatsApp con tu número de pedido.'
+        };
+
+        function getWarrantyContent() {
+            const raw = getCfg('warranty_content', null);
+            if (!raw) return { ...WARRANTY_DEFAULT };
+            try {
+                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                return {
+                    title: parsed.title || WARRANTY_DEFAULT.title,
+                    content: parsed.content || WARRANTY_DEFAULT.content
+                };
+            } catch (e) { return { ...WARRANTY_DEFAULT }; }
+        }
+
+        async function saveWarrantyContent() {
+            const title = document.getElementById('warranty-title-input').value.trim() || WARRANTY_DEFAULT.title;
+            const content = document.getElementById('warranty-content-input').value.trim() || WARRANTY_DEFAULT.content;
+            const btn = event.target;
+            const original = btn.textContent;
+            btn.textContent = 'Guardando...'; btn.disabled = true;
+            try {
+                await saveCfg('warranty_content', JSON.stringify({ title, content }));
+                btn.textContent = '✅ Guardado';
+            } catch (e) {
+                btn.textContent = '❌ Error al guardar';
+            } finally {
+                setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+            }
+        }
+
+        // Convierte texto plano (líneas en blanco = párrafo, "- " = viñeta) a HTML seguro
+        function renderWarrantyBodyHtml(text) {
+            const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const blocks = text.split(/\n\s*\n/);
+            return blocks.map(block => {
+                const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+                if (lines.length && lines.every(l => l.startsWith('- '))) {
+                    return `<ul style="margin:0 0 14px 20px; padding:0;">${lines.map(l => `<li style="margin-bottom:6px;">${esc(l.slice(2))}</li>`).join('')}</ul>`;
+                }
+                return `<p style="margin:0 0 14px;">${lines.map(esc).join('<br>')}</p>`;
+            }).join('');
+        }
+
+        function openWarrantyModal() {
+            const wc = getWarrantyContent();
+            document.getElementById('warranty-modal-title').textContent = '🛡️ ' + wc.title;
+            document.getElementById('warranty-modal-body').innerHTML = renderWarrantyBodyHtml(wc.content);
+            const ov = document.getElementById('warranty-overlay');
+            ov.style.display = 'flex';
+        }
+
+        function closeWarrantyModal() {
+            document.getElementById('warranty-overlay').style.display = 'none';
+        }
+
         let runtimeVariants = [];
         let carouselInterval = null;
         let currentImageIndex = 0;
@@ -1913,31 +2177,199 @@
         }
 
         // ─────────────────────────────────────────────
-        // TEXTOS DEL MENÚ (Hombre / Mujer / Unisex / Marcas / Sale / Cambios y Garantía)
+        // MENÚ DE NAVEGACIÓN (Marcas / Sale / Cambios y Garantía + enlaces extra)
         // ─────────────────────────────────────────────
         const DEFAULT_NAV_LABELS = { marcas: 'Marcas', sale: 'SALE', garantia: 'Cambios y Garantía' };
 
+        function getNavConfig() {
+            const nl = getCfg('nav_labels', {});
+            const visible = { marcas: true, sale: true, garantia: true, ...(nl.visible || {}) };
+            const labels = { ...DEFAULT_NAV_LABELS, marcas: nl.marcas, sale: nl.sale, garantia: nl.garantia };
+            Object.keys(DEFAULT_NAV_LABELS).forEach(k => { if (!labels[k]) labels[k] = DEFAULT_NAV_LABELS[k]; });
+            const extraLinks = Array.isArray(getCfg('nav_extra_links', null)) ? getCfg('nav_extra_links', []) : [];
+            return { labels, visible, extraLinks };
+        }
+
+        const NAV_EXTRA_ACTION_TYPES = {
+            url:      { label: 'Abrir página web (URL)' },
+            scroll:   { label: 'Hacer scroll a una sección' },
+            whatsapp: { label: 'Abrir WhatsApp' },
+            warranty: { label: 'Abrir "Cambios y Garantía"' },
+            track:    { label: 'Abrir "Rastrear mi pedido"' },
+            cart:     { label: 'Ir al carrito' }
+        };
+
+        function runNavExtraAction(link) {
+            switch (link.type) {
+                case 'scroll':
+                    document.getElementById((link.value || '').replace(/^#/, ''))?.scrollIntoView({ behavior: 'smooth' });
+                    break;
+                case 'whatsapp': {
+                    const text = link.value ? encodeURIComponent(link.value) : '';
+                    window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}${text ? '&text=' + text : ''}`, '_blank');
+                    break;
+                }
+                case 'warranty': openWarrantyModal(); break;
+                case 'track': openTrackOrderModal(); break;
+                case 'cart': navigateTo('cart-view'); break;
+                default: // 'url'
+                    if (link.value) window.open(link.value, '_blank', 'noopener');
+            }
+        }
+
         function applyNavLabels() {
-            const nl = { ...DEFAULT_NAV_LABELS, ...getCfg('nav_labels', {}) };
+            const { labels, visible, extraLinks } = getNavConfig();
+
             Object.keys(DEFAULT_NAV_LABELS).forEach(key => {
                 const el = document.getElementById(`nav-label-${key}`);
-                if (el) el.innerText = nl[key];
-                const input = document.getElementById(`nav-label-input-${key}`);
-                if (input) input.value = nl[key];
+                if (el) el.innerText = labels[key];
+                const li = key === 'marcas' ? document.getElementById('nav-marcas-li')
+                    : document.querySelector(key === 'sale' ? '.nav-sale' : '#nav-label-garantia')?.closest('li');
+                if (li) li.style.display = visible[key] ? '' : 'none';
+            });
+
+            // Pintar botones extra en el menú (se limpian y repintan cada vez)
+            const navList = document.getElementById('nav-menu-list');
+            if (navList) {
+                navList.querySelectorAll('.nav-extra-link-item').forEach(el => el.remove());
+                extraLinks.forEach(link => {
+                    const li = document.createElement('li');
+                    li.className = 'nav-extra-link-item';
+                    li.innerHTML = `<span>${link.label}</span>`;
+                    li.onclick = () => runNavExtraAction(link);
+                    navList.appendChild(li);
+                });
+            }
+
+            // Pintar filas editables en el admin
+            renderNavFixedButtonsAdmin(labels, visible);
+            renderNavExtraLinksAdmin(extraLinks);
+        }
+
+        const NAV_FIXED_ORDER = ['marcas', 'sale', 'garantia'];
+        const NAV_FIXED_TITLES = { marcas: 'Marcas', sale: 'Sale', garantia: 'Cambios y Garantía' };
+
+        function renderNavFixedButtonsAdmin(labels, visible) {
+            const cont = document.getElementById('nav-fixed-buttons-list');
+            const restoreCont = document.getElementById('nav-fixed-restore-buttons');
+            if (!cont || !restoreCont) return;
+            cont.innerHTML = '';
+            restoreCont.innerHTML = '';
+            NAV_FIXED_ORDER.forEach(key => {
+                if (visible[key]) {
+                    addNavFixedButtonRow(key, labels[key]);
+                } else {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-action';
+                    btn.style.cssText = 'padding:8px 14px; font-size:12px; background:#f8fafc; color:#0f172a; border:1px solid var(--border-color);';
+                    btn.textContent = `↩️ Restaurar "${NAV_FIXED_TITLES[key]}"`;
+                    btn.onclick = () => { addNavFixedButtonRow(key, labels[key]); btn.remove(); };
+                    restoreCont.appendChild(btn);
+                }
             });
         }
 
+        function addNavFixedButtonRow(key, label) {
+            const cont = document.getElementById('nav-fixed-buttons-list');
+            if (!cont) return;
+            const row = document.createElement('div');
+            row.className = 'nav-fixed-link-row';
+            row.dataset.navkey = key;
+            row.style.cssText = 'display:grid; grid-template-columns:160px 1fr auto; gap:10px; margin-bottom:8px; align-items:center;';
+            row.innerHTML = `
+                <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--text-muted);">${NAV_FIXED_TITLES[key]}</span>
+                <input class="nfl-label" type="text" value="${(label || NAV_FIXED_TITLES[key]).replace(/"/g,'&quot;')}" placeholder="${NAV_FIXED_TITLES[key]}" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                <button onclick="removeNavFixedButtonRow('${key}')" style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-size:18px; line-height:1;" title="Quitar del menú">🗑️</button>
+            `;
+            cont.appendChild(row);
+        }
+
+        function removeNavFixedButtonRow(key) {
+            document.querySelector(`.nav-fixed-link-row[data-navkey="${key}"]`)?.remove();
+            const restoreCont = document.getElementById('nav-fixed-restore-buttons');
+            const btn = document.createElement('button');
+            btn.className = 'btn-action';
+            btn.style.cssText = 'padding:8px 14px; font-size:12px; background:#f8fafc; color:#0f172a; border:1px solid var(--border-color);';
+            btn.textContent = `↩️ Restaurar "${NAV_FIXED_TITLES[key]}"`;
+            btn.onclick = () => { addNavFixedButtonRow(key, DEFAULT_NAV_LABELS[key]); btn.remove(); };
+            restoreCont.appendChild(btn);
+        }
+
+
+        function renderNavExtraLinksAdmin(extraLinks) {
+            const cont = document.getElementById('nav-extra-links-list');
+            if (!cont) return;
+            cont.innerHTML = '';
+            (extraLinks || []).forEach(link => addNavExtraLinkRow(link));
+        }
+
+        function addNavExtraLinkRow(link) {
+            const cont = document.getElementById('nav-extra-links-list');
+            if (!cont) return;
+            const l = link || { label: '', type: 'url', value: '' };
+            const row = document.createElement('div');
+            row.className = 'nav-extra-link-row';
+            row.style.cssText = 'display:grid; grid-template-columns:1fr 1.3fr 1.5fr auto; gap:10px; margin-bottom:8px; align-items:center;';
+
+            const typeOptions = Object.entries(NAV_EXTRA_ACTION_TYPES)
+                .map(([key, def]) => `<option value="${key}" ${l.type === key ? 'selected' : ''}>${def.label}</option>`).join('');
+
+            row.innerHTML = `
+                <input class="nel-label" type="text" value="${(l.label||'').replace(/"/g,'&quot;')}" placeholder="Texto del botón" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
+                <select class="nel-type" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;" onchange="updateNavExtraRowValueField(this)">${typeOptions}</select>
+                <input class="nel-value" type="text" value="${(l.value||'').replace(/"/g,'&quot;')}" placeholder="${navExtraValuePlaceholder(l.type || 'url')}" style="padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;" ${['warranty','track','cart'].includes(l.type) ? 'disabled' : ''}>
+                <button onclick="this.closest('.nav-extra-link-row').remove()" style="background:none; border:none; color:var(--danger-color); cursor:pointer; font-size:18px; line-height:1;" title="Eliminar botón">🗑️</button>
+            `;
+            cont.appendChild(row);
+        }
+
+        function navExtraValuePlaceholder(type) {
+            switch (type) {
+                case 'scroll': return '#store-footer';
+                case 'whatsapp': return 'Mensaje opcional...';
+                case 'warranty': case 'track': case 'cart': return '(no requiere dato adicional)';
+                default: return 'https://...';
+            }
+        }
+
+        function updateNavExtraRowValueField(selectEl) {
+            const row = selectEl.closest('.nav-extra-link-row');
+            const valueInput = row.querySelector('.nel-value');
+            const type = selectEl.value;
+            valueInput.placeholder = navExtraValuePlaceholder(type);
+            const noValueNeeded = ['warranty', 'track', 'cart'].includes(type);
+            valueInput.disabled = noValueNeeded;
+            if (noValueNeeded) valueInput.value = '';
+        }
+
+        function collectNavExtraLinksFromDom() {
+            return Array.from(document.querySelectorAll('#nav-extra-links-list .nav-extra-link-row')).map(row => ({
+                label: row.querySelector('.nel-label').value.trim(),
+                type: row.querySelector('.nel-type').value,
+                value: row.querySelector('.nel-value').value.trim()
+            })).filter(l => l.label);
+        }
+
         async function saveNavLabels() {
-            const nl = {};
-            Object.keys(DEFAULT_NAV_LABELS).forEach(key => {
-                const input = document.getElementById(`nav-label-input-${key}`);
-                const val = (input?.value || '').trim();
-                nl[key] = val || DEFAULT_NAV_LABELS[key];
+            const prevNl = getCfg('nav_labels', {});
+            const nl = { visible: {} };
+            NAV_FIXED_ORDER.forEach(key => {
+                const row = document.querySelector(`.nav-fixed-link-row[data-navkey="${key}"]`);
+                if (row) {
+                    const val = row.querySelector('.nfl-label').value.trim();
+                    nl[key] = val || DEFAULT_NAV_LABELS[key];
+                    nl.visible[key] = true;
+                } else {
+                    nl[key] = prevNl[key] || DEFAULT_NAV_LABELS[key];
+                    nl.visible[key] = false;
+                }
             });
             await saveCfg('nav_labels', nl);
+            await saveCfg('nav_extra_links', collectNavExtraLinksFromDom());
             applyNavLabels();
-            alert('✓ Textos del menú guardados en Google Sheets');
+            alert('✓ Menú de navegación guardado en Google Sheets');
         }
+
 
         async function uploadBrandLogo(inputEl) {
             const file = inputEl.files[0];
@@ -2459,7 +2891,7 @@
                         ${cfg.phoneWholesale ? `<div class="footer-contact-item"><span class="footer-contact-icon">🏭</span><span>Mayoristas: <strong><a href="tel:${cfg.phoneWholesale}" style="color:inherit;">${cfg.phoneWholesale}</a></strong></span></div>` : ''}
                         ${cfg.email ? `<div class="footer-contact-item"><span class="footer-contact-icon">✉️</span><span><a href="mailto:${cfg.email}" style="color:inherit;">${cfg.email}</a></span></div>` : ''}
                         ${cfg.pqrsfUrl ? `<div class="footer-contact-item"><span class="footer-contact-icon">📝</span><span><a href="${cfg.pqrsfUrl}" style="color:rgba(255,255,255,.8); text-decoration:underline;">Formulario PQRSF</a></span></div>` : ''}
-                        ${cfg.devolutionsUrl ? `<div class="footer-contact-item"><span class="footer-contact-icon">🔄</span><span><a href="${cfg.devolutionsUrl}" style="color:rgba(255,255,255,.8); text-decoration:underline;">Cambios, Garantías o Devoluciones</a></span></div>` : ''}
+                        ${cfg.devolutionsUrl ? `<div class="footer-contact-item"><span class="footer-contact-icon">🔄</span><span><a href="javascript:void(0)" onclick="openWarrantyModal()" style="color:rgba(255,255,255,.8); text-decoration:underline;">Cambios, Garantías o Devoluciones</a></span></div>` : ''}
                     </div>`;
                 }
 
@@ -2832,7 +3264,11 @@
 
             if (viewId === 'home-view') renderHome();
             if (viewId === 'catalog-view') renderCatalog();
-            if (viewId === 'cart-view') renderCart();
+            if (viewId === 'cart-view') {
+                const cityInput = document.getElementById('cart-city-input');
+                if (cityInput) cityInput.value = getCartSelectedCity();
+                renderCart();
+            }
             if (viewId === 'product-detail-view' && extra.productId) viewProductDetails(extra.productId, true);
 
             // Registrar en el historial del navegador para que Atrás/Adelante funcionen
@@ -2895,6 +3331,26 @@
             const titles = { dashboard:'📊 Dashboard', config:'⚙️ Configuración de Página', inventario:'📦 Inventario', cotizaciones:'📝 Cotizaciones', facturacion:'🧾 Facturación', usuarios:'👥 Usuarios', clientes:'🧑\u200d🤝\u200d🧑 Clientes', pedidos:'📋 Pedidos' };
             const titleEl = document.getElementById('admin-view-title');
             if (titleEl) titleEl.textContent = titles[mod] || 'Panel';
+            if (mod === 'config') {
+                applyNavLabels();
+                const sc = getShippingConfig();
+                const costInput = document.getElementById('shipping-cost-input');
+                const thresholdInput = document.getElementById('shipping-threshold-input');
+                const labelInput = document.getElementById('shipping-text-label');
+                const freeInput = document.getElementById('shipping-text-free');
+                const missingInput = document.getElementById('shipping-text-missing');
+                if (costInput) costInput.value = sc.default.cost;
+                if (thresholdInput) thresholdInput.value = sc.default.threshold;
+                if (labelInput) labelInput.value = sc.texts.label;
+                if (freeInput) freeInput.value = sc.texts.freeUnlocked;
+                if (missingInput) missingInput.value = sc.texts.missingTemplate;
+                renderShippingZonesAdmin();
+                const wc = getWarrantyContent();
+                const wTitleInput = document.getElementById('warranty-title-input');
+                const wContentInput = document.getElementById('warranty-content-input');
+                if (wTitleInput) wTitleInput.value = wc.title;
+                if (wContentInput) wContentInput.value = wc.content;
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function closeAdminModule() {
@@ -4471,6 +4927,7 @@
                     quantity: 1, image: img, size: size, colorName: colorName || (activeVariant ? activeVariant.colorName : null) });
             }
             updateCartBadge();
+            persistCart();
         }
 
         function buyDirectWhatsApp(id, size) {
@@ -4514,12 +4971,68 @@
             if (mbadge) mbadge.innerText = total;
         }
 
+        function flashUpdate(el) {
+            if (!el) return;
+            el.style.transition = 'none';
+            el.style.color = 'var(--accent-dark)';
+            el.style.transform = 'scale(1.15)';
+            requestAnimationFrame(() => {
+                el.style.transition = 'color .5s ease, transform .3s ease';
+                el.style.color = '#0f172a';
+                el.style.transform = 'scale(1)';
+            });
+        }
+
+        const CART_CITY_KEY = 'cart_selected_city';
+
+        function onCartCityChange() {
+            const val = document.getElementById('cart-city-input')?.value || '';
+            try { localStorage.setItem(CART_CITY_KEY, val); } catch (e) { /* no crítico */ }
+            renderCart();
+            // Sugerir la misma ciudad en el checkout si el campo existe y está vacío
+            const chkCiudad = document.getElementById('chk-ciudad');
+            if (chkCiudad && !chkCiudad.value) chkCiudad.value = val;
+        }
+
+        function getCartSelectedCity() {
+            try { return localStorage.getItem(CART_CITY_KEY) || ''; } catch (e) { return ''; }
+        }
+
+        function renderFreeShippingBar(total) {
+            const box = document.getElementById('free-shipping-box');
+            if (!box) return;
+            const cfg = getShippingConfig();
+            const city = getCartSelectedCity();
+            const { threshold } = getShippingForCity(city);
+            if (total <= 0 || threshold <= 0) { box.innerHTML = ''; return; }
+            if (total >= threshold) {
+                box.innerHTML = `
+                    <p style="font-size:12.5px; font-weight:700; color:#16a34a; margin-bottom:6px;">${cfg.texts.freeUnlocked}</p>
+                    <div style="height:6px; border-radius:99px; background:#dcfce7; overflow:hidden;">
+                        <div style="height:100%; width:100%; background:#16a34a; border-radius:99px;"></div>
+                    </div>`;
+            } else {
+                const restante = threshold - total;
+                const pct = Math.min(100, Math.round((total / threshold) * 100));
+                const texto = cfg.texts.missingTemplate.replace('{monto}', `<strong>${formatCOP(restante)}</strong>`);
+                box.innerHTML = `
+                    <p style="font-size:12.5px; font-weight:600; color:#0f172a; margin-bottom:6px;">${texto}</p>
+                    <div style="height:6px; border-radius:99px; background:#e2e8f0; overflow:hidden;">
+                        <div style="height:100%; width:${pct}%; background:var(--accent-dark); border-radius:99px; transition:width .3s ease;"></div>
+                    </div>`;
+            }
+        }
+
         function renderCart() {
             const wrapper = document.getElementById('cart-items-wrapper');
             if (cart.length === 0) {
                 wrapper.innerHTML = `<p style="color:var(--text-muted); padding:30px 0;">Tu bolsa de compras está vacía.</p>`;
                 document.getElementById('summary-qty').innerText = "0";
+                document.getElementById('summary-shipping').innerText = "$ 0";
                 document.getElementById('summary-total').innerText = "$ 0";
+                const labelEl0 = document.getElementById('summary-shipping-label');
+                if (labelEl0) labelEl0.innerText = getShippingConfig().texts.label;
+                renderFreeShippingBar(0);
                 return;
             }
 
@@ -4528,13 +5041,17 @@
                 total += (item.price * item.quantity);
                 qty += item.quantity;
                 return `
-                    <div class="cart-item">
+                    <div class="cart-item" id="cart-row-${(item.cartKey || item.id).replace(/[^a-zA-Z0-9_-]/g,'')}" style="transition:opacity .25s ease, transform .25s ease, max-height .25s ease;">
                         <img src="${item.image}">
                         <div style="flex-grow:1;">
                             <h4 style="font-size:16px;">${item.title}</h4>
                             <p style="font-size:12px; color:var(--text-muted); text-transform:uppercase;">${item.brand}</p>
                             ${item.size ? `<p style="font-size:13px; font-weight:700; color:var(--accent-dark); margin-top:3px;">Talla: ${item.size}</p>` : ''}
-                            <p style="font-size:13px; font-weight:700; margin-top:2px;">Cantidad: ${item.quantity} par(es)</p>
+                            <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+                                <button onclick="changeQty('${item.cartKey || item.id}', -1)" style="width:26px; height:26px; border-radius:6px; border:1px solid var(--border-color); background:#f8fafc; font-weight:800; cursor:pointer; font-size:14px; line-height:1;">−</button>
+                                <span style="font-size:13px; font-weight:700; min-width:70px;">${item.quantity} par(es)</span>
+                                <button onclick="changeQty('${item.cartKey || item.id}', 1)" style="width:26px; height:26px; border-radius:6px; border:1px solid var(--border-color); background:#f8fafc; font-weight:800; cursor:pointer; font-size:14px; line-height:1;">+</button>
+                            </div>
                             <button onclick="removeFromBag('${item.cartKey || item.id}')" style="background:none; border:none; color:var(--danger-color); font-size:12px; cursor:pointer; text-decoration:underline; margin-top:6px;">Eliminar</button>
                         </div>
                         <div style="font-weight:700;">${formatCOP(item.price * item.quantity)}</div>
@@ -4542,13 +5059,52 @@
                 `;
             }).join('');
 
-            document.getElementById('summary-qty').innerText = qty;
-            document.getElementById('summary-total').innerText = formatCOP(total);
+            const { cost: shippingCostCfg, threshold } = getShippingForCity(getCartSelectedCity());
+            const shippingCost = (threshold > 0 && total >= threshold) ? 0 : shippingCostCfg;
+            const qtyEl = document.getElementById('summary-qty');
+            const totalEl = document.getElementById('summary-total');
+            const labelEl = document.getElementById('summary-shipping-label');
+            if (labelEl) labelEl.innerText = getShippingConfig().texts.label;
+            qtyEl.innerText = qty;
+            document.getElementById('summary-shipping').innerText = shippingCost === 0 ? "Gratis" : formatCOP(shippingCost);
+            totalEl.innerText = formatCOP(total + shippingCost);
+            flashUpdate(qtyEl);
+            flashUpdate(totalEl);
+            renderFreeShippingBar(total);
+        }
+
+        function changeQty(key, delta) {
+            const item = cart.find(i => (i.cartKey || i.id) === key);
+            if (!item) return;
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                removeFromBag(key);
+                return;
+            }
+            updateCartBadge();
+            persistCart();
+            renderCart();
         }
 
         function removeFromBag(key) {
+            const rowId = 'cart-row-' + key.replace(/[^a-zA-Z0-9_-]/g,'');
+            const row = document.getElementById(rowId);
+            if (row) {
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(30px)';
+                row.style.maxHeight = row.offsetHeight + 'px';
+                requestAnimationFrame(() => { row.style.maxHeight = '0px'; row.style.paddingTop = '0'; row.style.paddingBottom = '0'; row.style.overflow = 'hidden'; });
+                setTimeout(() => {
+                    cart = cart.filter(item => (item.cartKey || item.id) !== key);
+                    updateCartBadge();
+                    persistCart();
+                    renderCart();
+                }, 250);
+                return;
+            }
             cart = cart.filter(item => (item.cartKey || item.id) !== key);
             updateCartBadge();
+            persistCart();
             renderCart();
         }
 
@@ -4562,7 +5118,11 @@
                 msg += `[${i+1}] ${item.title} (${item.brand.toUpperCase()})\n`;
                 msg += `    Pares: ${item.quantity} | Total: ${formatCOP(item.price * item.quantity)}\n\n`;
             });
-            msg += `*VALOR TOTAL COMPRA:* ${formatCOP(totalFactura)}\n\n`;
+            msg += `*VALOR TOTAL COMPRA:* ${formatCOP(totalFactura)}\n`;
+            const { cost: _sc, threshold: _st } = getShippingConfig();
+            const shippingCost = (_st > 0 && totalFactura >= _st) ? 0 : _sc;
+            msg += `*ENVÍO:* ${shippingCost === 0 ? 'Gratis' : formatCOP(shippingCost)}\n`;
+            msg += `*TOTAL A PAGAR:* ${formatCOP(totalFactura + shippingCost)}\n\n`;
             msg += `Deseo proceder con los datos de envío y pago correspondiente.`;
 
             await sendPostRequest({ action: "registerSale", cart: cart });
@@ -4570,6 +5130,7 @@
             window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
             cart = [];
             updateCartBadge();
+            persistCart();
             navigateTo('home-view');
         }
 
@@ -5148,7 +5709,10 @@
             const cfg = getPagosConfig();
             const metodoPago = cfg[selectedPago]?.label || selectedPago;
             const storeName = (getCfg('brand_config',{}).name || localStorage.getItem('brand_name') || 'StivZapat');
-            let total = cart.reduce((s,i)=>s+i.price*i.quantity, 0);
+            const subtotal = cart.reduce((s,i)=>s+i.price*i.quantity, 0);
+            const { cost: shipCost, threshold: shipThreshold } = getShippingForCity(ciudad);
+            const shippingCost = (shipThreshold > 0 && subtotal >= shipThreshold) ? 0 : shipCost;
+            let total = subtotal + shippingCost;
 
             // ── Si elige Wompi → abrir widget de pago real ──
             if (selectedPago === 'wompi') {
@@ -5173,6 +5737,8 @@
                 dir,
                 metodoPago,
                 items: cart.map(i => ({...i})),
+                subtotal,
+                envio: shippingCost,
                 total,
                 estado: 'pendiente'
             };
@@ -5196,12 +5762,13 @@
             cart.forEach((item, i) => {
                 msg += `[${i+1}] ${item.title} (${item.brand.toUpperCase()})\n    Pares: ${item.quantity} | Total: ${formatCOP(item.price * item.quantity)}\n\n`;
             });
-            msg += `*VALOR TOTAL:* ${formatCOP(total)}\n*Método de pago:* ${metodoPago}\n\nDeseo confirmar este pedido. (ID: ${orderId})`;
+            msg += `*SUBTOTAL:* ${formatCOP(subtotal)}\n*ENVÍO:* ${shippingCost === 0 ? 'Gratis' : formatCOP(shippingCost)}\n*VALOR TOTAL:* ${formatCOP(total)}\n*Método de pago:* ${metodoPago}\n\nDeseo confirmar este pedido. (ID: ${orderId})`;
 
             window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
 
             cart = [];
             updateCartBadge();
+            persistCart();
             closeCheckoutModal();
             navigateTo('home-view');
             alert(`✅ Pedido registrado con ID: ${orderId}\n\nEl stock se descontará cuando el administrador confirme el pago recibido.`);
