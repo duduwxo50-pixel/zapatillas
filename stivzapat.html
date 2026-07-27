@@ -397,11 +397,12 @@
             .catalog-layout { grid-template-columns: 1fr; gap: 16px; }
             .catalog-layout aside { display: none; }
 
-            /* Detalle del producto: apilado */
-            .product-detail-layout { grid-template-columns: 1fr; gap: 20px; }
+            /* Detalle del producto: miniaturas + imagen en la misma fila, info abajo */
+            .product-detail-layout { grid-template-columns: 48px 1fr; gap: 10px 12px; }
+            .product-detail-layout > div:nth-child(3) { grid-column: 1 / -1; }
             .product-detail-img-col { max-width: 100%; }
             .product-detail-layout h1 { font-size: 22px; }
-            .thumbnail-card { width: 52px; height: 52px; }
+            .thumbnail-card { width: 48px; height: 48px; }
 
             /* Carrito: apilado */
             .cart-layout { grid-template-columns: 1fr; gap: 20px; }
